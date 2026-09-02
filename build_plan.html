@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SecureMail Build Plan</title>
+  <style>
+:root {
+  --bg: #eef1f4;
+  --paper: #fffcf7;
+  --ink: #1b242c;
+  --muted: #5b6773;
+  --line: #d8ddd4;
+  --navy: #13202c;
+  --navy-2: #1c2f40;
+  --teal: #0f766e;
+  --teal-soft: #d7efe9;
+  --amber: #b45309;
+  --amber-soft: #fde8c8;
+  --code-bg: #12202c;
+  --code-fg: #e8eef3;
+  --shadow: 0 12px 40px rgba(19, 32, 44, 0.08);
+  --radius: 14px;
+  --sidebar-w: 280px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 500px at 10% -10%, #d9ebe6 0%, transparent 55%),
+    var(--bg);
+  font: 16px/1.65 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+}
+code, kbd, pre, .toc, .hero-meta, .flow-node, nav, .badge, .fn, button {
+  font-family: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+a { color: var(--teal); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: #0a5c56; }
+.layout {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  min-height: 100vh;
+}
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: auto;
+  background: var(--navy);
+  color: #d7e0e8;
+  padding: 28px 18px 40px;
+}
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 10px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 18px;
+}
+.brand strong {
+  font: 700 13px/1.2 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7dd3c7;
+}
+.brand span { font-size: 12px; color: #93a4b3; }
+.toc { font-size: 12px; line-height: 1.35; }
+.toc ul { list-style: none; margin: 0; padding: 0; }
+.toc > ul > li { margin: 2px 0; }
+.toc a {
+  display: block;
+  color: #c5d2dc;
+  text-decoration: none;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+}
+.toc a:hover, .toc a.active {
+  background: rgba(125, 211, 199, 0.1);
+  color: #fff;
+  border-left-color: #7dd3c7;
+}
+.toc li li a { padding-left: 18px; color: #9aabba; font-size: 11px; }
+.toc .toctitle { display: none; }
+.content-wrap { padding: 36px 28px 80px; }
+article {
+  max-width: 980px;
+  margin: 0 auto;
+  background: var(--paper);
+  border: 1px solid #e4ddd0;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 48px 56px 72px;
+}
+.hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid var(--navy);
+}
+.hero h1 {
+  font: 700 34px/1.15 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.03em;
+  margin: 0 0 10px;
+}
+.hero-meta { color: var(--muted); font-size: 13px; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--amber-soft);
+  color: var(--amber);
+  border: 1px solid #f3d19a;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.badge::before {
+  content: "";
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #d97706;
+}
+h2 {
+  font: 700 22px/1.25 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  margin: 52px 0 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--navy);
+}
+h2:first-of-type { border-top: 0; margin-top: 8px; }
+h3 {
+  font: 700 18px/1.3 ui-sans-serif, system-ui, sans-serif;
+  margin: 36px 0 12px;
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+h3[id^="step-"] {
+  background: linear-gradient(180deg, #f4faf8, #eef6f3);
+  border: 1px solid #cfe4dd;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-top: 48px;
+}
+p { margin: 0 0 14px; }
+em { color: #3d4a56; }
+strong { color: #111827; }
+ul, ol { padding-left: 1.3em; margin: 0 0 16px; }
+li { margin: 4px 0; }
+li > ul, li > ol { margin-top: 4px; margin-bottom: 6px; }
+blockquote {
+  margin: 16px 0;
+  padding: 10px 16px;
+  border-left: 4px solid var(--teal);
+  background: var(--teal-soft);
+  color: #134e4a;
+  border-radius: 0 10px 10px 0;
+}
+pre {
+  background: var(--code-bg);
+  color: var(--code-fg);
+  border-radius: 12px;
+  padding: 16px 18px;
+  overflow: auto;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 18px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+}
+code {
+  font-size: 0.86em;
+  background: #ece7dc;
+  padding: 0.12em 0.38em;
+  border-radius: 5px;
+}
+pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+.table-wrap {
+  overflow-x: auto;
+  margin: 0 0 22px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 13.5px/1.45 ui-sans-serif, system-ui, sans-serif;
+  min-width: 640px;
+}
+th {
+  text-align: left;
+  background: var(--navy);
+  color: #e8eef3;
+  padding: 10px 12px;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+td {
+  padding: 10px 12px;
+  border-top: 1px solid var(--line);
+  vertical-align: top;
+}
+tr:nth-child(even) td { background: #f7f3ea; }
+.flowchart {
+  background: #12202c;
+  color: #dbe7ef;
+  border-radius: 16px;
+  padding: 28px 22px 32px;
+  margin: 8px 0 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.flow-chain, .flow-split, .flow-branch, .flow-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.flow-split {
+  flex-direction: row;
+  gap: 28px;
+  align-items: flex-start;
+}
+.flow-branch {
+  width: 100%;
+  max-width: 520px;
+}
+.flow-merge-note {
+  font-size: 11px;
+  color: #93a4b3;
+  text-align: center;
+  margin-top: 8px;
+}
+.flow-node {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 280px;
+  max-width: 420px;
+  background: #1c3244;
+  color: #f4f8fb !important;
+  text-decoration: none !important;
+  border: 1px solid #2c4b62;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.flow-node:hover { border-color: #7dd3c7; background: #214056; }
+.fn {
+  flex: 0 0 auto;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: #0f766e;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+.n0 .fn { background: #64748b; }
+.n7 .fn, .n8 .fn { background: #b45309; }
+.n10 .fn { background: #7c3aed; }
+.n11 .fn { background: #0369a1; }
+.flow-arrow {
+  width: 2px;
+  height: 18px;
+  background: #4b6a80;
+  position: relative;
+}
+.flow-arrow::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  bottom: -1px;
+  border: 5px solid transparent;
+  border-top-color: #4b6a80;
+  border-bottom: 0;
+}
+.flow-join {
+  width: 180px;
+  height: 18px;
+  border: 2px solid #4b6a80;
+  border-top: 0;
+  border-radius: 0 0 16px 16px;
+  margin-bottom: 6px;
+}
+.companions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 8px 0 8px;
+}
+.companion {
+  display: block;
+  background: #f4faf8;
+  border: 1px solid #cfe4dd;
+  border-radius: 12px;
+  padding: 12px 14px;
+  text-decoration: none;
+  color: inherit;
+}
+.companion:hover { border-color: var(--teal); }
+.companion b {
+  display: block;
+  font: 700 13px ui-sans-serif, system-ui, sans-serif;
+  color: var(--teal);
+  margin-bottom: 2px;
+}
+.companion span { font-size: 13px; color: var(--muted); }
+.back-top {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  background: var(--navy);
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.back-top:hover { background: #0f766e; }
+@media (max-width: 980px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { position: relative; height: auto; max-height: 42vh; }
+  article { padding: 28px 20px 48px; }
+  .hero { flex-direction: column; }
+  .companions, .flow-split { grid-template-columns: 1fr; flex-direction: column; }
+  .flow-node { min-width: 0; width: 100%; }
+}
+@media print {
+  .sidebar, .back-top { display: none; }
+  .layout { display: block; }
+  article { box-shadow: none; border: 0; padding: 0; max-width: none; }
+  a { color: inherit; text-decoration: none; }
+  .flowchart { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+}
+</style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <strong>SecureMail</strong>
+        <span>Build plan · readable view</span>
+      </div>
+      <nav class="toc" aria-label="On this page"><div class="toc">
+<ul>
+<li><a href="#1-purpose">1. Purpose</a></li>
+<li><a href="#2-ground-rules">2. Ground rules</a></li>
+<li><a href="#3-fixture-doctrine">3. Fixture doctrine</a><ul>
+<li><a href="#31-source-selection-per-case-as-needed">3.1 Source selection (per case, as needed)</a></li>
+</ul>
+</li>
+<li><a href="#4-per-step-template">4. Per-step template</a></li>
+<li><a href="#5-capability-findings-that-shape-step-boundaries">5. Capability findings that shape step boundaries</a></li>
+<li><a href="#6-step-sequence">6. Step sequence</a></li>
+<li><a href="#7-steps">7. Steps</a><ul>
+<li><a href="#step-0-foundations">Step 0 — Foundations</a></li>
+<li><a href="#step-1-intake-and-tcp-stream-reconstruction">Step 1 — Intake and TCP stream reconstruction</a></li>
+<li><a href="#step-2-automatic-smtpimappop3-identification">Step 2 — Automatic SMTP/IMAP/POP3 identification</a></li>
+<li><a href="#step-3-starttlsstls-negotiation-detection-and-validation">Step 3 — STARTTLS/STLS negotiation detection and validation</a></li>
+<li><a href="#step-4-tls-handshake-reconstruction-version-cipher-suite-key-exchange">Step 4 — TLS handshake reconstruction, version, cipher suite, key exchange</a></li>
+<li><a href="#step-5-certificate-extraction-and-per-certificate-analysis">Step 5 — Certificate extraction and per-certificate analysis</a></li>
+<li><a href="#step-6-certificate-chain-validation-and-identity">Step 6 — Certificate chain validation and identity</a></li>
+<li><a href="#step-7-deterministic-policy-engine">Step 7 — Deterministic policy engine</a></li>
+<li><a href="#step-8-posture-scoring-and-prioritized-findings">Step 8 — Posture scoring and prioritized findings</a></li>
+<li><a href="#step-9-reports-json-html-pdf">Step 9 — Reports: JSON, HTML, PDF</a></li>
+<li><a href="#step-10-advisory-ml-risk-scoring-and-anomaly-detection">Step 10 — Advisory ML: risk scoring and anomaly detection</a></li>
+<li><a href="#step-11-interactive-dashboard">Step 11 — Interactive dashboard</a></li>
+</ul>
+</li>
+<li><a href="#8-deliverable-traceability">8. Deliverable traceability</a></li>
+</ul>
+</div>
+</nav>
+    </aside>
+    <div class="content-wrap">
+      <article>
+        <header class="hero">
+          <div>
+            <h1>SecureMail Build Plan</h1>
+            <div class="hero-meta">Execution order, fixtures, and the test that proves each piece is done.</div>
+          </div>
+          <span class="badge">Execution plan</span>
+        </header>
+        
+<div class="companions">
+  <a class="companion" href="./OBJECTIVE.MD"><b>OBJECTIVE.MD</b><span>Requirements and the 21 deliverables</span></a>
+  <a class="companion" href="./TECHNICAL_DESIGN.md"><b>TECHNICAL_DESIGN.md</b><span>Architecture and rationale</span></a>
+</div>
+
+<h2 id="1-purpose">1. Purpose</h2>
+<p><a href="./TECHNICAL_DESIGN.md">TECHNICAL_DESIGN.md</a> answers <em>what</em> SecureMail is and <em>why</em> each
+technology choice was made. This document answers <em>in what order do we build it, and
+what test proves each piece is done</em>.</p>
+<p>Every step below exists to deliver one or more items from the deliverable list in
+<a href="./OBJECTIVE.MD">OBJECTIVE.MD</a> (lines 29-53), grouped only when they are logically
+inseparable (for example, TLS version and cipher suite are both read from the same
+handshake record). A step is <strong>not complete</strong> until its acceptance tests pass against
+committed fixtures. There is no &ldquo;implement now, test later&rdquo; step in this plan.</p>
+<h2 id="2-ground-rules">2. Ground rules</h2>
+<ol>
+<li><strong>Zeek is the primary processing engine.</strong> Packet capture ingestion, TCP stream
+   reassembly, protocol identification, TLS handshake decoding, and X.509 extraction
+   happen in Zeek. Python does not re-implement packet parsing.</li>
+<li><strong>Python is the orchestrator, not a second parser.</strong> The <code>securemail</code> Python
+   package invokes Zeek (and TShark where Zeek is insufficient), normalizes Zeek&rsquo;s
+   output into canonical evidence models, applies deterministic policy, computes
+   scores, and renders reports. This is also the integration seam for future
+   services (API, ML, reporting) referenced in the objective.</li>
+<li><strong>CLI-only surface for now.</strong> Every step is driven end-to-end from a command-line
+   entry point (<code>securemail &lt;command&gt;</code>). No FastAPI service, queue, or database is
+   built before the CLI path proves the logic works. TECHNICAL_DESIGN&rsquo;s FastAPI/
+   Celery/PostgreSQL architecture (its Section 5) is the target shape for the
+   Python package&rsquo;s internal boundaries (routers/application/domain/ports/adapters),
+   not something to stand up prematurely.</li>
+<li><strong>Deterministic before AI.</strong> Every rule-based deliverable (protocol ID, STARTTLS,
+   TLS facts, certificate facts, weak-algorithm detection, forward secrecy) must be
+   fully deterministic, versioned, and test-covered before any AI/ML step is
+   started. AI/ML steps (Step 10) consume the deterministic output; they never
+   replace or gate it.</li>
+<li><strong>Evidence states are mandatory, not decorative.</strong> Every fixture&rsquo;s <code>expected.json</code>
+   must use the six evidence states from TECHNICAL_DESIGN Section 2.3 where they
+   apply: <code>observed</code>, <code>verified</code>, <code>inferred</code>, <code>incomplete</code>, <code>conflicting</code>,
+   <code>not_observable</code>, <code>indeterminate</code>. A test that lets &ldquo;no weakness detected&rdquo; pass
+   for a check that was actually <code>not_observable</code> or <code>incomplete</code> is treated as a
+   bug in the test, not a passing test.</li>
+<li><strong>Test-first for everything deterministic.</strong> For every step through Step 9, the
+   fixture and its <code>expected.json</code> are authored and reviewed before the
+   corresponding Zeek script or Python code is written. Steps 10 and 11 use a
+   different, explicitly named approach (see those steps) because &ldquo;known output&rdquo;
+   does not mean the same thing for ML evaluation or for a UI contract.</li>
+<li><strong>One step, one runnable proof.</strong> Each step ends with a specific CLI command that
+   an outsider can run against the fixtures directory and see pass.</li>
+</ol>
+<h2 id="3-fixture-doctrine">3. Fixture doctrine</h2>
+<p>Every test fixture is a self-contained directory:</p>
+<pre><code class="language-text">tests/fixtures/&lt;case_id&gt;/
+  capture.pcapng           # evidence, byte-preserved, never edited after creation
+  expected.json            # declared ground truth, authored BEFORE code
+  provenance.json          # source, generator script + args/versions, sha256, capture date
+</code></pre>
+<p><code>provenance.json</code> makes every fixture&rsquo;s origin reproducible and auditable:</p>
+<pre><code class="language-json">{
+  &quot;source&quot;: &quot;lab | scapy | public_corpus&quot;,
+  &quot;generator&quot;: &quot;path/to/script.py or docker-compose file, with exact args&quot;,
+  &quot;tool_versions&quot;: {&quot;postfix&quot;: &quot;3.9&quot;, &quot;openssl&quot;: &quot;3.x&quot;, &quot;scapy&quot;: &quot;2.x&quot;},
+  &quot;sha256&quot;: &quot;&lt;capture.pcapng hash&gt;&quot;,
+  &quot;created_at&quot;: &quot;RFC 3339 timestamp&quot;,
+  &quot;notes&quot;: &quot;what this fixture proves and why this source was chosen&quot;
+}
+</code></pre>
+<h3 id="31-source-selection-per-case-as-needed">3.1 Source selection (per case, as needed)</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Used for</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Lab capture</strong> — Dockerized Postfix/Dovecot/Cyrus + <code>openssl s_server</code>/<code>s_client</code>, a throwaway CA, tcpdump on the bridge network</td>
+<td>Real handshakes: SMTP/IMAP/POP3 STARTTLS success, implicit TLS on 465/993/995, TLS 1.2 vs 1.3, ECDHE vs static RSA, weak suites via a legacy-OpenSSL container, and a certificate matrix (expired, not-yet-valid, RSA-1024, SHA-1 signature, self-signed, SAN mismatch, broken chain)</td>
+<td>Only a real TLS stack produces byte-accurate handshakes and certificates; hand-crafting these is error-prone and would test our own assumptions instead of reality</td>
+</tr>
+<tr>
+<td><strong>Scapy-crafted</strong></td>
+<td>Cases a real stack will not reliably produce on demand: missing SYN, midstream capture start, snaplen truncation, overlapping/conflicting retransmissions, out-of-order segments, STARTTLS capability stripping, plaintext <code>AUTH</code>/<code>LOGIN</code> after a failed or missing upgrade, malformed TLS records, protocols running on nonstandard ports, IPv6</td>
+<td>Full control over byte-level malformation and capture-quality degradation, which is exactly what Section 2.3/8.2 of TECHNICAL_DESIGN requires us to prove we handle safely</td>
+</tr>
+<tr>
+<td><strong>Public corpus</strong> — Wireshark Sample Captures, curated <code>smtp</code>/<code>imap</code>/<code>pop3</code>/<code>tls</code> traces</td>
+<td>Differential, no-crash regression against traffic we did not generate ourselves, with hand-authored expectations</td>
+<td>Confirms our analyzer does not silently depend on quirks of our own lab traffic generator; never the sole source of proof for a rule</td>
+</tr>
+</tbody>
+</table></div>
+<p>A step may use one, two, or all three sources; each step names which it uses and why.</p>
+<h2 id="4-per-step-template">4. Per-step template</h2>
+<p>Every step below follows this structure:</p>
+<ul>
+<li><strong>Deliverables covered</strong> — the exact OBJECTIVE.MD bullet(s).</li>
+<li><strong>Fixtures</strong> — which case(s), from which source(s), and why.</li>
+<li><strong>Test contract</strong> — the concrete assertions authored first, against <code>expected.json</code>.</li>
+<li><strong>Implementation</strong> — Zeek-side work, then Python-side work.</li>
+<li><strong>CLI command</strong> — the runnable proof.</li>
+<li><strong>Exit criteria</strong> — what must be true to call the step done.</li>
+</ul>
+<h2 id="5-capability-findings-that-shape-step-boundaries">5. Capability findings that shape step boundaries</h2>
+<p>Before laying out the steps, two Zeek gaps had to be confirmed because they change
+where responsibility sits between Zeek and Python (verified against the Zeek 8.x
+script reference):</p>
+<ul>
+<li><code>smtp.log</code> exists out of the box and includes a <code>tls</code> field plus
+  <code>smtp_request</code>/<code>smtp_reply</code>/<code>smtp_starttls</code> events.</li>
+<li><strong>There is no <code>imap.log</code>.</strong> The built-in IMAP analyzer only exposes
+  <code>imap_capabilities</code> and <code>imap_starttls</code>; it stops decoding once TLS starts.</li>
+<li><strong>There is no <code>pop3.log</code>, and the POP3 analyzer is disabled by default</strong> — its
+  script was never ported to run automatically. It must be turned on with
+  <code>Analyzer::register_for_ports</code> or a DPD payload signature before
+  <code>pop3_request</code>/<code>pop3_reply</code>/<code>pop3_starttls</code>/<code>pop3_unexpected</code> events fire.</li>
+<li><code>ssl.log</code> provides <code>version</code>, <code>cipher</code>, <code>curve</code>, <code>server_name</code>, <code>resumed</code>,
+  <code>established</code>, <code>last_alert</code>, <code>ssl_history</code> (an ordered letter-code of handshake
+  messages, e.g. <code>C</code>=client_hello, <code>S</code>=server_hello, <code>X</code>=certificate,
+  <code>K</code>=server_key_exchange, <code>G</code>=client_key_exchange, <code>J</code>=hello_retry_request,
+  <code>L</code>=alert), <code>cert_chain_fps</code>, <code>subject</code>, <code>issuer</code>, <code>sni_matches_cert</code>.</li>
+<li>Loading <code>policy/protocols/ssl/ssl-log-ext.zeek</code> adds the fields needed for key
+  exchange and forward-secrecy inference: <code>client_version</code>, <code>server_version</code>,
+  <code>client_ciphers</code>, <code>client_curves</code>, <code>client_supported_versions</code>,
+  <code>server_supported_version</code>, <code>client_key_share_groups</code>, <code>server_key_share_group</code>,
+  <code>dh_param_size</code>, <code>psk_key_exchange_modes</code>, <code>sigalgs</code>, <code>hashalgs</code>,
+  <code>client_comp_methods</code>, <code>comp_method</code>.</li>
+<li><code>policy/protocols/ssl/validate-certs.zeek</code> can add <code>validation_status</code>/
+  <code>validation_code</code>, but it validates against Zeek&rsquo;s bundled Mozilla trust list at
+  whatever time Zeek runs — not against a pinned, capture-time-aware trust
+  snapshot. SecureMail still performs authoritative chain validation in Python
+  (Step 6); Zeek&rsquo;s own validation is at most a cross-check.</li>
+<li><code>conn.log</code> (<code>missed_bytes</code>, <code>history</code>), <code>weird.log</code>, <code>capture_loss.log</code>, and
+  <code>reporter.log</code> are the raw material for reconstruction-quality evidence.</li>
+</ul>
+<p><strong>Consequence:</strong> IMAP and POP3 command-level evidence (capabilities, STARTTLS/STLS
+transcript, error responses) is SecureMail&rsquo;s own responsibility, not something Zeek
+hands us for free. Step 2 makes this an explicit decision gate: start with small
+custom Zeek event handlers over the existing (and newly enabled) events, and only
+escalate to a purpose-built Spicy analyzer or a bounded TShark second pass if the
+built-in events prove insufficient for the state machines in Step 3.</p>
+<h2 id="6-step-sequence">6. Step sequence</h2>
+<div class="flowchart" role="img" aria-label="Build plan step sequence">
+  <div class="flow-chain">
+    <a class="flow-node n0" href="#step-0-foundations"><span class="fn">0</span>Foundations</a>
+    <span class="flow-arrow" aria-hidden="true"></span>
+    <a class="flow-node n1" href="#step-1-intake-and-tcp-stream-reconstruction"><span class="fn">1</span>Intake &amp; TCP reconstruction</a>
+    <span class="flow-arrow" aria-hidden="true"></span>
+    <a class="flow-node n2" href="#step-2-automatic-smtpimappop3-identification"><span class="fn">2</span>Protocol identification</a>
+    <span class="flow-arrow" aria-hidden="true"></span>
+    <a class="flow-node n3" href="#step-3-starttlsstls-negotiation-detection-and-validation"><span class="fn">3</span>STARTTLS state machines</a>
+    <span class="flow-arrow" aria-hidden="true"></span>
+    <a class="flow-node n4" href="#step-4-tls-handshake-reconstruction-version-cipher-suite-key-exchange"><span class="fn">4</span>TLS handshake, version, cipher, KX</a>
+  </div>
+  <div class="flow-branch">
+    <div class="flow-col">
+      <span class="flow-arrow" aria-hidden="true"></span>
+      <a class="flow-node n5" href="#step-5-certificate-extraction-and-per-certificate-analysis"><span class="fn">5</span>Certificate extraction</a>
+      <span class="flow-arrow" aria-hidden="true"></span>
+      <a class="flow-node n6" href="#step-6-certificate-chain-validation-and-identity"><span class="fn">6</span>Chain validation &amp; identity</a>
+    </div>
+    <div class="flow-merge-note">Steps 4 and 6 both feed Step 7</div>
+  </div>
+  <div class="flow-chain">
+    <a class="flow-node n7" href="#step-7-deterministic-policy-engine"><span class="fn">7</span>Policy engine</a>
+    <span class="flow-arrow" aria-hidden="true"></span>
+    <a class="flow-node n8" href="#step-8-posture-scoring-and-prioritized-findings"><span class="fn">8</span>Scoring &amp; prioritization</a>
+  </div>
+  <div class="flow-split">
+    <div class="flow-col">
+      <span class="flow-arrow" aria-hidden="true"></span>
+      <a class="flow-node n9" href="#step-9-reports-json-html-pdf"><span class="fn">9</span>Reports JSON / HTML / PDF</a>
+    </div>
+    <div class="flow-col">
+      <span class="flow-arrow" aria-hidden="true"></span>
+      <a class="flow-node n10" href="#step-10-advisory-ml-risk-scoring-and-anomaly-detection"><span class="fn">10</span>Advisory ML</a>
+    </div>
+  </div>
+  <div class="flow-chain">
+    <span class="flow-join" aria-hidden="true"></span>
+    <a class="flow-node n11" href="#step-11-interactive-dashboard"><span class="fn">11</span>Dashboard</a>
+  </div>
+</div>
+
+<h2 id="7-steps">7. Steps</h2>
+<h3 id="step-0-foundations">Step 0 — Foundations</h3>
+<p><em>Enabler step. No OBJECTIVE.MD deliverable is claimed here; every later step depends on it.</em></p>
+<p><strong>Fixtures.</strong> None yet — this step builds the harness the other steps&rsquo; fixtures run
+through. One trivial &ldquo;empty capture&rdquo; fixture (a PCAP with a handful of unrelated
+packets, source: Scapy) is added purely to prove the pipeline runs end to end.</p>
+<p><strong>Test contract.</strong>
+- <code>securemail analyze tests/fixtures/empty/capture.pcapng</code> exits 0 and produces a
+  canonical JSON document that validates against the v0 evidence schema.
+- The report&rsquo;s run-identity block contains a non-empty <code>analyzer_bundle_digest</code>,
+  <code>capture_sha256</code>, and <code>normalization_schema_version</code>.
+- Re-running the same command against the same fixture produces byte-identical
+  JSON (idempotency/reproducibility check, per TECHNICAL_DESIGN 5.5).
+- Running with no network access available still succeeds (proves the analyzer
+  containers are actually network-disabled, not just documented as such).</p>
+<p><strong>Implementation.</strong>
+- <em>Zeek/TShark side:</em> <code>Dockerfile.zeek</code> and <code>Dockerfile.tshark</code> pinned by digest,
+  built with <code>--network=none</code> at run time; a digest lockfile
+  (<code>tools/analyzer-bundle.lock</code>) recording both image digests plus the Zeek policy
+  script bundle hash. Zeek invoked with <code>LogAscii::use_json=T</code> for structured
+  output.
+- <em>Python side:</em> create the <code>securemail</code> package using the layout from
+  TECHNICAL_DESIGN 5.3 (<code>api/ application/ domain/ ports/ adapters/ workers/
+  bootstrap.py</code>), except the first adapter under <code>api/</code> is a Typer CLI, not
+  FastAPI. Add:
+  - <code>ports/analyzers.py</code> — <code>Protocol</code> interfaces for <code>ZeekRunner</code> and
+    <code>TSharkRunner</code> (subprocess adapters using a fixed argv array, never a shell).
+  - <code>adapters/analyzers/zeek_runner.py</code>, <code>tshark_runner.py</code> — the concrete
+    subprocess adapters, each computing and returning the tool&rsquo;s digest.
+  - <code>domain/evidence/</code> — canonical Pydantic v2 models v0, including the
+    <code>EvidenceState</code> enum (<code>observed</code>, <code>verified</code>, <code>inferred</code>, <code>incomplete</code>,
+    <code>conflicting</code>, <code>not_observable</code>, <code>indeterminate</code>) and the <code>AnalysisRun</code>
+    identity record.
+  - <code>bootstrap.py</code> — composition root wiring CLI to the (still mostly empty)
+    application use case <code>run_analysis</code>.
+  - <code>tests/support/fixture_harness.py</code> — runs a fixture directory end to end and
+    diffs the produced JSON against <code>expected.json</code> with clear field-level diffs.
+  - <code>tests/fixtures/generators/</code> — the Scapy/lab generator scripts referenced by
+    every later step&rsquo;s <code>provenance.json</code>.</p>
+<p><strong>CLI command.</strong></p>
+<pre><code class="language-bash">securemail analyze tests/fixtures/empty/capture.pcapng --out out/empty.json
+</code></pre>
+<p><strong>Exit criteria.</strong>
+- The command above runs fully offline and produces schema-valid, reproducible
+  JSON.
+- The fixture harness can run any <code>tests/fixtures/&lt;case_id&gt;</code> and report pass/fail
+  with a diff.
+- CI (even a local <code>make test</code> target at this stage) runs the harness on the one
+  fixture and passes.</p>
+<h3 id="step-1-intake-and-tcp-stream-reconstruction">Step 1 — Intake and TCP stream reconstruction</h3>
+<p><strong>Deliverable covered:</strong> <em>Complete TCP stream reconstruction.</em></p>
+<p><strong>Fixtures.</strong>
+- Scapy-crafted, one fixture per degradation mode: missing SYN, missing FIN,
+  mid-stream capture start, snaplen truncation (<code>captured_len &lt; original_len</code>),
+  overlapping retransmissions with conflicting bytes, out-of-order segments,
+  duplicate segments.
+- One lab capture as the clean baseline (a plain SMTP session with no loss).</p>
+<p><strong>Test contract.</strong>
+- For the clean baseline, <code>expected.json</code> declares <code>reconstruction_quality:
+  complete</code> with zero gap bytes.
+- For every degradation fixture, <code>expected.json</code> declares <code>incomplete</code> or
+  <code>conflicting</code> (never <code>complete</code>), names the specific reason (e.g.
+  <code>missing_syn</code>, <code>snaplen_truncation</code>, <code>overlapping_retransmission_conflict</code>),
+  and states the exact gap byte count / conflicting byte ranges where
+  applicable.
+- A truncated stream must never be silently reported as a complete stream with
+  fewer bytes — the test explicitly asserts the state field is set, not just
+  that byte counts look smaller.</p>
+<p><strong>Implementation.</strong>
+- <em>Zeek side:</em> run Zeek&rsquo;s standard TCP reassembly; no reassembly is
+  reimplemented. Capture <code>conn.log</code> (<code>missed_bytes</code>, <code>history</code>), <code>weird.log</code>, and
+  <code>capture_loss.log</code>. Run <code>capinfos</code> in preflight to record packet counts,
+  timestamp resolution, and snaplen-vs-actual-length mismatches before Zeek runs.
+- <em>Python side:</em> <code>domain/evidence/flow.py</code> — a <code>Flow</code> model with a
+  <code>reconstruction_quality</code> field computed by a pure function that maps
+  <code>conn.log</code>/<code>weird.log</code>/<code>capture_loss.log</code> facts to one of <code>complete</code>,
+  <code>incomplete</code>, or <code>conflicting</code>, plus a machine-readable reason code and the
+  affected byte ranges. SHA-256 of the original capture is computed before any
+  analyzer runs (immutability of evidence, per TECHNICAL_DESIGN 8.1).</p>
+<p><strong>CLI command.</strong></p>
+<pre><code class="language-bash">securemail analyze tests/fixtures/tcp_snaplen_truncation/capture.pcapng
+</code></pre>
+<p><strong>Exit criteria.</strong> All TCP-reconstruction fixtures pass, including every
+degradation mode; the &ldquo;never silently report complete&rdquo; assertion is a named,
+independent test case, not an incidental check.</p>
+<h3 id="step-2-automatic-smtpimappop3-identification">Step 2 — Automatic SMTP/IMAP/POP3 identification</h3>
+<p><strong>Deliverable covered:</strong> <em>Automatic identification of SMTP, IMAP, and POP3
+protocols.</em></p>
+<p><strong>Fixtures.</strong>
+- Lab captures: SMTP on 25/587, IMAP on 143, POP3 on 110, each on its standard
+  port.
+- Scapy-crafted: the same three protocols replayed on nonstandard ports (to
+  prove identification is payload-driven, not port-driven), plus one
+  intentionally ambiguous/malformed banner exchange that should resolve to
+  <code>indeterminate</code> rather than a wrong guess.
+- Public corpus: one independent SMTP and one independent IMAP capture as a
+  regression cross-check.</p>
+<p><strong>Test contract.</strong>
+- Each fixture&rsquo;s <code>expected.json</code> names the identified protocol, an explicit
+  <code>evidence_state</code> (<code>observed</code> when payload evidence exists), and separate
+  <code>port_hint</code> vs <code>payload_evidence</code> fields so a test can assert they are
+  reported independently, not conflated.
+- The nonstandard-port fixtures assert the protocol is still correctly
+  identified from payload alone.
+- The ambiguous fixture asserts <code>indeterminate</code>, not a forced guess.</p>
+<p><strong>Implementation.</strong>
+- <em>Zeek side:</em>
+  1. Enable the dormant POP3 analyzer via <code>Analyzer::register_for_ports</code> (and/or
+     a DPD payload signature) so <code>pop3_request</code>/<code>pop3_reply</code> events actually
+     fire.
+  2. Add DPD payload signatures for SMTP, IMAP, and POP3 so identification does
+     not depend on well-known ports.
+  3. Write <code>scripts/securemail-email.zeek</code>, a small custom script that
+     subscribes to <code>smtp_request</code>/<code>smtp_reply</code>, <code>imap_capabilities</code>, and the
+     newly enabled <code>pop3_request</code>/<code>pop3_reply</code> events and emits one unified
+     <code>sm_email.log</code> with protocol, direction, and raw command/response lines.
+  4. <strong>Decision gate (recorded here, not deferred):</strong> if the built-in IMAP/POP3
+     events prove too coarse for Step 3&rsquo;s state machines, escalate per protocol
+     to either a small Spicy analyzer or a bounded TShark second pass
+     (<code>tshark -Y "imap or pop"</code> with a fixed, allowlisted field list) — never an
+     unbounded full-tree dissection.
+- <em>Python side:</em> <code>domain/evidence/session.py</code> — normalizes <code>sm_email.log</code> (and,
+  where the gate triggers it, the TShark corroboration) into a protocol-tagged
+  <code>EmailSession</code> with <code>port_hint</code> and <code>payload_evidence</code> as separate fields, and
+  a confidence value when Zeek/TShark disagree.</p>
+<p><strong>CLI command.</strong></p>
+<pre><code class="language-bash">securemail analyze tests/fixtures/pop3_nonstandard_port/capture.pcapng
+</code></pre>
+<p><strong>Exit criteria.</strong> All three protocols are identified correctly by payload on
+both standard and nonstandard ports; the ambiguous fixture reports
+<code>indeterminate</code>; the Spicy-vs-TShark decision is documented in
+<code>docs/decisions/step2-imap-pop3-depth.md</code> regardless of which way it goes.</p>
+<h3 id="step-3-starttlsstls-negotiation-detection-and-validation">Step 3 — STARTTLS/STLS negotiation detection and validation</h3>
+<p><strong>Deliverable covered:</strong> <em>STARTTLS negotiation detection and validation.</em></p>
+<p><strong>Fixtures.</strong>
+- Lab captures: successful STARTTLS/STLS upgrade for each of SMTP, IMAP, and
+  POP3; implicit TLS on 465/993/995 for comparison.
+- Scapy-crafted: advertised-but-never-requested STARTTLS, requested-but-rejected
+  STARTTLS, capability stripped from the server&rsquo;s advertised list (downgrade-
+  consistent evidence), plaintext commands issued mid-transition (protocol
+  violation), and plaintext <code>AUTH</code>/<code>LOGIN</code>/<code>USER</code>+<code>PASS</code> sent after a failed or
+  absent upgrade.
+- Public corpus: one independent STARTTLS capture per protocol as regression.</p>
+<p><strong>Test contract.</strong>
+- Each protocol has its own state machine with named states (at minimum:
+  <code>advertised</code>, <code>requested</code>, <code>accepted</code>, <code>tls_established</code>,
+  <code>plaintext_fallback</code>, <code>violation</code>) and <code>expected.json</code> asserts the exact
+  terminal state plus the evidence frames that produced it.
+- The stripped-capability fixture asserts a <code>downgrade_consistent</code> flag distinct
+  from &ldquo;no STARTTLS seen&rdquo; — the design&rsquo;s point that passive evidence can be
+  <em>consistent with</em> stripping without proving an attacker did it.
+- The implicit-TLS fixtures assert correlation with the decoded protocol, not a
+  port-only conclusion.
+- Hypothesis-based property tests generate bounded random sequences over each
+  protocol&rsquo;s command/response alphabet and assert the state machine never
+  reaches an undefined state and never reports <code>tls_established</code> without an
+  actual observed TLS ClientHello.</p>
+<p><strong>Implementation.</strong>
+- <em>Zeek side:</em> consume <code>smtp_starttls</code>, <code>imap_starttls</code>, and <code>pop3_starttls</code>
+  (now firing per Step 2), plus the raw command/response lines from
+  <code>sm_email.log</code>, to know exactly when the plaintext channel stopped.
+- <em>Python side:</em> <code>domain/policies/starttls/</code> — three pure state-machine
+  functions (<code>smtp_upgrade</code>, <code>imap_upgrade</code>, <code>pop3_upgrade</code>), each implemented
+  as a explicit transition table over a small alphabet of observed events
+  (<code>EHLO</code>/<code>CAPA</code> seen, <code>STARTTLS</code>/<code>STLS</code> sent, positive/negative response,
+  ClientHello observed, post-upgrade capability refresh observed, plaintext
+  command observed post-upgrade-attempt). Implicit-TLS correlation lives in
+  <code>domain/policies/starttls/implicit_tls.py</code>, matching port 465/993/995 against
+  the decoded protocol from Step 2&rsquo;s evidence rather than the port number
+  alone.</p>
+<p><strong>CLI command.</strong></p>
+<pre><code class="language-bash">securemail analyze tests/fixtures/imap_starttls_capability_stripped/capture.pcapng
+</code></pre>
+<p><strong>Exit criteria.</strong> All three protocols&rsquo; state machines pass every fixture
+including the adversarial ones; the Hypothesis property tests run in CI and find
+no reachable undefined state; <code>downgrade_consistent</code> is reported as its own
+field, never collapsed into a boolean &ldquo;STARTTLS ok&rdquo;.</p>
+<h3 id="step-4-tls-handshake-reconstruction-version-cipher-suite-key-exchange">Step 4 — TLS handshake reconstruction, version, cipher suite, key exchange</h3>
+<p><strong>Deliverables covered:</strong> <em>TLS handshake reconstruction</em>, <em>detection of negotiated
+TLS versions</em>, <em>identification of negotiated cipher suites</em>, <em>identification of key
+exchange mechanisms.</em></p>
+<p><strong>Fixtures.</strong>
+- Lab captures: TLS 1.2 with ECDHE, TLS 1.2 with static RSA, TLS 1.2 with static
+  ECDH, TLS 1.3 full handshake, TLS 1.3 with a HelloRetryRequest, TLS 1.3
+  session resumption via PSK, a legacy-OpenSSL container negotiating a weak
+  suite (e.g. RC4 or a export-grade cipher) for completeness of extraction (not
+  yet policy judgment — that is Step 7).
+- Scapy-crafted: a handshake using the legacy TLS record-layer version field
+  while <code>supported_versions</code> reports a different negotiated version (tests the
+  &ldquo;resolve legacy record version vs <code>supported_versions</code>&rdquo; rule explicitly), and
+  a truncated handshake that stops after ClientHello.
+- Public corpus: an independent TLS 1.2 and an independent TLS 1.3 capture as
+  regression.</p>
+<p><strong>Test contract.</strong>
+- Each fixture&rsquo;s <code>expected.json</code> states the negotiated TLS version resolved
+  from the correct field (<code>supported_versions</code> takes precedence over the legacy
+  record version when both are present), the negotiated cipher suite by its
+  canonical IANA name and hex code, and the key-exchange mechanism.
+- For TLS 1.3 fixtures, <code>expected.json</code> explicitly marks the server certificate
+  and <code>CertificateVerify</code> as <code>not_observable</code> (encrypted post-ServerHello) —
+  the test must fail if the implementation ever fabricates a certificate result
+  for TLS 1.3 from anything other than genuinely decoded evidence.
+- The key-exchange assertion is version-aware: for TLS 1.3, the mechanism is
+  derived from <code>key_share</code>/<code>supported_groups</code>/PSK-mode fields, never from the
+  cipher-suite name, since TLS 1.3 cipher suites encode neither key exchange
+  nor authentication.
+- The truncated-handshake fixture asserts <code>incomplete</code>, not a guessed version.
+- The <code>ssl_history</code> letter sequence for each fixture is asserted against the
+  expected message order, proving the handshake reconstruction is evidence-
+  linked rather than inferred from log fields alone.</p>
+<p><strong>Implementation.</strong>
+- <em>Zeek side:</em> load <code>policy/protocols/ssl/ssl-log-ext.zeek</code> to get
+  <code>client_version</code>, <code>server_version</code>, <code>client_ciphers</code>, <code>client_curves</code>,
+  <code>client_supported_versions</code>, <code>server_supported_version</code>,
+  <code>client_key_share_groups</code>, <code>server_key_share_group</code>, <code>dh_param_size</code>,
+  <code>psk_key_exchange_modes</code>, <code>sigalgs</code>, <code>hashalgs</code>, <code>client_comp_methods</code>,
+  <code>comp_method</code>, alongside the base <code>ssl.log</code> fields (<code>version</code>, <code>cipher</code>,
+  <code>curve</code>, <code>ssl_history</code>, <code>established</code>, <code>last_alert</code>).
+- <em>Python side:</em>
+  - <code>domain/evidence/handshake.py</code> — canonical <code>TlsHandshake</code> model built from
+    <code>ssl_history</code> plus the offered/selected parameter fields, carrying frame
+    references and a <code>visibility</code> flag (<code>full</code>, <code>partial</code>, <code>not_observable</code>).
+  - <code>adapters/reference_data/iana_tls_parameters.py</code> — a versioned, checked-in
+    snapshot of the IANA TLS Parameters registry (cipher suite names/codes,
+    supported-group names/codes) loaded as data, not hardcoded per-suite
+    <code>if</code> statements, so it can be refreshed independently.
+  - <code>domain/policies/tls/key_exchange.py</code> — pure function mapping
+    <code>(negotiated_version, cipher_suite, key_share_groups, dh_param_size,
+    psk_key_exchange_modes)</code> to a key-exchange classification, explicit about
+    what is <code>inferred</code> vs <code>observed</code>.</p>
+<p><strong>CLI command.</strong></p>
+<pre><code class="language-bash">securemail analyze tests/fixtures/tls13_hello_retry_request/capture.pcapng
+</code></pre>
+<p><strong>Exit criteria.</strong> Version/cipher/key-exchange are correct on every fixture; the
+TLS 1.3 <code>not_observable</code> assertions pass; the legacy-record-version-vs-
+<code>supported_versions</code> conflict fixture resolves correctly; no per-suite logic is
+hardcoded outside the versioned IANA data file.</p>
+<h3 id="step-5-certificate-extraction-and-per-certificate-analysis">Step 5 — Certificate extraction and per-certificate analysis</h3>
+<p><strong>Deliverables covered:</strong> <em>Extraction of X.509 certificates</em>, <em>certificate
+expiration analysis</em>, <em>public key algorithm and key length analysis</em>, <em>digital
+signature algorithm identification.</em></p>
+<p><strong>Fixtures.</strong>
+- Lab captures (certificate matrix, all on TLS 1.2 so certificates are
+  observable): valid current certificate, expired certificate, not-yet-valid
+  certificate, RSA-1024 key, RSA-2048 key, ECDSA P-256 key, SHA-1-signed
+  certificate, SHA-256-signed certificate, a certificate expiring within a
+  configurable warning window.
+- Scapy-crafted: a malformed/truncated certificate message (fuzzed ASN.1 within
+  a bounded harness) to prove the parser fails safely rather than crashing.
+- Public corpus: one independent capture with a full certificate chain as
+  regression.</p>
+<p><strong>Test contract.</strong>
+- Each fixture&rsquo;s <code>expected.json</code> states, per certificate: <code>syntax_valid</code>,
+  subject/issuer, not-before/not-after, public key algorithm and effective
+  security strength (not raw bit length — RSA-2048 and a 256-bit ECDSA key are
+  not compared on a raw-bits basis), and the certificate&rsquo;s own signature
+  algorithm kept in a field separate from the TLS handshake&rsquo;s
+  <code>CertificateVerify</code> signature algorithm.
+- The expiry fixtures assert two independent booleans:
+  <code>valid_at_capture_time</code> and <code>valid_at_analysis_time</code> (a certificate can be
+  expired <em>now</em> but was valid when captured, and the report must say both).
+- The malformed-certificate fixture asserts the analyzer reports
+  <code>syntax_valid: false</code> with a reason, and the process does not crash or hang
+  (resource-limit test, per TECHNICAL_DESIGN 8.2).
+- The RSA-1024 fixture is captured here purely as a <strong>fact</strong> (key size = 1024);
+  whether that fact is a <em>finding</em> is Step 7&rsquo;s job, not this step&rsquo;s.</p>
+<p><strong>Implementation.</strong>
+- <em>Zeek side:</em> rely on Zeek&rsquo;s file-analysis framework to extract server (and
+  client, if present) certificate DER bytes into content-addressed files linked
+  to <code>cert_chain_fps</code> in <code>ssl.log</code>; enable <code>x509.log</code> for basic parsed summary
+  fields as a cross-check, not as the source of truth.
+- <em>Python side:</em>
+  - <code>adapters/artifacts/certificate_store.py</code> — stores DER bytes by SHA-256,
+    linked to capture hash, flow key, and frame reference.
+  - <code>domain/evidence/certificate.py</code> — canonical <code>CertificateEvidence</code> model
+    parsed with the <code>cryptography</code> library: subject/issuer, validity window,
+    public key algorithm + size, effective security-strength mapping table
+    (<code>domain/policies/pki/key_strength.py</code>, data-driven, e.g. RSA-2048 ≈
+    112-bit, P-256 ≈ 128-bit, so RSA and ECC are never compared by raw bit
+    count), and signature algorithm.
+  - Bound the parser: reject certificates beyond a maximum nesting/size before
+    large allocation, and run parsing inside the same non-root, network-
+    disabled sandbox constraints as the rest of analysis.</p>
+<p><strong>CLI command.</strong></p>
+<pre><code class="language-bash">securemail analyze tests/fixtures/cert_expired_rsa1024/capture.pcapng
+</code></pre>
+<p><strong>Exit criteria.</strong> Every certificate fact deliverable is extracted correctly
+across the matrix; the two independent expiry booleans are both asserted in
+every expiry fixture; the malformed-certificate fixture proves safe failure
+under a resource-limit test, not just a happy-path pass.</p>
+<h3 id="step-6-certificate-chain-validation-and-identity">Step 6 — Certificate chain validation and identity</h3>
+<p><strong>Deliverable covered:</strong> <em>Certificate chain validation.</em></p>
+<p><strong>Fixtures.</strong>
+- Lab captures: a certificate chain issued by the lab&rsquo;s throwaway CA
+  (well-formed, trusted-if-the-lab-CA-is-in-the-pinned-trust-snapshot),
+  self-signed leaf, broken chain (missing intermediate), chain with a SAN that
+  does not match the server name used, chain with a SAN that does match.
+- Scapy-crafted: none needed here — chain validity is a PKI-logic problem, not
+  a packet-shape problem, so lab captures suffice.
+- Public corpus: one independent capture with a well-known chain shape (e.g.
+  root -&gt; intermediate -&gt; leaf) as regression.</p>
+<p><strong>Test contract.</strong>
+- Each fixture&rsquo;s <code>expected.json</code> states the independent fields from
+  TECHNICAL_DESIGN 4.3: <code>certificate_observed</code>, <code>syntax_valid</code> (from Step 5),
+  <code>path_valid_at_capture_time</code>, <code>path_valid_at_analysis_time</code>,
+  <code>identity_match</code>, <code>revocation_status</code> (<code>good</code>/<code>revoked</code>/<code>unknown</code>/<code>stale</code> —
+  expect <code>unknown</code> in every fixture here since no OCSP/CRL evidence is
+  imported by default), <code>trust_profile_id</code>, <code>trust_store_digest</code>, and
+  <code>indeterminate_reasons</code> where applicable.
+- The self-signed and broken-chain fixtures assert <code>path_valid_at_*: false</code>
+  with a specific reason, never a bare boolean with no explanation.
+- The SAN-mismatch fixture asserts <code>identity_match: false</code> while
+  <code>path_valid_at_*</code> can still be <code>true</code> — the two must be independent fields,
+  never merged into one pass/fail.
+- A test explicitly asserts that no test in this step causes any network
+  request (mocked/blocked DNS and HTTP at the sandbox level).
+- A differential test cross-checks the Python <code>cryptography</code>-based validation
+  result against an OpenSSL CLI invocation (<code>openssl verify</code>) for the same
+  chain and trust store, and fails if they disagree without a documented
+  reason.</p>
+<p><strong>Implementation.</strong>
+- <em>Python side:</em>
+  - <code>adapters/pki/trust_store.py</code> — a pinned, offline trust-store snapshot
+    (file-based, digested) with an explicit <code>trust_store_digest</code>; no AIA/OCSP/
+    CRL/CT network calls, per TECHNICAL_DESIGN 4.3 and 8.2.
+  - <code>domain/policies/pki/chain_validation.py</code> — pure-ish validation using
+    <code>cryptography</code>&rsquo;s X.509 verification API with an explicit verification time
+    (defaulting to capture time, with a second pass at analysis time),
+    producing the independent fields above.
+  - <code>domain/policies/pki/identity.py</code> — RFC 9525 SAN-based identity matching
+    against a declared reference identity source (SNI, or an explicit
+    configured expected hostname), with no Common Name fallback.
+  - <code>adapters/pki/openssl_crosscheck.py</code> — a bounded, argument-fixed
+    <code>openssl verify</code> subprocess adapter used only in the differential test, not
+    in the production result path.</p>
+<p><strong>CLI command.</strong></p>
+<pre><code class="language-bash">securemail analyze tests/fixtures/cert_chain_san_mismatch/capture.pcapng
+</code></pre>
+<p><strong>Exit criteria.</strong> All chain-validation fixtures pass with every field
+independent as specified; the OpenSSL differential test passes or documents
+every disagreement; zero network calls occur during this step&rsquo;s tests.</p>
+<h3 id="step-7-deterministic-policy-engine">Step 7 — Deterministic policy engine</h3>
+<p><strong>Deliverables covered:</strong> <em>Detection of weak cryptographic algorithms and
+deprecated TLS versions</em>, <em>identification of insecure protocol configurations</em>,
+<em>Forward Secrecy assessment.</em></p>
+<p><strong>Fixtures.</strong>
+- Reuses fixtures from Steps 3, 4, 5, and 6 (this step adds a policy-evaluation
+  layer on top of already-extracted facts, so it needs no new captures) plus a
+  small set of Scapy-crafted or lab fixtures added specifically to hit rule
+  boundaries: TLS 1.1 exactly, TLS 1.0 exactly, a NULL/export cipher, RC4, a
+  TLS 1.2 static-RSA key exchange, a TLS 1.2 static-ECDH key exchange, a
+  SHA-1-signed handshake <code>CertificateVerify</code>, an RSA-1536 certificate key
+  (boundary just above/below the 2048-bit rule).
+- One fixture with a TLS 1.3 PSK-only resumption and one with genuinely missing
+  handshake evidence, specifically to prove forward secrecy resolves to
+  <code>indeterminate</code> rather than a guess in both cases.</p>
+<p><strong>Test contract.</strong>
+- Every rule has its own unit test asserting: input facts in, finding code and
+  severity out, for both the triggering case and the just-inside-policy case
+  (boundary testing, e.g. RSA-2048 passes, RSA-1536 fails, under the same
+  rule).
+- Each finding in <code>expected.json</code> carries a stable finding code, the policy
+  profile it was evaluated under (<code>ietf_current</code>, <code>nist_federal</code>,
+  <code>historical_at_capture</code>), the rule&rsquo;s effective date, and a rationale string
+  referencing the relevant standard.
+- The forward-secrecy fixtures assert: TLS 1.2 ECDHE → forward secrecy present;
+  TLS 1.2 static RSA/DH/ECDH → forward secrecy absent; TLS 1.3 normal (EC)DHE →
+  present; TLS 1.3 PSK-only → <code>indeterminate</code>; missing handshake evidence →
+  <code>indeterminate</code>. No fixture is allowed to assert forward secrecy from a
+  single observation alone (e.g. no assertion of &ldquo;ephemeral key was reused&rdquo; or
+  &ldquo;ticket key was rotated&rdquo;).
+- A profile-switch test runs the same fixture under two different policy
+  profiles and asserts the findings differ where the profiles disagree (proves
+  profiles are actually data-driven, not cosmetic).</p>
+<p><strong>Implementation.</strong>
+- <em>Python side:</em>
+  - <code>domain/policies/rules/*.yaml</code> — versioned, effective-dated rule packs (one
+    file per profile), each rule declaring: stable ID, source standard,
+    applicability (protocol/version/field pattern), effective date, severity,
+    rationale, and its own inline test cases.
+  - <code>domain/policies/rule_engine.py</code> — a small, pure evaluator that loads a
+    rule pack and applies it to the canonical evidence from Steps 3-6,
+    producing <code>Finding</code> records; it never mutates or filters the underlying
+    evidence.
+  - <code>domain/policies/tls/forward_secrecy.py</code> — pure function implementing the
+    version-aware table above, defaulting to <code>indeterminate</code> whenever a
+    required fact (key-exchange classification, PSK mode, or handshake
+    completeness) is missing.
+  - A signature/digest is computed per rule pack so <code>AnalysisRun</code> can record
+    exactly which <code>policy_pack_version</code> produced a given finding.</p>
+<p><strong>CLI command.</strong></p>
+<pre><code class="language-bash">securemail analyze tests/fixtures/tls13_psk_only_resumption/capture.pcapng --policy-profile ietf_current
+</code></pre>
+<p><strong>Exit criteria.</strong> Every rule has a passing boundary test; the forward-secrecy
+table is fully covered including both <code>indeterminate</code> cases; switching policy
+profiles measurably changes findings on the profile-switch fixture; no rule
+logic exists outside the versioned rule-pack data files.</p>
+<h3 id="step-8-posture-scoring-and-prioritized-findings">Step 8 — Posture scoring and prioritized findings</h3>
+<p><strong>Deliverables covered:</strong> <em>Prioritized security findings</em>, <em>comprehensive
+cryptographic security posture assessment.</em></p>
+<p><strong>Fixtures.</strong>
+- Synthetic finding sets (not new PCAPs — this step consumes <code>Finding</code> records
+  from Step 7) hand-assembled to cover: many low-severity findings on one
+  endpoint (dedup test), the same finding recurring across sessions over time
+  (recurrence test), a mix of high/medium/low severity with varying evidence
+  confidence, and a case with several <code>not_observable</code>/<code>indeterminate</code> checks
+  to prove they show up in coverage denominators rather than vanishing.</p>
+<p><strong>Test contract.</strong>
+- Given a hand-computed input finding set and hand-computed expected score
+  components (severity, confidence, exposure, recurrence), the test asserts
+  the exact posture score output — this is a pure arithmetic contract, so
+  <code>expected.json</code> contains the intermediate component values, not just the
+  final number, so a regression pinpoints which component broke.
+- The dedup fixture asserts N raw session-level findings collapse to one
+  endpoint-level finding with a recurrence count, not N separate findings.
+- The coverage fixture asserts the posture assessment publishes explicit
+  <code>unknown_count</code> / <code>not_observable_count</code> denominators per protocol and per
+  check category, and that these never get silently folded into &ldquo;checks
+  passed&rdquo;.
+- Prioritization output is tested as an ordering assertion (finding A must rank
+  above finding B given their severity/confidence/exposure/recurrence inputs),
+  not just a raw score comparison, since ordering is what an analyst actually
+  consumes.</p>
+<p><strong>Implementation.</strong>
+- <em>Python side:</em>
+  - <code>domain/findings/scoring.py</code> — pure, versioned scoring function taking
+    severity, evidence confidence, exposure, recurrence, and (optionally) asset
+    criticality, returning both a final score and its named components.
+  - <code>domain/findings/dedup.py</code> — pure function collapsing session-level
+    findings sharing the same finding code and affected endpoint into one
+    endpoint-level <code>Finding</code> with a recurrence count and a list of
+    contributing session references (evidence is preserved, not discarded).
+  - <code>domain/findings/posture.py</code> — aggregates findings and coverage
+    denominators into the <code>ReportManifest</code>-level posture summary described in
+    TECHNICAL_DESIGN 5.4.</p>
+<p><strong>CLI command.</strong></p>
+<pre><code class="language-bash">securemail score tests/fixtures/synthetic_findings/mixed_severity.json
+</code></pre>
+<p><strong>Exit criteria.</strong> All hand-computed score vectors match exactly; dedup and
+ordering behave as specified; coverage denominators are present and non-zero in
+the fixture designed to exercise them.</p>
+<h3 id="step-9-reports-json-html-pdf">Step 9 — Reports: JSON, HTML, PDF</h3>
+<p><strong>Deliverable covered:</strong> <em>Exportable forensic reports in JSON, PDF, and HTML
+formats.</em></p>
+<p><strong>Approach for this step (explicitly non-PCAP test-first): schema-first +
+golden-snapshot.</strong> There is no &ldquo;capture with a known report&rdquo; to test against —
+the report is a rendering of already-tested facts from Steps 1-8. So the test-
+first discipline here is: author the JSON Schema and one frozen, hand-reviewed
+example canonical report <em>before</em> writing the renderer, then test every
+renderer against that frozen example rather than against a PCAP.</p>
+<p><strong>Fixtures.</strong>
+- One frozen canonical JSON report (<code>tests/fixtures/reports/golden_report.json</code>)
+  covering at least one finding of each evidence state, at least one
+  <code>not_observable</code> certificate case, and at least one hostile string (e.g. a
+  banner containing <code>&lt;script&gt;</code>, control characters, and Unicode
+  right-to-left overrides) deliberately injected into a decoded field to test
+  escaping.</p>
+<p><strong>Test contract.</strong>
+- The JSON Schema validates the golden report, and a mutation test (removing a
+  required field) fails schema validation — proving the schema is not
+  vacuously permissive.
+- RFC 8785 canonicalization of the golden report is deterministic byte-for-byte
+  across repeated runs, and its hash is pinned in the test.
+- The HTML snapshot test renders the golden report and asserts the hostile
+  string is present only in escaped form (no literal <code>&lt;script&gt;</code> tag, no raw
+  control characters) — this is a security test, not a formatting test.
+- The PDF test asserts extracted text content (via a text-extraction check, not
+  byte comparison) contains the expected finding codes and page count is
+  within an expected range, with the renderer version and fonts pinned in the
+  test fixture&rsquo;s provenance so a future renderer upgrade is caught explicitly
+  rather than silently changing output.
+- A round-trip test confirms HTML and PDF are both derived from the <em>same</em>
+  canonical JSON object in memory — never independently re-assembled from raw
+  evidence — by asserting every finding code present in the JSON also appears
+  in both renders.</p>
+<p><strong>Implementation.</strong>
+- <em>Python side:</em>
+  - <code>domain/reports/schema.py</code> — the versioned JSON Schema / Pydantic model for
+    the canonical report.
+  - <code>adapters/reports/canonical_json.py</code> — RFC 8785 canonicalization + SHA-256.
+  - <code>adapters/reports/html_renderer.py</code> — Jinja2 templates with autoescaping
+    enabled and verified on (never disabled per-template).
+  - <code>adapters/reports/pdf_renderer.py</code> — WeasyPrint rendering the same HTML
+    output, with pinned fonts bundled in the repo (not system fonts) so
+    rendering is reproducible across machines.</p>
+<p><strong>CLI command.</strong></p>
+<pre><code class="language-bash">securemail report tests/fixtures/reports/golden_report.json --format json,html,pdf --out out/
+</code></pre>
+<p><strong>Exit criteria.</strong> Schema validation is meaningfully strict (mutation test
+proves it); HTML escaping test passes; PDF text/page-count test passes with
+pinned renderer/fonts; all three formats are shown to derive from one shared
+in-memory report object.</p>
+<h3 id="step-10-advisory-ml-risk-scoring-and-anomaly-detection">Step 10 — Advisory ML: risk scoring and anomaly detection</h3>
+<p><strong>Deliverables covered:</strong> <em>AI-based cryptographic risk scoring</em>, <em>AI-assisted
+anomaly detection for suspicious TLS sessions.</em></p>
+<p><strong>Approach for this step (explicitly not test-first in the PCAP sense):
+evaluation-harness-first.</strong> TECHNICAL_DESIGN Section 9 is explicit that no
+representative public email-TLS risk corpus exists and that rediscovering rules
+that are already deterministic (Step 7) has no defensible ML value. So instead
+of &ldquo;write a fixture with known output, then write code,&rdquo; this step is: build
+the evaluation harness and its acceptance thresholds first, then build the
+simplest model that can pass them, only escalating model complexity when a
+baseline measurably fails.</p>
+<p><strong>Fixtures / evaluation data.</strong>
+- A synthetic endpoint-cohort generator (<code>tests/support/synthetic_cohorts.py</code>)
+  producing multi-week per-endpoint session-feature time series with seeded,
+  labeled anomalies (e.g. &ldquo;TLS version drops from 1.3 to 1.0 on day 40 for
+  endpoint X&rdquo;, &ldquo;certificate issuer changes and handshake failure rate jumps
+  from 0.2% to 18%&rdquo;), so detection delay and precision are measurable against
+  a known ground truth even though it is synthetic, not a PCAP.</p>
+<p><strong>Test contract (the harness, authored first).</strong>
+- Detection delay: seeded anomalies must be flagged within N cohort-windows of
+  their introduction (N declared and justified before any model is written).
+- Top-K precision: among the top-K ranked anomalies per evaluation window,
+  precision must exceed a stated floor against the seeded labels.
+- Baseline gate: a robust-statistics baseline (median/MAD, categorical rarity)
+  must be run and scored <em>first</em>; Isolation Forest (or anything more complex)
+  is only added to the codebase once it is shown, on this harness, to beat the
+  baseline by a stated margin — this comparison itself is a committed test.
+- Authority test (hard requirement, always enforced regardless of model
+  choice): given a deterministic <code>Finding</code> from Step 7 and any anomaly score,
+  the combined report never suppresses, downgrades, or rewrites the
+  deterministic finding. This is tested by asserting the deterministic
+  findings list is byte-identical whether or not the ML stage ran.
+- Every model output ships with a concrete, evidence-linked reason string
+  (e.g. &ldquo;first TLS 1.0 selection for this endpoint in 180 days&rdquo;), and a test
+  asserts a reason string is always present and references a real evidence
+  field, never a generic &ldquo;anomaly detected&rdquo;.</p>
+<p><strong>Implementation.</strong>
+- <em>Python side:</em>
+  - <code>adapters/ml/baselines.py</code> — median/MAD and categorical-rarity scorers.
+  - <code>adapters/ml/isolation_forest.py</code> — added only after the baseline gate
+    test above is committed and passing against the baseline, per
+    TECHNICAL_DESIGN 9.3.
+  - <code>application/advisory_pipeline.py</code> — orchestrates feature extraction from
+    already-computed canonical evidence (never raw packets) and runs strictly
+    after and separately from the deterministic policy engine, writing its
+    output to a distinct <code>AnomalyResult</code> record that is never merged into
+    <code>Finding</code>.
+  - Everything runs in shadow mode: the CLI has a <code>--advisory</code> flag that is
+    off by default, and the report clearly separates the &ldquo;Deterministic
+    Findings&rdquo; section from the &ldquo;Advisory / ML&rdquo; section.</p>
+<p><strong>CLI command.</strong></p>
+<pre><code class="language-bash">securemail evaluate-ml tests/support/synthetic_cohorts/cohort_seeded_v1/
+</code></pre>
+<p><strong>Exit criteria.</strong> The evaluation harness runs and reports detection delay and
+top-K precision against declared thresholds; the baseline-beats-nothing and
+model-beats-baseline comparisons are both committed, passing tests; the
+authority test (deterministic findings unaffected by ML) passes; every advisory
+output carries a concrete reason string.</p>
+<h3 id="step-11-interactive-dashboard">Step 11 — Interactive dashboard</h3>
+<p><strong>Deliverable covered:</strong> <em>Interactive visualization dashboard for security
+monitoring and analysis.</em></p>
+<p><strong>Approach for this step: contract-first.</strong> The dashboard has no &ldquo;known output
+from a PCAP&rdquo; either — its correctness is about faithfully presenting and
+navigating already-validated data. So the test-first anchor here is the API/
+data contract (the same canonical JSON from Step 9), established before any UI
+code, with the UI tested against that contract via browser automation.</p>
+<p><strong>Fixtures.</strong>
+- Reuses the golden report from Step 9, plus 2-3 additional canonical reports
+  assembled from earlier steps&rsquo; fixtures to populate a multi-case, multi-
+  severity view (needed to test filtering/sorting meaningfully).</p>
+<p><strong>Test contract.</strong>
+- Contract tests: read-only FastAPI routes added over the existing application
+  operations (no new business logic in the routes) return exactly the same
+  canonical JSON the CLI produces for the same input — a diff test between
+  <code>securemail report ... --format json</code> output and the API response body.
+- Playwright end-to-end tests: upload/select a case, drill down from a finding
+  to its underlying evidence frame reference, and verify the UI visually and
+  structurally separates observed facts, deterministic conclusions, ML
+  advisories, and analyst notes (matching TECHNICAL_DESIGN 5.2&rsquo;s stage
+  separation) — asserted via distinct, labeled UI regions, not just visual
+  inspection.
+- An authorization test confirms a case&rsquo;s data is not visible without the
+  correct case-scoped access, even though full RBAC is out of scope until
+  Phase 2 of TECHNICAL_DESIGN — at minimum, an explicit &ldquo;no case selected&rdquo;
+  state must never leak another case&rsquo;s data.</p>
+<p><strong>Implementation.</strong>
+- <em>Python side:</em> <code>api/routers/reports.py</code> — thin FastAPI routes calling the
+  same <code>application/</code> use cases the CLI calls; no logic duplicated between CLI
+  and API.
+- <em>Frontend:</em> React + TypeScript + Vite + TanStack Query/Table + Apache
+  ECharts, per TECHNICAL_DESIGN Section 6, consuming the canonical JSON
+  contract directly.</p>
+<p><strong>CLI/verification command.</strong></p>
+<pre><code class="language-bash">uvicorn securemail.api.main:app --reload &amp;
+npx playwright test tests/e2e/dashboard.spec.ts
+</code></pre>
+<p><strong>Exit criteria.</strong> API responses are byte-identical (module the run timestamp)
+to CLI JSON output for the same input; Playwright suite passes including the
+evidence drill-down and the four-way separation of observed/deterministic/ML/
+analyst content; the no-case-selected isolation test passes.</p>
+<h2 id="8-deliverable-traceability">8. Deliverable traceability</h2>
+<p>Every deliverable listed in <a href="./OBJECTIVE.MD">OBJECTIVE.MD</a> (lines 33-53) is mapped
+below to its owning step, its primary evidence source, and the honest achievable
+state for that deliverable, per TECHNICAL_DESIGN&rsquo;s feasibility constraints
+(Section 2.3). &ldquo;Full&rdquo; means the deliverable is fully determinable whenever the
+relevant protocol evidence exists in the capture; &ldquo;where observable&rdquo; and &ldquo;best
+effort&rdquo; are technical accuracy statements, not deferred scope; &ldquo;advisory&rdquo; means
+the output supports but never overrides a deterministic result.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>OBJECTIVE.MD deliverable</th>
+<th>Owning step</th>
+<th>Evidence source</th>
+<th>Achievable state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Automatic identification of SMTP, IMAP, and POP3 protocols</td>
+<td>Step 2</td>
+<td>Zeek (enabled POP3 analyzer + DPD signatures + custom event script)</td>
+<td>Full</td>
+</tr>
+<tr>
+<td>2</td>
+<td>STARTTLS negotiation detection and validation</td>
+<td>Step 3</td>
+<td>Zeek events (<code>smtp_starttls</code>/<code>imap_starttls</code>/<code>pop3_starttls</code>) + Python state machines</td>
+<td>Full, with explicit <code>downgrade_consistent</code> distinguished from proof of attack</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Complete TCP stream reconstruction</td>
+<td>Step 1</td>
+<td>Zeek TCP reassembly (<code>conn.log</code>, <code>weird.log</code>, <code>capture_loss.log</code>)</td>
+<td>Best effort; completeness and conflicts are explicit, never silently assumed</td>
+</tr>
+<tr>
+<td>4</td>
+<td>TLS handshake reconstruction</td>
+<td>Step 4</td>
+<td>Zeek <code>ssl.log</code> + <code>ssl-log-ext</code></td>
+<td>Full for TLS 1.2; where observable for TLS 1.3 (post-ServerHello is encrypted)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Detection of negotiated TLS versions</td>
+<td>Step 4</td>
+<td>Zeek <code>ssl.log</code>/<code>ssl-log-ext</code> (<code>supported_versions</code> resolved over legacy record version)</td>
+<td>Full</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Identification of negotiated cipher suites</td>
+<td>Step 4</td>
+<td>Zeek <code>ssl.log</code> + versioned IANA TLS-parameters data</td>
+<td>Full</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Identification of key exchange mechanisms</td>
+<td>Step 4</td>
+<td>Zeek <code>ssl-log-ext</code> (<code>key_share</code>/<code>curve</code>/<code>dh_param_size</code>/PSK modes)</td>
+<td>Full where observable; TLS 1.3 requires version-aware inference, never suite-name inference</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Extraction of X.509 certificates</td>
+<td>Step 5</td>
+<td>Zeek file-extraction + <code>x509.log</code></td>
+<td>Full when TLS 1.2 or when secrets/telemetry make TLS 1.3 certs observable; <code>not_observable</code> otherwise</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Certificate chain validation</td>
+<td>Step 6</td>
+<td>Python <code>cryptography</code> against a pinned offline trust snapshot, OpenSSL cross-check</td>
+<td>Conditional on certificate observability; independent fields, no network fetches</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Certificate expiration analysis</td>
+<td>Step 5</td>
+<td>Python <code>cryptography</code></td>
+<td>Full when certificate observed; reports validity at capture time and at analysis time separately</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Public key algorithm and key length analysis</td>
+<td>Step 5</td>
+<td>Python <code>cryptography</code></td>
+<td>Full when certificate observed; reported as effective security strength, not raw bit count</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Digital signature algorithm identification</td>
+<td>Step 5</td>
+<td>Python <code>cryptography</code></td>
+<td>Full when certificate observed; certificate-signature and handshake-signature algorithms kept separate</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Detection of weak cryptographic algorithms and deprecated TLS versions</td>
+<td>Step 7</td>
+<td>Versioned rule packs over Step 4/5 facts</td>
+<td>Full via deterministic, effective-dated rules</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Identification of insecure protocol configurations</td>
+<td>Step 7</td>
+<td>Versioned rule packs over Step 3/4 facts</td>
+<td>Full via deterministic, role-specific rules</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Forward Secrecy assessment</td>
+<td>Step 7</td>
+<td>Version-aware rule over Step 4 key-exchange facts</td>
+<td>Full for TLS 1.2 (EC)DHE vs static; <code>indeterminate</code> for TLS 1.3 PSK-only/0-RTT or missing evidence</td>
+</tr>
+<tr>
+<td>16</td>
+<td>AI-based cryptographic risk scoring</td>
+<td>Step 10</td>
+<td>Advisory ML pipeline over Steps 4-7 evidence</td>
+<td>Advisory; deterministic severity (Step 7/8) remains authoritative</td>
+</tr>
+<tr>
+<td>17</td>
+<td>AI-assisted anomaly detection for suspicious TLS sessions</td>
+<td>Step 10</td>
+<td>Advisory ML pipeline, baseline-gated</td>
+<td>Advisory, shadow mode; never suppresses a deterministic finding</td>
+</tr>
+<tr>
+<td>18</td>
+<td>Prioritized security findings</td>
+<td>Step 8</td>
+<td>Deterministic scoring/dedup over Step 7 findings</td>
+<td>Full deterministic ordering now; ML-assisted refinement later without overriding it</td>
+</tr>
+<tr>
+<td>19</td>
+<td>Comprehensive cryptographic security posture assessment</td>
+<td>Step 8</td>
+<td>Aggregated findings + coverage denominators</td>
+<td>Full, including explicit unknown/not-observable counts</td>
+</tr>
+<tr>
+<td>20</td>
+<td>Exportable forensic reports in JSON, PDF, and HTML formats</td>
+<td>Step 9</td>
+<td>Canonical JSON schema + Jinja2/WeasyPrint</td>
+<td>Full; JSON authoritative, HTML/PDF deterministic renders of the same object</td>
+</tr>
+<tr>
+<td>21</td>
+<td>Interactive visualization dashboard for security monitoring and analysis</td>
+<td>Step 11</td>
+<td>React/ECharts over the same canonical JSON contract</td>
+<td>Full for the case/session/finding/evidence workflows scoped in this plan</td>
+</tr>
+</tbody>
+</table></div>
+<p>All 21 deliverables are covered by exactly one owning step (with Steps 4 and 5
+each covering multiple deliverables that share one underlying evidence record, as
+noted in Section 1). No deliverable is left unaddressed, and every deliverable&rsquo;s
+&ldquo;achievable state&rdquo; column is the same honest language used in
+<a href="./TECHNICAL_DESIGN.md">TECHNICAL_DESIGN.md</a> Section 12 — this plan does not
+relax those constraints, it only sequences the work needed to prove them.</p>
+      </article>
+    </div>
+  </div>
+  <button class="back-top" type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})">Top</button>
+  <script>
+(function () {
+  const links = Array.from(document.querySelectorAll('.toc a[href^="#"]'));
+  const ids = links.map((a) => a.getAttribute('href').slice(1));
+  const headings = ids.map((id) => document.getElementById(id)).filter(Boolean);
+  const setActive = () => {
+    let current = headings[0];
+    for (const h of headings) {
+      if (h.getBoundingClientRect().top <= 88) current = h;
+    }
+    links.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === '#' + (current && current.id)));
+  };
+  document.addEventListener('scroll', setActive, { passive: true });
+  setActive();
+})();
+</script>
+</body>
+</html>

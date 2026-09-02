@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SecureMail Technical Design</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-2: #10182c;
+      --surface: #151e35;
+      --surface-2: #1b2642;
+      --line: #2a3759;
+      --line-2: #3a4a73;
+      --text: #eef3ff;
+      --muted: #93a0c2;
+      --faint: #6d7a9c;
+      --teal: #3dd6c6;
+      --teal-dim: rgba(61, 214, 198, 0.14);
+      --blue: #7aa2ff;
+      --blue-dim: rgba(122, 162, 255, 0.14);
+      --amber: #f5c14a;
+      --amber-dim: rgba(245, 193, 74, 0.14);
+      --rose: #ff7a8a;
+      --rose-dim: rgba(255, 122, 138, 0.14);
+      --green: #5ee0a0;
+      --green-dim: rgba(94, 224, 160, 0.14);
+      --violet: #c9a6ff;
+      --violet-dim: rgba(201, 166, 255, 0.14);
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+      --radius: 16px;
+      --sidebar: 280px;
+      --max: 1120px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(61, 214, 198, 0.08), transparent 50%),
+        radial-gradient(900px 500px at 100% 0%, rgba(122, 162, 255, 0.08), transparent 45%),
+        var(--bg);
+      font: 16px/1.6 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    }
+    a { color: var(--teal); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code, .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.9em;
+    }
+    code {
+      background: var(--teal-dim);
+      color: var(--teal);
+      padding: 0.12em 0.42em;
+      border-radius: 6px;
+    }
+    .skip {
+      position: absolute;
+      left: -999px;
+      top: 8px;
+      background: var(--teal);
+      color: #06201c;
+      padding: 8px 12px;
+      border-radius: 8px;
+      z-index: 20;
+    }
+    .skip:focus { left: 8px; }
+
+    .app {
+      display: grid;
+      grid-template-columns: var(--sidebar) 1fr;
+      min-height: 100vh;
+    }
+    nav.toc {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      padding: 24px 18px 40px;
+      border-right: 1px solid var(--line);
+      background: rgba(11, 16, 32, 0.92);
+      backdrop-filter: blur(12px);
+    }
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+    .logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, var(--teal), #1aa89a);
+      color: #06201c;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .brand p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .toc a {
+      display: block;
+      color: var(--muted);
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .toc a:hover, .toc a.active {
+      background: var(--surface);
+      color: var(--text);
+      text-decoration: none;
+    }
+    .toc .sub { padding-left: 20px; font-size: 12px; }
+    .toc-group {
+      margin: 16px 0 6px;
+      padding: 0 10px;
+      color: var(--faint);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    main { padding: 32px 40px 80px; max-width: calc(var(--max) + 80px); }
+    section { margin: 0 0 56px; scroll-margin-top: 24px; }
+    h2 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: -0.03em;
+    }
+    h3 { margin: 28px 0 10px; font-size: 20px; }
+    h4 { margin: 20px 0 8px; font-size: 16px; color: var(--teal); }
+    .lede { color: var(--muted); margin: 0 0 22px; max-width: 72ch; }
+
+    .hero {
+      background:
+        linear-gradient(180deg, rgba(61, 214, 198, 0.08), transparent 40%),
+        var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 28px;
+    }
+    .kicker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 650;
+      border: 1px solid transparent;
+    }
+    .pill.teal { background: var(--teal-dim); color: var(--teal); border-color: rgba(61,214,198,.28); }
+    .pill.blue { background: var(--blue-dim); color: var(--blue); border-color: rgba(122,162,255,.28); }
+    .pill.amber { background: var(--amber-dim); color: var(--amber); border-color: rgba(245,193,74,.28); }
+    .pill.green { background: var(--green-dim); color: var(--green); border-color: rgba(94,224,160,.28); }
+    .pill.rose { background: var(--rose-dim); color: var(--rose); border-color: rgba(255,122,138,.28); }
+    .pill.violet { background: var(--violet-dim); color: var(--violet); border-color: rgba(201,166,255,.28); }
+    .pill.muted { background: var(--surface-2); color: var(--muted); border-color: var(--line); }
+    .hero h2 { font-size: 36px; line-height: 1.15; max-width: 18ch; }
+    .thesis {
+      margin: 16px 0 0;
+      padding: 14px 16px;
+      border-left: 3px solid var(--teal);
+      background: var(--teal-dim);
+      border-radius: 0 12px 12px 0;
+      max-width: 78ch;
+    }
+
+    .grid { display: grid; gap: 14px; }
+    .g2 { grid-template-columns: 1fr 1fr; }
+    .g3 { grid-template-columns: repeat(3, 1fr); }
+    .g4 { grid-template-columns: repeat(4, 1fr); }
+    .g5 { grid-template-columns: repeat(5, 1fr); }
+    .g7 { grid-template-columns: repeat(7, 1fr); }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+    .card h3, .card h4 { margin-top: 0; }
+    .card p:last-child, .card ul:last-child { margin-bottom: 0; }
+    .card.in { border-top: 3px solid var(--green); }
+    .card.out { border-top: 3px solid var(--rose); }
+    .stat {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .stat b { display: block; color: var(--text); font-size: 22px; letter-spacing: -0.03em; margin-bottom: 4px; }
+    ul.clean, ol.clean { margin: 0; padding-left: 18px; }
+    ul.clean li, ol.clean li { margin: 6px 0; }
+    .muted { color: var(--muted); }
+
+    .callout {
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+    }
+    .callout.warn { background: var(--amber-dim); border-color: rgba(245,193,74,.3); }
+    .callout.danger { background: var(--rose-dim); border-color: rgba(255,122,138,.3); }
+    .callout.info { background: var(--blue-dim); border-color: rgba(122,162,255,.3); }
+    .callout.ok { background: var(--teal-dim); border-color: rgba(61,214,198,.3); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    th, td {
+      text-align: left;
+      vertical-align: top;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    th {
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    tr:last-child td { border-bottom: 0; }
+    .table-wrap { overflow: auto; border-radius: var(--radius); margin: 12px 0 20px; }
+
+    .flow {
+      display: grid;
+      gap: 10px;
+    }
+    .lane {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .lane-label {
+      display: flex;
+      align-items: center;
+      color: var(--faint);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding-top: 8px;
+    }
+    .nodes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .node {
+      min-width: 140px;
+      flex: 1;
+      background: var(--surface-2);
+      border: 1px solid var(--line-2);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+    .node b { display: block; margin-bottom: 2px; }
+    .node.api { border-color: var(--teal); background: var(--teal-dim); }
+    .node.store { border-color: var(--blue); background: var(--blue-dim); }
+    .node.q { border-color: var(--amber); background: var(--amber-dim); }
+    .node.work { border-color: var(--violet); background: var(--violet-dim); }
+    .node.tool { border-color: var(--green); background: var(--green-dim); }
+    .node.obs { border-color: var(--rose); background: var(--rose-dim); }
+    .arrow {
+      text-align: center;
+      color: var(--faint);
+      letter-spacing: 0.4em;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .steps { counter-reset: step; display: grid; gap: 10px; }
+    .step {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: var(--teal-dim);
+      color: var(--teal);
+      font-weight: 800;
+    }
+    .step h4 { margin: 0 0 4px; color: var(--text); }
+    .step p, .step ul { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .layers {
+      display: grid;
+      gap: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+    }
+    .layer {
+      border: 1px dashed var(--line-2);
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.02);
+    }
+    .layer b { color: var(--teal); }
+
+    .states { display: flex; flex-wrap: wrap; gap: 8px; }
+    .state {
+      flex: 1 1 160px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .state .name { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+
+    .tree {
+      background: #0a0f1c;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+      overflow: auto;
+      font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #c9d6f5;
+      white-space: pre;
+    }
+
+    .timeline { display: grid; gap: 16px; }
+    .phase {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .phase-id {
+      padding: 18px 16px;
+      background: var(--surface-2);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .phase-id span { color: var(--muted); font-size: 12px; }
+    .phase-id b { font-size: 22px; }
+    .phase-body { padding: 16px 18px; }
+    .phase.p0 .phase-id { color: var(--blue); }
+    .phase.p1 .phase-id { color: var(--teal); }
+    .phase.p2 .phase-id { color: var(--amber); }
+    .phase.p3 .phase-id { color: var(--violet); }
+
+    .decision {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 12px;
+      align-items: start;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+    .num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--teal);
+      color: #06201c;
+      font-weight: 800;
+    }
+
+    .ref-list { columns: 2; gap: 24px; padding-left: 18px; }
+    .ref-list li { break-inside: avoid; margin: 6px 0; }
+
+    footer {
+      color: var(--faint);
+      font-size: 13px;
+      border-top: 1px solid var(--line);
+      padding-top: 18px;
+    }
+
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      nav.toc { position: relative; height: auto; max-height: 280px; }
+      main { padding: 20px 16px 60px; }
+      .g2, .g3, .g4, .g5, .g7, .lane, .phase { grid-template-columns: 1fr; }
+      .hero h2 { font-size: 28px; max-width: none; }
+      .ref-list { columns: 1; }
+    }
+    @media print {
+      nav.toc { display: none; }
+      .app { display: block; }
+      body { background: #fff; color: #111; }
+      .card, .hero, .phase, table { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to content</a>
+  <div class="app">
+    <nav class="toc" aria-label="Document outline">
+      <div class="brand">
+        <div class="logo">SM</div>
+        <div>
+          <h1>SecureMail</h1>
+          <p>Technical Design</p>
+        </div>
+      </div>
+      <div class="toc-group">Start here</div>
+      <a href="#purpose">1. Purpose</a>
+      <a href="#scope">2. Scope</a>
+      <a href="#constraints">2.3 Constraints</a>
+      <a href="#landscape">3. Solution landscape</a>
+      <div class="toc-group">What to build</div>
+      <a href="#deliverables">4. Deliverables</a>
+      <a class="sub" href="#d-email">Email & streams</a>
+      <a class="sub" href="#d-tls">TLS metadata</a>
+      <a class="sub" href="#d-x509">Certificates</a>
+      <a class="sub" href="#d-ai">AI & posture</a>
+      <a class="sub" href="#d-reports">Reports</a>
+      <div class="toc-group">How it is built</div>
+      <a href="#architecture">5. Architecture</a>
+      <a class="sub" href="#stages">Processing stages</a>
+      <a class="sub" href="#boundaries">Clean boundaries</a>
+      <a class="sub" href="#model">Data model</a>
+      <a href="#stack">6. Technology stack</a>
+      <a href="#standards">7. Standards</a>
+      <div class="toc-group">How it stays trustworthy</div>
+      <a href="#practices">8. Practices</a>
+      <a href="#ml">9. AI / ML</a>
+      <a href="#enhancements">10. Enhancements</a>
+      <a href="#roadmap">11. Roadmap</a>
+      <a href="#trace">12. Traceability</a>
+      <a href="#decisions">13. Decisions</a>
+      <a href="#refs">14. References</a>
+    </nav>
+
+    <main id="content">
+      <header class="hero">
+        <div class="kicker">
+          <span class="pill teal">Proposed baseline</span>
+          <span class="pill blue">From OBJECTIVE.MD</span>
+          <span class="pill muted">Research cutoff 2 Sep 2026</span>
+          <span class="pill amber">Offline / on-prem first</span>
+        </div>
+        <h2>AI-assisted passive forensics for email crypto posture</h2>
+        <p class="lede">SecureMail assesses SMTP, IMAP, and POP3 traffic in PCAP/PCAPNG files. It reconstructs sessions, checks STARTTLS/TLS/certificates against versioned rules, then uses ML only to prioritize unusual behavior.</p>
+        <div class="thesis">
+          <strong>Core rule:</strong> the design is <em>deterministic first and AI assisted</em>. Versioned rules decide whether an RFC or cryptographic requirement was violated. ML may flag unusual behavior and help prioritize work. It must never make the compliance call.
+        </div>
+      </header>
+
+      <div class="grid g4" style="margin-bottom:40px">
+        <div class="card"><div class="stat"><b>Zeek + TShark</b>Primary analyzer + targeted decoder. Do not write another packet parser.</div></div>
+        <div class="card"><div class="stat"><b>FastAPI stack</b>PostgreSQL, RabbitMQ/Celery, content-addressed evidence, React reports.</div></div>
+        <div class="card"><div class="stat"><b>Evidence states</b>Missing, encrypted, or incomplete data is never rendered as “secure.”</div></div>
+        <div class="card"><div class="stat"><b>Defer complexity</b>OpenSearch, K8s, advanced ML, and LLM wait until measured need.</div></div>
+      </div>
+
+      <section id="purpose">
+        <h2>1. Purpose</h2>
+        <p class="lede">This document maps every requested deliverable to established solutions, recommends a stack and architecture, defines engineering/forensic/ML practices, and proposes a phased roadmap.</p>
+        <div class="grid g4">
+          <div class="card"><h4>1. Map</h4><p class="muted">Every OBJECTIVE.MD deliverable to a proven tool plus SecureMail’s own layer.</p></div>
+          <div class="card"><h4>2. Recommend</h4><p class="muted">An implementable offline, open-source-first architecture.</p></div>
+          <div class="card"><h4>3. Standardize</h4><p class="muted">Engineering, security, forensic, and ML practices from day one.</p></div>
+          <div class="card"><h4>4. Sequence</h4><p class="muted">Enhancements and a four-phase delivery plan with exit criteria.</p></div>
+        </div>
+      </section>
+
+      <section id="scope">
+        <h2>2. Scope and non-goals</h2>
+        <div class="grid g2">
+          <div class="card in">
+            <h3>In scope</h3>
+            <ul class="clean">
+              <li>Offline PCAP / PCAPNG ingestion</li>
+              <li>Passive SMTP, IMAP, POP3 on standard and nonstandard ports</li>
+              <li>Best-effort bidirectional TCP reconstruction</li>
+              <li>SMTP <code>STARTTLS</code>, IMAP <code>STARTTLS</code>, POP3 <code>STLS</code></li>
+              <li>Observable TLS handshakes and X.509 chains</li>
+              <li>Versioned crypto and email-policy checks</li>
+              <li>Evidence-linked findings, scoring, anomalies, dashboards, JSON/HTML/PDF</li>
+              <li>Single-node first, with a path to multi-node</li>
+            </ul>
+          </div>
+          <div class="card out">
+            <h3>Non-goals</h3>
+            <ul class="clean">
+              <li>Breaking encryption or recovering plaintext without authorized keys</li>
+              <li>Replacing Wireshark-class packet tools</li>
+              <li>Treating missing evidence as proof a session was secure</li>
+              <li>Active scanning of mail servers in the default workflow</li>
+              <li>Automatically changing server configuration</li>
+              <li>Letting ML/LLM make final compliance, attribution, legal, or IR decisions</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="constraints">
+        <h2>2.3 Critical feasibility constraints</h2>
+        <p class="lede">The objective says “complete” and “validate.” Passive evidence cannot guarantee those outcomes in every capture. SecureMail must say what it saw, not invent certainty.</p>
+        <div class="grid g2">
+          <div class="card"><h4>1. Capture quality</h4><p class="muted">Missing packets, asymmetric routing, truncation, midstream capture, drops, conflicting retransmissions, or malformed fragments can make a stream incomplete or ambiguous.</p></div>
+          <div class="card"><h4>2. TLS 1.3 hides the rest</h4><p class="muted">Messages after <code>ServerHello</code>, including the server certificate, are encrypted. Without authorized session secrets, cert extraction is normally unavailable.</p></div>
+          <div class="card"><h4>3. ECH reduces identity</h4><p class="muted">Encrypted ClientHello can hide SNI and other ClientHello metadata used for endpoint identity and correlation.</p></div>
+          <div class="card"><h4>4. Historical validation needs history</h4><p class="muted">“Valid at capture time” needs capture timestamp, identity, trust-store snapshot, intermediates, and time-appropriate revocation. Relays may also need historical MX, DNSSEC/TLSA, or MTA-STS.</p></div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h4>5. Opportunistic SMTP is context dependent</h4>
+          <p class="muted">Cleartext fallback on port 25 is not by itself proof of non-compliance unless DANE, MTA-STS, REQUIRETLS, or an organizational policy required authenticated TLS.</p>
+        </div>
+
+        <h3>Evidence states — never collapse these into “secure”</h3>
+        <p class="lede">“No weakness detected” must never be rendered as “secure” when relevant checks are incomplete, not observable, or indeterminate.</p>
+        <div class="states">
+          <div class="state"><div class="name"><span class="dot" style="background:var(--green)"></span>observed</div><div class="muted">Directly decoded from captured bytes</div></div>
+          <div class="state"><div class="name"><span class="dot" style="background:var(--teal)"></span>verified</div><div class="muted">Independently checked against a named policy or trust source</div></div>
+          <div class="state"><div class="name"><span class="dot" style="background:var(--blue)"></span>inferred</div><div class="muted">Derived from observable protocol facts</div></div>
+          <div class="state"><div class="name"><span class="dot" style="background:var(--amber)"></span>incomplete</div><div class="muted">Affected by capture loss or truncation</div></div>
+          <div class="state"><div class="name"><span class="dot" style="background:var(--rose)"></span>conflicting</div><div class="muted">Multiple valid reconstructions or sources disagree</div></div>
+          <div class="state"><div class="name"><span class="dot" style="background:var(--violet)"></span>not_observable</div><div class="muted">Encrypted or absent by protocol design</div></div>
+          <div class="state"><div class="name"><span class="dot" style="background:var(--faint)"></span>indeterminate</div><div class="muted">Required context is unavailable</div></div>
+        </div>
+      </section>
+
+      <section id="landscape">
+        <h2>3. Established solution landscape</h2>
+        <p class="lede">No verified product already provides the full requested workflow as one email-specific application. Integrate mature analyzers. Build only the normalization, policy, scoring, evidence, and workflow layers that are unique to this objective.</p>
+
+        <h3>3.1 Recommended foundation</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Solution</th><th>Role</th><th>Maturity</th><th>License</th><th>Decision</th></tr></thead>
+            <tbody>
+              <tr><td><a href="https://zeek.org/">Zeek</a></td><td>Stateful connection, email, TLS, X.509 metadata</td><td>High</td><td>BSD-style</td><td><span class="pill green">Primary analyzer</span></td></tr>
+              <tr><td><a href="https://www.wireshark.org/docs/man-pages/tshark.html">TShark / Wireshark</a></td><td>Deep decoding, reassembly cross-check, frame evidence</td><td>High</td><td>GPL-2.0+</td><td><span class="pill teal">Targeted second pass</span></td></tr>
+              <tr><td><a href="https://arkime.com/">Arkime</a></td><td>Searchable packet/session retention</td><td>High</td><td>Apache-2.0</td><td><span class="pill muted">Optional production</span></td></tr>
+              <tr><td><a href="https://github.com/cisagov/Malcolm">Malcolm</a></td><td>Zeek + Suricata + Arkime + OpenSearch reference</td><td>High, heavy</td><td>Apache-2.0 umbrella</td><td><span class="pill muted">Prototype only</span></td></tr>
+              <tr><td><a href="https://suricata.io/">Suricata</a></td><td>IDS corroboration, SMTP/TLS telemetry, EVE JSON</td><td>High</td><td>GPL-2.0</td><td><span class="pill amber">Phase two optional</span></td></tr>
+              <tr><td><a href="https://github.com/ntop/nDPI">nDPI</a></td><td>Port-independent classification</td><td>High</td><td>LGPL-3.0</td><td><span class="pill muted">Optional classifier</span></td></tr>
+              <tr><td><a href="https://cryptography.io/en/latest/x509/verification/">Python cryptography</a></td><td>X.509 parsing and policy-controlled path validation</td><td>High</td><td>Apache-2.0 / BSD</td><td><span class="pill green">Primary PKI lib</span></td></tr>
+              <tr><td><a href="https://docs.openssl.org/">OpenSSL</a></td><td>Low-level cert verification cross-check</td><td>High</td><td>Apache-2.0</td><td><span class="pill teal">Adapter / diagnostic</span></td></tr>
+              <tr><td><a href="https://github.com/digicert/pkilint">pkilint</a></td><td>RFC 5280 and profile linting</td><td>Medium-high</td><td>MIT</td><td><span class="pill muted">Optional lint</span></td></tr>
+              <tr><td><a href="https://github.com/zmap/zlint">ZLint</a></td><td>Web-PKI / CA/B Forum linting</td><td>High for Web PKI</td><td>Apache-2.0</td><td><span class="pill muted">Optional; filter rules</span></td></tr>
+              <tr><td><a href="https://opensearch.org/">OpenSearch</a></td><td>Search, faceting, dashboards, anomaly detection</td><td>High</td><td>Apache-2.0</td><td><span class="pill amber">Defer until PG limits</span></td></tr>
+              <tr><td><a href="https://scikit-learn.org/stable/modules/outlier_detection.html">scikit-learn</a></td><td>Transparent statistical / anomaly models</td><td>High</td><td>BSD-3-Clause</td><td><span class="pill green">Primary ML</span></td></tr>
+              <tr><td><a href="https://riverml.xyz/">River</a></td><td>Online / streaming anomaly models</td><td>Medium-high</td><td>BSD-3-Clause</td><td><span class="pill muted">Future streaming</span></td></tr>
+              <tr><td><a href="https://weasyprint.org/">WeasyPrint</a></td><td>HTML-to-PDF</td><td>High</td><td>BSD-3-Clause</td><td><span class="pill green">Primary PDF</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>3.2 Alternatives and commercial benchmarks</h3>
+        <div class="grid g2">
+          <div class="card"><h4>NetworkMiner</h4><p class="muted">Useful for analyst cross-check and reconstructed mail artifacts. Not a complete cryptographic posture engine. Some automation is edition-dependent.</p></div>
+          <div class="card"><h4>Xplico</h4><p class="muted">Shows SMTP/IMAP/POP3 reconstruction. Age and narrower maintenance make it a validation reference, not a primary dependency.</p></div>
+          <div class="card"><h4>Security Onion / Malcolm</h4><p class="muted">Mature SOC integration around Zeek, Suricata, retention, and dashboards. Neither supplies the email-specific policy, historical PKI, confidence, and report model.</p></div>
+          <div class="card"><h4>Corelight</h4><p class="muted">Closest commercial benchmark for operationalized Zeek telemetry and air-gapped network security monitoring.</p></div>
+          <div class="card"><h4>NDR vendors</h4><p class="muted">ExtraHop, NetWitness, Darktrace, Vectra, Stamus: useful quality benchmarks. Proprietary models conflict with open-source-first. None verified to cover the full deliverable set.</p></div>
+          <div class="card"><h4>EndaceProbe</h4><p class="muted">Relevant for lossless high-rate capture retention. It is a capture appliance, not an email cryptographic posture analyzer.</p></div>
+        </div>
+        <p class="callout info" style="margin-top:14px">Commercial products are product-quality benchmarks. Do not assume they provide protocol coverage or forensic guarantees without a proof of concept.</p>
+      </section>
+
+      <section id="deliverables">
+        <h2>4. Deliverable-to-solution assessment</h2>
+        <p class="lede">Read each row as: the objective asked for X; existing tools already do Y; SecureMail must still own Z.</p>
+
+        <h3 id="d-email">4.1 Email protocol and stream processing</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Objective</th><th>Established capability</th><th>SecureMail owns</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Identify SMTP, IMAP, POP3</td><td>Zeek analyzers; TShark dissectors; optional nDPI</td><td>Normalize evidence, add confidence, resolve disagreement, support nonstandard ports</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>Detect / validate STARTTLS/STLS</td><td>Zeek email events; TShark command/response</td><td>Protocol state machines: advertised → requested → accepted → TLS, plus fallback and post-upgrade errors</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>Reconstruct TCP streams</td><td>Zeek and TShark stateful reassembly</td><td>Record gaps, truncation, retransmissions, overlap conflicts, direction, confidence; preserve ambiguity</td><td><span class="pill amber">MVP, best effort</span></td></tr>
+              <tr><td>Identify implicit TLS</td><td>Zeek/TShark TLS plus service/port metadata</td><td>Correlate 465/993/995 with decoded protocol; avoid port-only conclusions</td><td><span class="pill green">MVP</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="grid g3">
+          <div class="card"><h4>SMTP</h4><p class="muted">Inspect <code>EHLO</code> capabilities, <code>STARTTLS</code>, the <code>220</code> response, immediate TLS transition, and a fresh post-TLS <code>EHLO</code>.</p></div>
+          <div class="card"><h4>IMAP</h4><p class="muted">Inspect capabilities, tagged <code>STARTTLS</code>, prevent commands during transition, expect capability refresh.</p></div>
+          <div class="card"><h4>POP3</h4><p class="muted">Inspect <code>CAPA</code>, <code>STLS</code>, authorization state, positive response, and capability refresh.</p></div>
+        </div>
+        <p class="callout warn" style="margin-top:14px">A passive trace can show evidence consistent with stripping or downgrade. It cannot prove an attacker removed a capability unless a trustworthy expected policy or historical baseline exists.</p>
+
+        <h3 id="d-tls">4.2 TLS and cryptographic metadata</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Objective</th><th>Established capability</th><th>SecureMail owns</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Reconstruct TLS handshakes</td><td>Zeek summarizes; TShark handshake trees</td><td>Canonical handshake records with frame refs and visibility flags</td><td><span class="pill teal">MVP where observable</span></td></tr>
+              <tr><td>Negotiated TLS version</td><td>Zeek, TShark, Suricata fields</td><td>Resolve legacy record version vs <code>supported_versions</code>; evaluate against effective-dated policy</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>Cipher suite</td><td>Zeek/TShark + IANA registry</td><td>Versioned IANA mapping; “registered” is not “secure”</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>Key exchange</td><td>TShark key-share/group/signature; Zeek curve/group</td><td>Infer by TLS version; TLS 1.3 cipher names do not encode KEX or auth</td><td><span class="pill teal">MVP where observable</span></td></tr>
+              <tr><td>Deprecated protocols / algorithms</td><td>IETF/NIST rules can evaluate extracted facts</td><td>Signed, effective-dated rule packs; separate IETF, NIST, historical, org profiles</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>Insecure configurations</td><td>Analyzers expose facts, not full email context</td><td>Rules for cleartext auth, failed upgrade, fallback, identity errors, missing policy, role-specific behavior</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>Forward secrecy</td><td>Exchange/group/PSK facts often extractable</td><td>TLS-version-aware result; <code>indeterminate</code> for ticket-key reuse, ephemeral reuse, or missing handshake</td><td><span class="pill green">MVP</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="grid g2">
+          <div class="card ok"><h4>Usually forward secret</h4><ul class="clean muted"><li>TLS 1.2 ECDHE</li><li>Normal TLS 1.3 (EC)DHE</li></ul></div>
+          <div class="card danger"><h4>Not / special-case</h4><ul class="clean muted"><li>TLS 1.2 static RSA, static DH, static ECDH</li><li>TLS 1.3 PSK-only and 0-RTT need separate treatment</li><li>A PCAP cannot prove secure erasure, ticket-key rotation, or ephemeral-key reuse from one observation</li></ul></div>
+        </div>
+
+        <h3 id="d-x509">4.3 X.509 certificate analysis</h3>
+        <p class="lede"><span class="pill blue">Conditional MVP</span> means the certificate was observable <em>and</em> the necessary validation context exists. Unavailable evidence must not silently become a pass.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Objective</th><th>Established capability</th><th>SecureMail owns</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Extract certificates</td><td>Zeek file analysis, TShark, Suricata</td><td>Store DER by content hash; link exact frames/session</td><td><span class="pill blue">Conditional MVP</span></td></tr>
+              <tr><td>Validate chain</td><td><code>cryptography</code>, OpenSSL, Zeek policy</td><td>Select identity, trust profile, verification time, intermediates, revocation; keep each result separate</td><td><span class="pill blue">Conditional MVP</span></td></tr>
+              <tr><td>Expiration</td><td>Standard X.509 parsers</td><td>Validity at capture time vs now; not-yet-valid; expiry warning window</td><td><span class="pill blue">Conditional MVP</span></td></tr>
+              <tr><td>Public-key algorithm / size</td><td><code>cryptography</code> / OpenSSL</td><td>Map to effective security strength; do not compare RSA and ECC raw bit lengths</td><td><span class="pill blue">Conditional MVP</span></td></tr>
+              <tr><td>Signature algorithm</td><td>X.509 and TLS <code>CertificateVerify</code></td><td>Store cert-signature and handshake-signature algorithms separately</td><td><span class="pill blue">Conditional MVP</span></td></tr>
+              <tr><td>Certificate vulnerabilities</td><td>pkilint / ZLint plus custom policy</td><td>RFC 5280 structure, constraints, EKU, SAN/identity, weak keys, chain quality, policy applicability</td><td><span class="pill blue">Conditional MVP</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h4>Independent validation fields</h4>
+        <div class="states">
+          <div class="state"><div class="name">certificate_observed</div></div>
+          <div class="state"><div class="name">syntax_valid</div></div>
+          <div class="state"><div class="name">path_valid_at_capture_time</div></div>
+          <div class="state"><div class="name">path_valid_at_analysis_time</div></div>
+          <div class="state"><div class="name">identity_match</div></div>
+          <div class="state"><div class="name">revocation_status</div><div class="muted">good / revoked / unknown / stale</div></div>
+          <div class="state"><div class="name">trust_profile_id + trust_store_digest</div></div>
+          <div class="state"><div class="name">indeterminate_reasons</div></div>
+        </div>
+        <p class="callout danger" style="margin-top:14px">Network retrieval of AIA, OCSP, CRLs, DNS, MTA-STS, or CT is <strong>disabled by default</strong>. Authorized enrichment must be imported, hashed, timestamped, and retained. Current network lookups must not be presented as historical proof.</p>
+
+        <h3 id="d-ai">4.4 AI, prioritization, and posture</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Objective</th><th>Established capability</th><th>SecureMail owns</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>AI crypto risk classification</td><td>Generic models exist; no verified public email-TLS risk corpus</td><td>Keep vulnerability classification deterministic; train operational priority only after defensible labels</td><td><span class="pill violet">Future / shadow</span></td></tr>
+              <tr><td>TLS anomaly detection</td><td>Stats, Isolation Forest, LOF, River, OpenSearch RCF</td><td>Site/role baselines, concrete deviations, drift/false-positive control</td><td><span class="pill amber">Phase two</span></td></tr>
+              <tr><td>Posture scoring</td><td>No universal standard score</td><td>Transparent versioned score from severity, confidence, exposure, recurrence, criticality, blast radius</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>Threat prioritization</td><td>SIEM/NDR proprietary ranking</td><td>Keep deterministic severity, evidence confidence, anomaly level, and analyst priority separate</td><td><span class="pill teal">MVP, then ML</span></td></tr>
+              <tr><td>Mitigation recommendations</td><td>Standards and vendor guidance</td><td>Versioned templates linked to finding codes; local LLM may only rewrite verified content</td><td><span class="pill green">MVP templates</span></td></tr>
+              <tr><td>Prioritized findings</td><td>Generic case-management patterns</td><td>Deduplicate sessions into endpoint findings; exceptions and adjudication</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>Posture assessment</td><td>Dashboards aggregate findings</td><td>Coverage denominators and unknown/not-observable counts by protocol, asset, domain, time</td><td><span class="pill green">MVP</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="callout ok">There is no defensible basis for training a model merely to rediscover exact rules such as “TLS 1.0 is deprecated.” ML adds value when predicting an operational outcome (for example remediation SLA) or detecting behavior unusual for a specific environment.</p>
+
+        <h3 id="d-reports">4.5 Reports and dashboards</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Objective</th><th>Established capability</th><th>SecureMail owns</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>JSON report</td><td>Pydantic JSON Schema</td><td>Authoritative versioned evidence/report schema</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>HTML report</td><td>Jinja2, browser-safe HTML/CSS</td><td>Self-contained, escaped, deterministic view of canonical JSON</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>PDF report</td><td>WeasyPrint or headless Chromium</td><td>Render from the same HTML; pin fonts and renderer version</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>Interactive dashboard</td><td>React / ECharts; optional Arkime/OpenSearch</td><td>Case, session, evidence, posture, trend, drill-down</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>Packet/session pivot</td><td>Arkime and Wireshark</td><td>Export minimal supporting PCAP slices and deep links</td><td><span class="pill amber">Phase two</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="callout info">JSON is authoritative. HTML and PDF are deterministic presentations of the same report model, not independently assembled reports.</p>
+      </section>
+
+      <section id="architecture">
+        <h2>5. Recommended architecture</h2>
+        <p class="lede">Follow the lanes top to bottom. The API never runs packet analysis. Workers talk to analyzers. PostgreSQL is the source of truth. ML cannot rewrite findings.</p>
+
+        <h3>5.1 Component and data flow</h3>
+        <div class="flow card">
+          <div class="lane">
+            <div class="lane-label">User plane</div>
+            <div class="nodes">
+              <div class="node api"><b>Analyst browser</b>React dashboard</div>
+              <div class="node api"><b>Reverse proxy + OIDC</b>Authn / MFA edge</div>
+              <div class="node api"><b>FastAPI control plane</b>No CPU-heavy analysis here</div>
+            </div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="lane">
+            <div class="lane-label">System of record</div>
+            <div class="nodes">
+              <div class="node store"><b>PostgreSQL</b>Jobs, findings, audit</div>
+              <div class="node store"><b>Evidence store</b>Content-addressed artifacts</div>
+              <div class="node store"><b>Transactional outbox</b>DB and queue cannot diverge</div>
+            </div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="lane">
+            <div class="lane-label">Queue</div>
+            <div class="nodes">
+              <div class="node q"><b>RabbitMQ</b>IDs and hashes only — never multi-GiB payloads</div>
+            </div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="lane">
+            <div class="lane-label">Workers</div>
+            <div class="nodes">
+              <div class="node work"><b>Intake</b>Hash, custody, quarantine</div>
+              <div class="node work"><b>Sandboxed analysis</b>Zeek + targeted TShark</div>
+              <div class="node work"><b>Advisory ML</b>Cannot suppress findings</div>
+              <div class="node work"><b>Report</b>JSON → HTML → PDF</div>
+            </div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="lane">
+            <div class="lane-label">Deterministic core</div>
+            <div class="nodes">
+              <div class="node tool"><b>Zeek</b>Primary pass</div>
+              <div class="node tool"><b>TShark</b>Targeted corroboration</div>
+              <div class="node tool"><b>Normalizer</b>Canonical Pydantic evidence</div>
+              <div class="node tool"><b>Policy engine</b>Versioned, effective-dated rules</div>
+            </div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="lane">
+            <div class="lane-label">Observability</div>
+            <div class="nodes">
+              <div class="node obs"><b>OpenTelemetry</b>Traces from API and workers</div>
+              <div class="node obs"><b>Prometheus + Grafana</b>Metrics and alerts</div>
+            </div>
+          </div>
+        </div>
+
+        <h3 id="stages">5.2 Processing stages</h3>
+        <div class="steps">
+          <div class="step"><div><h4>Evidence intake</h4><p>Validate file signatures and structure, not only extension or MIME. SHA-256 before analysis. Immutable content-addressed original. Record case, custodian, source, capture point, timezone, interface, snap length, filters, drops, clock source, transfer history. Read-only working copy plus conversion manifest if PCAPNG must be normalized.</p></div></div>
+          <div class="step"><div><h4>Capture preflight</h4><p>Inspect packet counts, interfaces, timestamp resolution, truncation, malformed blocks, duplicates, protocol distribution. Reject resource-policy violations early.</p></div></div>
+          <div class="step"><div><h4>Primary analysis</h4><p>Pinned Zeek image with no network. Produce connection, protocol, TLS, X.509, file, and notice logs. Keep raw analyzer output as an immutable artifact.</p></div></div>
+          <div class="step"><div><h4>Targeted corroboration</h4><p>TShark with a fixed argument array and bounded fields. Only sessions that need detailed frame evidence. Avoid unbounded full-tree JSON on large captures.</p></div></div>
+          <div class="step"><div><h4>Normalization</h4><p>Analyzer records → versioned Pydantic schemas. Every fact links to capture hash, flow key, direction, frames, byte offsets, analyzer version, and confidence.</p></div></div>
+          <div class="step"><div><h4>Deterministic evaluation</h4><p>Named, effective-dated email / TLS / X.509 / org profiles. Produce finding codes, severity, evidence confidence, rationale, standards refs, remediation template IDs.</p></div></div>
+          <div class="step"><div><h4>Advisory analytics</h4><p>Endpoint/time-window features. Separate novelty/anomaly score and reason codes. Never suppress or rewrite deterministic findings.</p></div></div>
+          <div class="step"><div><h4>Reporting and visualization</h4><p>Freeze canonical JSON. Render self-contained HTML and PDF. Dashboards keep observed facts, deterministic conclusions, ML output, and analyst decisions in separate lanes.</p></div></div>
+        </div>
+
+        <h3 id="boundaries">5.3 Clean application boundaries</h3>
+        <p class="lede">Dependency inversion and a single composition root. CPU-heavy or subprocess analysis never runs in a FastAPI request process.</p>
+        <div class="layers">
+          <div class="layer"><b>API routers</b> — validate HTTP, invoke one use case, map typed results to responses</div>
+          <div class="layer"><b>Application operations</b> — orchestrate workflows; do not import DB, Celery, Zeek, or TShark</div>
+          <div class="layer"><b>Domain rules and schemas</b> — pure where possible; Pydantic models or frozen dataclasses</div>
+          <div class="layer"><b>Protocol ports</b> — small interfaces for persistence and analyzers</div>
+          <div class="layer"><b>Adapters</b> — PostgreSQL, artifacts, queue, Zeek/TShark, reports, ML</div>
+        </div>
+        <h4>Suggested layout</h4>
+        <div class="tree">src/securemail/
+  api/                 # FastAPI routers, dependencies, response schemas
+  application/         # RORO use cases and workflow orchestration
+  domain/
+    evidence/          # Canonical packet, flow, handshake, certificate models
+    policies/          # Pure, effective-dated rule evaluators
+    findings/          # Finding, score, recommendation models
+  ports/               # Protocol interfaces for persistence and analyzers
+  adapters/
+    analyzers/         # Zeek and TShark subprocess adapters
+    persistence/       # SQLAlchemy repositories
+    artifacts/         # Content-addressed evidence storage
+    queue/             # Celery/RabbitMQ integration
+    reports/           # JSON, Jinja2, WeasyPrint
+    ml/                # Feature and model adapters
+  workers/             # Idempotent task entry points
+  bootstrap.py         # Composition root
+tests/
+  unit/  integration/  golden_pcaps/  end_to_end/</div>
+        <p class="muted" style="margin-top:10px">Avoid a generic <code>utils</code> package. Put code in the domain or adapter that owns the responsibility.</p>
+
+        <h3 id="model">5.4 Canonical data model</h3>
+        <div class="grid g3">
+          <div class="card"><h4>Case</h4><p class="muted">Authorization, scope, retention, owners, legal hold, access policy.</p></div>
+          <div class="card"><h4>Capture</h4><p class="muted">Original hash, size, format, source metadata, custody events, capture-quality summary.</p></div>
+          <div class="card"><h4>AnalysisRun</h4><p class="muted">Capture hash, config, image/tool digests, policy pack, trust store, model versions, state, errors.</p></div>
+          <div class="card"><h4>Flow</h4><p class="muted">Bidirectional five-tuple, role inference, protocol, frame ranges, reconstruction quality.</p></div>
+          <div class="card"><h4>EmailSession</h4><p class="muted">Commands/responses, upgrade transition, implicit TLS, plaintext-risk facts.</p></div>
+          <div class="card"><h4>TlsHandshake</h4><p class="muted">Offered/selected params, groups, signatures, alerts, visibility, completion.</p></div>
+          <div class="card"><h4>CertificateEvidence</h4><p class="muted">DER hash, parsed fields, chain position, source frames, independent validation outcomes.</p></div>
+          <div class="card"><h4>Finding</h4><p class="muted">Stable code, policy/version, severity, confidence, evidence refs, assets, remediation ID.</p></div>
+          <div class="card"><h4>AnomalyResult</h4><p class="muted">Feature schema, model digest, score, threshold, cohort, reason codes, advisory label.</p></div>
+          <div class="card"><h4>ReportManifest</h4><p class="muted">Schema version, source records, artifact hashes, renderer versions, signature metadata.</p></div>
+          <div class="card"><h4>AuditEvent</h4><p class="muted">Append-only actor, action, target, result, timestamp — no sensitive message content.</p></div>
+        </div>
+        <p class="muted">All externally visible schemas are versioned. Raw analyzer output is retained so new normalizers or policy packs can re-evaluate evidence without rerunning packet parsing when compatible.</p>
+
+        <h3>5.5 Idempotency and consistency</h3>
+        <div class="grid g2">
+          <div class="card"><h4>Deterministic run identity</h4><p class="muted"><code>(capture_sha256, analyzer_bundle_digest, normalization_schema_version, policy_pack_version, trust_store_digest, configuration_digest)</code></p></div>
+          <div class="card"><h4>Queue payloads</h4><p class="muted">IDs and artifact hashes only. Workers may run more than once; writes are upserts. Authoritative job state lives in PostgreSQL, not Celery results.</p></div>
+          <div class="card"><h4>Outbox + cancellation</h4><p class="muted">Transactional outbox so DB state and task publication cannot diverge. Cancellation is cooperative and leaves a complete audit record.</p></div>
+          <div class="card"><h4>Partial failure</h4><p class="muted">Produces a bounded, inspectable run state. It never silently drops a stage.</p></div>
+        </div>
+
+        <h3>5.6 Scaling model</h3>
+        <div class="callout ok">
+          <strong>Scale across captures first.</strong> Each capture is an independent unit and can go to a worker pool selected by file size and analyzer needs.
+        </div>
+        <p>Do not split one capture by byte offset or arbitrary time range — TCP sessions cross boundaries. If single-capture parallelism becomes necessary:</p>
+        <ol class="clean">
+          <li>Preclassify packets using a symmetric bidirectional flow key.</li>
+          <li>Keep every TCP flow on one worker.</li>
+          <li>Preserve original frame numbers and timestamps.</li>
+          <li>Merge only canonical flow/session records, not partially reassembled streams.</li>
+        </ol>
+        <p class="muted">Use PostgreSQL partitioning, staging tables, and <code>COPY</code> for high-volume session records. Add OpenSearch only after indexed PostgreSQL is shown insufficient. Add ClickHouse only for measured, very-high-volume analytical aggregation.</p>
+      </section>
+
+      <section id="stack">
+        <h2>6. Suggested technology stack</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Layer</th><th>Recommendation</th><th>Rationale</th><th>Important risks</th></tr></thead>
+            <tbody>
+              <tr><td>Language</td><td>Python 3, pinned minor</td><td>Forensic/ML ecosystem and team fit</td><td>CPU work must stay outside API processes</td></tr>
+              <tr><td>API</td><td>FastAPI, Pydantic v2, Uvicorn</td><td>Typed schemas, OpenAPI, async I/O</td><td>Body/stream limits and object authorization</td></tr>
+              <tr><td>Persistence</td><td>SQLAlchemy 2.0, asyncpg, Alembic</td><td>Typed async layer and migrations</td><td>Do not put large evidence blobs in PostgreSQL</td></tr>
+              <tr><td>Primary analyzer</td><td>Zeek</td><td>Mature stateful protocol framework</td><td>Native packaging; parser sandbox required</td></tr>
+              <tr><td>Deep decoder</td><td>TShark / Editcap / Capinfos</td><td>Dissectors, reassembly, PCAPNG tools</td><td>GPL redistribution; schema drift</td></tr>
+              <tr><td>PKI</td><td><code>cryptography</code> + OpenSSL cross-check</td><td>Explicit verification time/store</td><td>Pin OpenSSL/trust stores; air-gap wheels</td></tr>
+              <tr><td>Queue</td><td>Celery + RabbitMQ quorum queues</td><td>Long-task ecosystem, durable routing</td><td>At-least-once → idempotency; Erlang ops</td></tr>
+              <tr><td>Authoritative DB</td><td>PostgreSQL</td><td>Transactions, JSONB, GIN, partitioning, audit</td><td>Tune bulk ingest and retention partitions</td></tr>
+              <tr><td>Evidence store</td><td>Content-addressed FS / NFS first</td><td>Simple, offline, hash-addressed</td><td>Immutable perms, quota, backup, integrity scans</td></tr>
+              <tr><td>Search</td><td>PostgreSQL first; OpenSearch later</td><td>Avoid premature ops complexity</td><td>OpenSearch JVM/cluster overhead</td></tr>
+              <tr><td>Frontend</td><td>React, TypeScript, Vite, TanStack, ECharts</td><td>Multi-user analyst UX</td><td>Pin lockfiles; offline npm mirrors</td></tr>
+              <tr><td>Reports</td><td>Pydantic JSON, Jinja2, WeasyPrint</td><td>One canonical model, reproducible render</td><td>Pin Pango/fonts; test pagination</td></tr>
+              <tr><td>Auth</td><td>Existing OIDC; Keycloak if none</td><td>Central identity, MFA, roles</td><td>Keycloak operational weight</td></tr>
+              <tr><td>Telemetry</td><td>OTel, Prometheus, Alertmanager, Grafana</td><td>Standard traces/metrics/alerts</td><td>Licensing and cardinality review</td></tr>
+              <tr><td>Single-node</td><td>Rootless Podman + Quadlet or Compose</td><td>Isolation, on-prem deploy</td><td>Validate cgroup/seccomp on target OS</td></tr>
+              <tr><td>Multi-node</td><td>Air-gapped K3s + private OCI registry</td><td>Lightweight orchestration, signed bundles</td><td>Defer until HA/scale justifies it</td></tr>
+              <tr><td>Testing</td><td>pytest, Hypothesis, golden PCAPs, Playwright</td><td>Rules, malformed input, parser diffs, UI</td><td>Lawful, non-sensitive capture corpus</td></tr>
+              <tr><td>ML</td><td>scikit-learn; MLflow optional</td><td>Transparent baselines, local operation</td><td>Labels, drift, leakage, governance</td></tr>
+              <tr><td>Optional LLM</td><td><code>llama.cpp</code> + approved model</td><td>Offline narrative generation</td><td>License, hardware, prompt injection, hallucination</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>6.1 Deferred alternatives</h3>
+        <div class="grid g2">
+          <div class="card"><h4>Dramatiq</h4><p class="muted">Simpler task API. Reconsider if Celery complexity becomes a measured burden.</p></div>
+          <div class="card"><h4>Temporal</h4><p class="muted">Excellent durable workflows, too heavy for MVP; self-hosted security needs extra design.</p></div>
+          <div class="card"><h4>Redis / Valkey queues</h4><p class="muted">Not preferred for long durable forensic jobs. Do not add Redis only as a result backend.</p></div>
+          <div class="card"><h4>Kafka</h4><p class="muted">Only if SecureMail becomes a continuous high-volume sensor/event platform.</p></div>
+          <div class="card"><h4>Scapy / PyShark</h4><p class="muted">Scapy is for fixtures, not production reassembly. Call pinned TShark directly instead of PyShark.</p></div>
+          <div class="card"><h4>Streamlit / HTMX / Chromium PDF</h4><p class="muted">Streamlit is a research prototype. HTMX is simpler but drill-down favors React. Headless Chromium is a tested PDF fallback, not the default.</p></div>
+        </div>
+
+        <h3>6.2 License and supply-chain controls</h3>
+        <ul class="clean">
+          <li>Keep Zeek’s permissive core as the primary integration boundary.</li>
+          <li>Treat TShark, Suricata, and Scapy as separately invoked GPL tools. Preserve notices and get legal review before a bundled appliance.</li>
+          <li>RabbitMQ is MPL-2.0. PostgreSQL, React, Vite, ECharts, <code>cryptography</code>, scikit-learn, and WeasyPrint are generally permissive.</li>
+          <li>Review Grafana, Loki, and Tempo licensing for the chosen redistribution model.</li>
+          <li>JA4 family components do not all share one license. Review each fingerprint component.</li>
+          <li>ML runtime code and model weights have separate licenses; both must be approved and inventoried.</li>
+          <li>Air-gap update bundle: signed OCI images, wheels, OS packages, npm artifacts, trust stores, policy packs, vuln data, models.</li>
+          <li>Pin images by digest, generate SBOMs, verify signatures, and test rollback.</li>
+        </ul>
+      </section>
+
+      <section id="standards">
+        <h2>7. Standards baseline</h2>
+        <p class="lede">Policy rules must be data, not hard-coded parser behavior. Every rule includes a stable ID, source, applicability, effective date, severity, rationale, and test cases.</p>
+
+        <h3>7.1 Email protocols and transport security</h3>
+        <div class="grid g2">
+          <div class="card">
+            <h4>Core RFCs</h4>
+            <ul class="clean">
+              <li><a href="https://www.rfc-editor.org/rfc/rfc5321.html">RFC 5321</a> SMTP</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc3207.html">RFC 3207</a> SMTP STARTTLS</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc6409.html">RFC 6409</a> message submission</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc8314.html">RFC 8314</a> / <a href="https://www.rfc-editor.org/rfc/rfc8997.html">RFC 8997</a> TLS for submission and access; implicit TLS preferred for client access</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc7817.html">RFC 7817</a> historical email server identity</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc9051.html">RFC 9051</a> IMAP4rev2</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc1939.html">RFC 1939</a> / <a href="https://www.rfc-editor.org/rfc/rfc2449.html">RFC 2449</a> POP3 and CAPA</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc2595.html">RFC 2595</a> TLS for IMAP/POP3, including STLS</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Relay policy</h4>
+            <ul class="clean">
+              <li><a href="https://www.rfc-editor.org/rfc/rfc7672.html">RFC 7672</a> SMTP DANE</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc8461.html">RFC 8461</a> MTA-STS</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc8460.html">RFC 8460</a> SMTP TLS Reporting</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc8689.html">RFC 8689</a> REQUIRETLS</li>
+              <li>IANA ports are hints, not protocol proof</li>
+            </ul>
+            <h4>Separate profiles</h4>
+            <ol class="clean muted">
+              <li>SMTP relay on 25</li>
+              <li>Submission on 465/587</li>
+              <li>IMAP on 143/993</li>
+              <li>POP3 on 110/995</li>
+              <li>Org-specific internal relays</li>
+            </ol>
+            <p class="muted">A client-access rule must not be applied blindly to opportunistic SMTP relay.</p>
+          </div>
+        </div>
+
+        <h3>7.2 TLS and cryptography</h3>
+        <div class="grid g2">
+          <div class="card">
+            <ul class="clean">
+              <li><a href="https://www.rfc-editor.org/info/bcp195/">BCP 195</a> current IETF TLS/DTLS recommendations</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc8996.html">RFC 8996</a> deprecates TLS 1.0/1.1</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc9325.html">RFC 9325</a> secure use of TLS/DTLS</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc9846.html">RFC 9846</a> current TLS 1.3 spec</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc9852.html">RFC 9852</a> TLS 1.3 for newly designed protocols — does <em>not</em> automatically make TLS 1.2 non-conformant for existing email</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc10015.html">RFC 10015</a> TLS 1.2 key-exchange; no static RSA or finite-field DH/DHE</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc9155.html">RFC 9155</a> deprecates MD5 and SHA-1 in TLS signatures</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc9849.html">RFC 9849</a> Encrypted ClientHello</li>
+              <li><a href="https://www.rfc-editor.org/rfc/rfc10024.html">RFC 10024</a> hybrid ML-KEM/(EC)DHE groups</li>
+              <li>IANA TLS Parameters; NIST SP 800-52r2, 800-131A, FIPS 186-5, SP 800-57</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Required profiles</h4>
+            <p><code>ietf_current</code> · <code>nist_federal</code> · <code>historical_at_capture</code> · <code>organization_&lt;name&gt;</code></p>
+            <h4>Prohibited / failed under current general policy</h4>
+            <ul class="clean muted">
+              <li>SSL 2.0, SSL 3.0, TLS 1.0, TLS 1.1</li>
+              <li>NULL, export, RC4, or &lt; 112-bit effective security</li>
+              <li>TLS 1.2 static RSA and finite-field DH/DHE (RFC 10015)</li>
+              <li>MD5 or SHA-1 TLS digital signatures</li>
+              <li>RSA cert keys below 2048 bits under current IETF guidance</li>
+            </ul>
+            <p class="muted">“Not FIPS-approved” and “cryptographically weak” are different findings. NIST SP 800-52 Rev. 2 is a selectable profile, not a universal definition of security.</p>
+          </div>
+        </div>
+
+        <h3>7.3 X.509 and identity</h3>
+        <div class="card">
+          <p><a href="https://www.rfc-editor.org/rfc/rfc5280.html">RFC 5280</a> path validation. <a href="https://www.rfc-editor.org/rfc/rfc9525.html">RFC 9525</a> current service identity (SAN matching; Common Name fallback removed). RFC 7817 may still be a separately labeled historical email compatibility result.</p>
+          <p class="muted">SNI is evidence, not always the intended MX/service identity. A certificate cannot be identity-validated merely against names contained in that same certificate. Report both the policy applied and the reference identity source.</p>
+        </div>
+
+        <h3>7.4 TCP, IP, and capture formats</h3>
+        <div class="card">
+          <p><a href="https://www.rfc-editor.org/rfc/rfc9293.html">RFC 9293</a> TCP. <a href="https://www.rfc-editor.org/rfc/rfc8200.html">RFC 8200</a> IPv6 including fragments. PCAP and PCAPNG remain IETF drafts at the research cutoff.</p>
+          <p class="muted">Prefer PCAPNG at intake when interface and timestamp metadata is valuable, but preserve it unchanged. A derived PCAP may lose interface, name-resolution, comment, packet-drop, or decryption-secret metadata and therefore needs a conversion manifest.</p>
+        </div>
+      </section>
+
+      <section id="practices">
+        <h2>8. Standard engineering and forensic practices</h2>
+
+        <h3>8.1 Evidence integrity and chain of custody</h3>
+        <p class="lede">Follow NIST SP 800-86, NIST IR 8387, and the scope of ISO/IEC 27037 / 27041 / 27042 / 27043.</p>
+        <ul class="clean">
+          <li>Preserve the original file byte-for-byte; analyze verified working copies.</li>
+          <li>SHA-256 at intake; verify fixity after transfer, restore, and export.</li>
+          <li>Record authorization, case ID, source/custodian, acquiring person, timestamp/timezone, capture point, interface, filters, snap length, drops, clock source/offset, and each custody event.</li>
+          <li>Append-only, access-controlled custody records stored separately from the evidence file.</li>
+          <li>Detect <code>captured_len &lt; original_len</code>, malformed blocks, gaps, conflicting retransmissions, reassembly ambiguity.</li>
+          <li>Preserve competing interpretations when evidence does not support one deterministic TCP reconstruction.</li>
+          <li>Never “repair” the evidential original.</li>
+          <li>Export a manifest of every artifact hash and tool/version digest.</li>
+        </ul>
+
+        <h3>8.2 Hostile-input processing</h3>
+        <p class="lede">Treat every capture, decoded banner, certificate string, and report field as hostile.</p>
+        <div class="grid g2">
+          <div class="card"><h4>Sandbox</h4><p class="muted">Non-root, network-disabled analyzers. Read-only evidence mounts and root FS. Dropped capabilities, seccomp, PID/CPU/memory quotas, timeouts, bounded output.</p></div>
+          <div class="card"><h4>Limits</h4><p class="muted">Reject impossible block lengths, excessive nesting, decompression bombs, and configured packet/stream/chain limits before large allocation.</p></div>
+          <div class="card"><h4>Uploads</h4><p class="muted">Stream large uploads to quarantine while hashing. Do not load them into API memory.</p></div>
+          <div class="card"><h4>Commands</h4><p class="muted">Never build analyzer commands through a shell. Fixed executable + argument list with allowlisted options.</p></div>
+          <div class="card"><h4>Output</h4><p class="muted">Escape all decoded content in dashboard, HTML, and PDF. Keep report rendering isolated from packet analysis and the API.</p></div>
+          <div class="card"><h4>No outbound</h4><p class="muted">Disable DNS, HTTP, AIA, OCSP, CRL, MTA-STS, model downloads, and telemetry in analysis workers.</p></div>
+        </div>
+        <p class="muted" style="margin-top:10px">Baselines: OWASP File Upload Cheat Sheet, ASVS 5.0, API Security Top 10:2023, NIST SSDF SP 800-218, NIST SP 800-228.</p>
+
+        <h3>8.3 Authentication, authorization, and auditing</h3>
+        <ul class="clean">
+          <li>OIDC + MFA per organizational policy.</li>
+          <li>Authorize every case, capture, run, finding, report, and export. UI visibility is not authorization.</li>
+          <li>Separate analyst, reviewer, case manager, evidence custodian, and platform administrator roles where required.</li>
+          <li>Step-up approval for export, deletion, retention override, model/rule promotion, and trust-store changes.</li>
+          <li>Encrypt captures, session secrets, extracted credentials, reports, and backups at rest.</li>
+          <li>Append-only audit events. Do not put payloads, credentials, private/session keys, or unnecessary personal data in logs.</li>
+          <li>Rate-limit uploads, searches, exports, and expensive analysis.</li>
+        </ul>
+
+        <h3>8.4 Privacy and retention</h3>
+        <p class="callout warn">Captured traffic may contain credentials, mail content, addresses, identifiers, and organizational secrets. Offline deployment does not remove privacy duties. There is no universally correct retention period.</p>
+        <ul class="clean">
+          <li>Documented authority, purpose, case scope, and data owner before ingestion.</li>
+          <li>Minimize stored payloads when cryptographic metadata is sufficient.</li>
+          <li>Segregate cases; review access periodically; retention by evidence class and jurisdiction.</li>
+          <li>Legal holds that suspend deletion.</li>
+          <li>Verify deletion of working copies, caches, exports, backups, session keys, extracted payloads, and ML features after expiry.</li>
+          <li>Do not reuse case evidence for ML training without separate authorization, minimization, and governance.</li>
+          <li>Support a DPIA where monitoring creates high privacy risk. GDPR Arts. 5, 25, 32, 35; NIST Privacy Framework; ISO/IEC 27701.</li>
+        </ul>
+
+        <h3>8.5 Reproducibility and report integrity</h3>
+        <p>Every report must include original and working-copy hashes; case/capture/run IDs; capture quality and visibility limits; evidence/frame refs; analyzer/OS/container/dependency/normalizer/rule-pack/trust-store/model versions; configuration, timezone, seed, thresholds; applied standards profile and effective date; external evidence hashes; observed facts vs deterministic conclusions vs ML vs analyst conclusions as separate sections; stage errors, suppressed findings, exceptions, and indeterminate checks.</p>
+        <p class="muted">Use RFC 8785 canonical JSON before hashing or signing. RFC 3339/RFC 9557 timestamps. Optional W3C PROV. RFC 3161 trusted timestamps for proof of existence. PDF/A is archival presentation; canonical JSON remains authoritative.</p>
+
+        <h3>8.6 Testing and validation</h3>
+        <div class="grid g3">
+          <div class="card">
+            <h4>Deterministic / parser</h4>
+            <ul class="clean muted">
+              <li>Unit-test every rule, transition, and policy-version boundary</li>
+              <li>Golden captures for SMTP/IMAP/POP3, implicit TLS, STARTTLS success/fail, TLS 1.2/1.3, fragments, missing SYN/FIN, truncation, malformed, IPv4/IPv6, nonstandard ports</li>
+              <li>Differential Zeek vs TShark</li>
+              <li>Hypothesis + isolated fuzz of ASN.1, TLS, capture files, TCP reassembly</li>
+              <li>Exact frame/evidence refs, not only finding codes</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Application</h4>
+            <ul class="clean muted">
+              <li>Operations against stubbed Protocol interfaces</li>
+              <li>Migrations, outbox, redelivery, idempotency, fixity, analyzer adapters</li>
+              <li>E2E: upload, cancel, review, drill-down, authz, export</li>
+              <li>Report snapshots with pinned fonts/renderers</li>
+              <li>Restore, legal-hold, retention, DR exercises</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Performance</h4>
+            <ul class="clean muted">
+              <li>Ingest hashing throughput</li>
+              <li>Packets/bytes per second by protocol mix</li>
+              <li>Peak memory per GiB and large TCP stream</li>
+              <li>Queue wait and E2E time by capture-size class</li>
+              <li>PG insert/query/dashboard latency; report time/size; concurrent capacity; malformed/exhaustion behavior</li>
+            </ul>
+          </div>
+        </div>
+        <p class="muted">Publish test hardware and configuration with all performance claims.</p>
+
+        <h3>8.7 Observability and operations</h3>
+        <ul class="clean">
+          <li>Case-safe correlation ID through API, outbox, queue, worker, and report stages.</li>
+          <li>Structured JSON logs with secret/payload redaction.</li>
+          <li>OTel traces for stage duration and adapter calls.</li>
+          <li>Bounded-cardinality metrics: queue depth, stage latency, failures, retries, worker resources, capture sizes, findings, report jobs.</li>
+          <li>Alert on stalled queues, repeated parser crashes, fixity failures, storage thresholds, backup failures, policy/model signature failures.</li>
+          <li>Back up PostgreSQL and evidence manifests; immutable snapshots for artifacts; test restore in isolation and verify hashes.</li>
+          <li>Define RPO/RTO before introducing HA.</li>
+        </ul>
+      </section>
+
+      <section id="ml">
+        <h2>9. AI/ML design and governance</h2>
+        <h3>9.1 Authority boundary — keep these separate</h3>
+        <div class="grid g3">
+          <div class="card" style="border-top:3px solid var(--teal)"><h4>1. Standards severity</h4><p class="muted">Deterministic result from a named policy. This is authoritative.</p></div>
+          <div class="card" style="border-top:3px solid var(--blue)"><h4>2. Evidence confidence</h4><p class="muted">Quality and completeness of the observation.</p></div>
+          <div class="card" style="border-top:3px solid var(--violet)"><h4>3. Anomaly level</h4><p class="muted">Deviation from an endpoint or peer-group baseline. Advisory only.</p></div>
+        </div>
+        <p class="callout warn" style="margin-top:14px">An optional fourth output — predicted remediation priority — must be named after its actual target, not described as a probability that a system is “insecure.”</p>
+
+        <h3>9.2 Feature design</h3>
+        <div class="grid g3">
+          <div class="card"><h4>Session</h4><p class="muted">Protocol/role, upgrade state, offered/selected versions/ciphers/groups/signatures, AEAD and FS indicators, resumption/PSK/0-RTT, alerts, handshake duration, retransmissions, resets, fingerprints, visible cert properties, capture quality.</p></div>
+          <div class="card"><h4>Endpoint window</h4><p class="muted">TLS-version distribution, STARTTLS success rate, cleartext ratio, weak-config ratio, failure rate, cert/fingerprint churn, first-seen values, rare pairings, deviation from historical baseline.</p></div>
+          <div class="card"><h4>Context</h4><p class="muted">Asset role, criticality, exposure, environment, maintenance window, data sensitivity, accepted-risk expiry, capture point, visibility class.</p></div>
+        </div>
+        <p class="muted">Do not use raw IPs, names, serial numbers, or certificate identities as direct supervised features unless encoding and validation show the model is not memorizing one organization.</p>
+
+        <h3>9.3 Model progression</h3>
+        <ol class="clean">
+          <li>Start with median/MAD, quantiles, categorical rarity, and change-point rules.</li>
+          <li>Evaluate Isolation Forest on endpoint-window features after enough baseline history.</li>
+          <li>Compare any advanced model against these simple baselines.</li>
+          <li>Train supervised operational-priority models only after analysts produce consistent, independently governed labels.</li>
+          <li>Begin with regularized logistic regression; compare shallow GBTs only with measured benefit and stable explanations.</li>
+          <li>Deploy every learned model in shadow mode before it can affect workflow.</li>
+        </ol>
+        <p class="muted">Avoid autoencoders and sequence models in early releases. They need more data, are harder to explain, and can reproduce environment-specific noise.</p>
+
+        <h3>9.4 Evaluation</h3>
+        <div class="grid g2">
+          <div class="card"><h4>Supervised</h4><p class="muted">PR-AUC, per-tier precision/recall, critical recall, precision at the analyst’s daily review budget, Brier/calibration, cost-weighted errors, temporal and cross-organization holdouts. Split by time, endpoint/certificate family, and organization — random splits leak identity.</p></div>
+          <div class="card"><h4>Anomaly</h4><p class="muted">Alerts per 1,000 endpoint-days, precision among top-K reviewed, detection delay for seeded changes, stability during maintenance, new vs established endpoints.</p></div>
+        </div>
+        <h4>Every anomaly must explain a concrete deviation</h4>
+        <div class="grid g3">
+          <div class="card"><p class="muted">“First TLS 1.0 selection for this MX in 180 days.”</p></div>
+          <div class="card"><p class="muted">“Certificate issuer changed and handshake failures increased from 0.2% to 18%.”</p></div>
+          <div class="card"><p class="muted">“A new server fingerprint appeared in 4 of 2,800 sessions.”</p></div>
+        </div>
+
+        <h3>9.5 False-positive and drift controls</h3>
+        <ul class="clean">
+          <li>Gate conclusions on capture quality and observability.</li>
+          <li>Deduplicate repeated sessions into endpoint-level findings.</li>
+          <li>Role/site peer groups and minimum-support thresholds.</li>
+          <li>Hysteresis and maintenance-window suppression.</li>
+          <li>Owner-approved exceptions with reason, reviewer, and expiry.</li>
+          <li>Quarantine analyst feedback until reviewed; never retrain automatically from clicks or suppression.</li>
+          <li>Monitor feature missingness, categorical novelty, score distribution, alert volume, visibility changes, calibration.</li>
+          <li>Treat sensor relocation or a new capture point as topology change before labeling it model drift.</li>
+        </ul>
+
+        <h3>9.6 Model and AI security</h3>
+        <p>Version and hash the feature schema, dataset, label policy, training code, model, calibrator, thresholds, recommendation templates, prompts, and local model weights.</p>
+        <div class="grid g2">
+          <div class="card"><ul class="clean muted"><li>Malformed/fractured traffic and fingerprint mimicry</li><li>Poisoned imported baselines or analyst feedback</li><li>Model, trust-store, and policy-pack tampering</li><li>Malicious ASN.1/certificate parser inputs</li></ul></div>
+          <div class="card"><ul class="clean muted"><li>Resource exhaustion</li><li>Forged PCAP timestamps</li><li>NAT/load-balancer aggregation</li><li>Indirect prompt injection from captured text</li><li>Evasion from TLS 1.3 and ECH visibility limits</li></ul></div>
+        </div>
+        <p class="muted">Governance: NIST AI RMF 1.0, NIST AI 600-1, ISO/IEC 42001, ISO/IEC 23894.</p>
+
+        <h3>9.7 Optional local LLM</h3>
+        <div class="grid g2">
+          <div class="card in"><h4>May</h4><ul class="clean"><li>Summarize verified findings for analyst or executive audience</li><li>Explain a curated remediation template</li><li>Group related findings</li><li>Answer questions over a bundled, versioned standards corpus with citations</li></ul></div>
+          <div class="card out"><h4>Must not</h4><ul class="clean"><li>Parse captures as the primary detector</li><li>Decide compliance or final severity</li><li>Execute generated commands</li><li>Access the network</li><li>Receive raw email bodies by default</li><li>Treat captured content as instructions</li></ul></div>
+        </div>
+        <p class="muted" style="margin-top:10px">Use schema-constrained I/O, fixed token limits, citation validation, evidence IDs, an abstention path, and full model/prompt provenance.</p>
+      </section>
+
+      <section id="enhancements">
+        <h2>10. Suggested enhancements</h2>
+        <h3>10.1 Highest priority</h3>
+        <div class="grid g2">
+          <div class="card"><h4>1. Capture observability score</h4><p class="muted">Show what proportion of expected sessions, handshakes, and certificate checks were observable and why data was missing.</p></div>
+          <div class="card"><h4>2. As-of-capture vs current policy</h4><p class="muted">Separate “acceptable when captured” from “requires remediation today.”</p></div>
+          <div class="card"><h4>3. Evidence bundle per finding</h4><p class="muted">Minimal packet slices, normalized facts, raw analyzer records, policy version, and hashes for independent verification.</p></div>
+          <div class="card"><h4>4. Cryptographic asset inventory / CBOM</h4><p class="muted">Endpoints, versions, ciphers, groups, keys, certificates, issuers, fingerprints, owners, first/last seen.</p></div>
+          <div class="card"><h4>5. Regression and blast-radius views</h4><p class="muted">When posture changed, and how many sessions, clients, domains, and assets were affected.</p></div>
+          <div class="card"><h4>6. Exception workflow</h4><p class="muted">Owner, business reason, compensating controls, reviewer, expiry; automatically reopen expired exceptions.</p></div>
+        </div>
+        <h3>10.2 Policy and ecosystem enrichment</h3>
+        <ul class="clean">
+          <li>Import signed/historical DNS, MX, DNSSEC/TLSA, MTA-STS, and TLS-RPT evidence.</li>
+          <li>Compare multiple sensor perspectives without duplicating findings.</li>
+          <li>Import authorized endpoint/session-secret telemetry for TLS 1.3 visibility.</li>
+          <li>Export stable finding codes and evidence links to SIEM/SOAR and case systems.</li>
+          <li>Configuration migration simulator for compatibility and expected posture change before rollout.</li>
+          <li>Non-sensitive lab capture generator and public golden corpus.</li>
+        </ul>
+        <h3>10.3 Cryptographic agility</h3>
+        <ul class="clean">
+          <li>Inventory Encrypted ClientHello visibility changes.</li>
+          <li>Recognize standardized hybrid ML-KEM/(EC)DHE groups.</li>
+          <li>Report PQC readiness and unknown algorithms without treating absence of PQC as a current email security failure.</li>
+          <li>Make algorithm/group registries and policy packs independently updateable and signed.</li>
+        </ul>
+      </section>
+
+      <section id="roadmap">
+        <h2>11. Delivery roadmap</h2>
+        <div class="timeline">
+          <article class="phase p0">
+            <div class="phase-id"><span>Now</span><b>Phase 0</b><span>Feasibility</span></div>
+            <div class="phase-body">
+              <p><strong>Deliver:</strong> lawful PCAP/PCAPNG corpus; Zeek/TShark field-coverage matrix; canonical evidence/observability/finding schemas; SMTP/IMAP/POP3 upgrade state machines; initial IETF/NIST profiles; analyzer sandbox and performance baseline.</p>
+              <p class="muted"><strong>Exit:</strong> golden examples cover every deterministic deliverable and major incomplete state; all facts link to frames and analyzer versions; TLS 1.3/ECH limits represented without false passes; a 10+ GiB capture fails safely or completes within documented bounds.</p>
+            </div>
+          </article>
+          <article class="phase p1">
+            <div class="phase-id"><span>MVP</span><b>Phase 1</b><span>Single-node</span></div>
+            <div class="phase-body">
+              <p><strong>Deliver:</strong> FastAPI, PostgreSQL, artifact store, Celery/RabbitMQ; immutable intake and custody; Zeek + targeted TShark; protocol/STARTTLS/TLS/X.509 policy engine; transparent scoring and curated remediation; React dashboard; JSON/HTML/PDF; rootless offline bundle.</p>
+              <p class="muted"><strong>Exit:</strong> every Section 4 MVP deliverable has automated acceptance tests; jobs are idempotent; analyzer crashes cannot compromise API or evidence; same-bundle reruns are semantically identical; authz and audit cover every evidence/report operation.</p>
+            </div>
+          </article>
+          <article class="phase p2">
+            <div class="phase-id"><span>Beta</span><b>Phase 2</b><span>Hardened analyst</span></div>
+            <div class="phase-body">
+              <p><strong>Deliver:</strong> OIDC/MFA, granular RBAC, retention, legal hold, review flow; quotas, cancellation, resumable upload, worker-size classes; Arkime/OpenSearch only if justified; statistical baselines and Isolation Forest in shadow mode; adjudication, exception, regression, blast-radius; offline DNS/MTA-STS/DANE/TLS-RPT enrichment; full observability and DR runbooks.</p>
+              <p class="muted"><strong>Exit:</strong> anomaly alerts meet agreed top-K precision and volume budget; restore verifies all hashes; no critical finding can be suppressed by ML; legal hold and retention independently tested.</p>
+            </div>
+          </article>
+          <article class="phase p3">
+            <div class="phase-id"><span>Scale</span><b>Phase 3</b><span>Production</span></div>
+            <div class="phase-body">
+              <p><strong>Deliver:</strong> air-gapped K3s only when needed; PostgreSQL HA, RabbitMQ quorum, redundant artifacts, private registry; flow-aware single-capture parallelism if required; signed offline updates, SBOMs, rollback; calibrated supervised priority model; constrained local LLM summaries; multi-sensor correlation and PQC inventory.</p>
+              <p class="muted"><strong>Exit:</strong> availability, recovery, throughput, and analyst-latency SLOs met; model performance validated on temporal and org-separated data; every model/rule/trust update is signed, reviewable, reversible, and auditable.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="trace">
+        <h2>12. Deliverable traceability</h2>
+        <p class="lede">All OBJECTIVE.MD deliverables are covered. “Conditional,” “where observable,” and “best effort” are technical accuracy requirements, not deferred scope.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>OBJECTIVE.MD deliverable</th><th>Design section</th><th>Planned state</th></tr></thead>
+            <tbody>
+              <tr><td>Automatic SMTP/IMAP/POP3 identification</td><td>4.1, 5.2</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>STARTTLS negotiation detection and validation</td><td>4.1, 7.1</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>Complete TCP stream reconstruction</td><td>2.3, 4.1, 7.4</td><td><span class="pill amber">Best-effort MVP</span></td></tr>
+              <tr><td>TLS handshake reconstruction</td><td>2.3, 4.2</td><td><span class="pill teal">MVP where observable</span></td></tr>
+              <tr><td>Negotiated TLS version</td><td>4.2, 7.2</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>Negotiated cipher suite</td><td>4.2, 7.2</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>Key exchange mechanism</td><td>4.2, 7.2</td><td><span class="pill teal">MVP where observable</span></td></tr>
+              <tr><td>X.509 certificate extraction</td><td>2.3, 4.3</td><td><span class="pill blue">Conditional MVP</span></td></tr>
+              <tr><td>Certificate chain validation</td><td>4.3, 7.3</td><td><span class="pill blue">Conditional MVP</span></td></tr>
+              <tr><td>Certificate expiration analysis</td><td>4.3</td><td><span class="pill blue">Conditional MVP</span></td></tr>
+              <tr><td>Public-key algorithm and key length</td><td>4.3, 7.2</td><td><span class="pill blue">Conditional MVP</span></td></tr>
+              <tr><td>Digital-signature algorithm</td><td>4.3</td><td><span class="pill blue">Conditional MVP</span></td></tr>
+              <tr><td>Weak algorithms and deprecated TLS</td><td>4.2, 7.2</td><td><span class="pill green">MVP via versioned rules</span></td></tr>
+              <tr><td>Insecure protocol configurations</td><td>4.1, 4.2, 7.1</td><td><span class="pill green">MVP via role-specific rules</span></td></tr>
+              <tr><td>Forward secrecy assessment</td><td>4.2</td><td><span class="pill green">MVP with indeterminate</span></td></tr>
+              <tr><td>AI-based cryptographic risk scoring</td><td>4.4, 9</td><td><span class="pill teal">Deterministic first; learned later</span></td></tr>
+              <tr><td>AI-assisted TLS anomaly detection</td><td>4.4, 9</td><td><span class="pill amber">Phase two advisory</span></td></tr>
+              <tr><td>Prioritized security findings</td><td>4.4, 9</td><td><span class="pill teal">MVP deterministic; later ML</span></td></tr>
+              <tr><td>Comprehensive posture assessment</td><td>4.4, 10</td><td><span class="pill green">MVP with coverage denominators</span></td></tr>
+              <tr><td>JSON, PDF, and HTML reports</td><td>4.5, 8.5</td><td><span class="pill green">MVP</span></td></tr>
+              <tr><td>Interactive visualization dashboard</td><td>4.5, 5, 6</td><td><span class="pill green">MVP</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="decisions">
+        <h2>13. Decision summary</h2>
+        <div class="grid" style="gap:10px">
+          <div class="decision"><div class="num">1</div><div><strong>Zeek is the primary analyzer.</strong> TShark is a targeted corroborating decoder.</div></div>
+          <div class="decision"><div class="num">2</div><div><strong>Build a canonical evidence and policy layer</strong> rather than another packet parser.</div></div>
+          <div class="decision"><div class="num">3</div><div><strong>Start with FastAPI, Celery/RabbitMQ, PostgreSQL, content-addressed evidence, React, and deterministic reports.</strong></div></div>
+          <div class="decision"><div class="num">4</div><div><strong>Defer OpenSearch, Kubernetes, advanced ML, and an LLM</strong> until measured needs justify their operational and governance cost.</div></div>
+          <div class="decision"><div class="num">5</div><div><strong>Capture quality, observability, provenance, and historical policy</strong> are first-class data.</div></div>
+          <div class="decision"><div class="num">6</div><div><strong>Deterministic standards findings are authoritative.</strong> ML is explicitly advisory.</div></div>
+          <div class="decision"><div class="num">7</div><div><strong>Report reproducibility, chain of custody, parser isolation, privacy, offline supply-chain updates, and licensing</strong> are product requirements from the first release.</div></div>
+        </div>
+      </section>
+
+      <section id="refs">
+        <h2>14. Reference index</h2>
+        <h3>Protocol and cryptography</h3>
+        <ul class="ref-list">
+          <li><a href="https://www.rfc-editor.org/info/bcp195/">IETF BCP 195</a></li>
+          <li><a href="https://www.rfc-editor.org/rfc/rfc3207.html">RFC 3207 — SMTP STARTTLS</a></li>
+          <li><a href="https://www.rfc-editor.org/rfc/rfc8314.html">RFC 8314 — TLS for Email Submission and Access</a></li>
+          <li><a href="https://www.rfc-editor.org/rfc/rfc8996.html">RFC 8996 — Deprecating TLS 1.0 and 1.1</a></li>
+          <li><a href="https://www.rfc-editor.org/rfc/rfc9325.html">RFC 9325 — Secure Use of TLS and DTLS</a></li>
+          <li><a href="https://www.rfc-editor.org/rfc/rfc9525.html">RFC 9525 — Service Identity</a></li>
+          <li><a href="https://www.rfc-editor.org/rfc/rfc9846.html">RFC 9846 — TLS 1.3</a></li>
+          <li><a href="https://www.rfc-editor.org/rfc/rfc9849.html">RFC 9849 — Encrypted ClientHello</a></li>
+          <li><a href="https://www.rfc-editor.org/rfc/rfc10015.html">RFC 10015 — TLS 1.2 Key Exchange</a></li>
+          <li><a href="https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml">IANA TLS Parameters</a></li>
+          <li><a href="https://csrc.nist.gov/pubs/sp/800/52/r2/final">NIST SP 800-52 Rev. 2</a></li>
+        </ul>
+        <h3>Forensics and secure engineering</h3>
+        <ul class="ref-list">
+          <li><a href="https://csrc.nist.gov/pubs/sp/800/86/final">NIST SP 800-86</a></li>
+          <li><a href="https://www.nist.gov/publications/digital-evidence-preservation-considerations-evidence-handlers">NIST IR 8387</a></li>
+          <li><a href="https://csrc.nist.gov/pubs/sp/800/218/final">NIST SSDF SP 800-218</a></li>
+          <li><a href="https://owasp.org/www-project-application-security-verification-standard/">OWASP ASVS</a></li>
+          <li><a href="https://owasp.org/API-Security/">OWASP API Security Top 10</a></li>
+          <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html">OWASP File Upload Cheat Sheet</a></li>
+        </ul>
+        <h3>Components</h3>
+        <ul class="ref-list">
+          <li><a href="https://docs.zeek.org/en/current/">Zeek documentation</a></li>
+          <li><a href="https://www.wireshark.org/docs/man-pages/tshark.html">TShark manual</a></li>
+          <li><a href="https://arkime.com/">Arkime</a></li>
+          <li><a href="https://malcolm.fyi/docs/">Malcolm</a></li>
+          <li><a href="https://cryptography.io/en/latest/x509/verification/">Python cryptography X.509</a></li>
+          <li><a href="https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/">Celery brokers</a></li>
+          <li><a href="https://www.rabbitmq.com/docs/quorum-queues">RabbitMQ quorum queues</a></li>
+          <li><a href="https://www.postgresql.org/docs/">PostgreSQL</a></li>
+          <li><a href="https://docs.opensearch.org/latest/">OpenSearch</a></li>
+          <li><a href="https://doc.courtbouillon.org/weasyprint/stable/">WeasyPrint</a></li>
+          <li><a href="https://scikit-learn.org/stable/modules/outlier_detection.html">scikit-learn outlier detection</a></li>
+          <li><a href="https://docs.k3s.io/installation/airgap">K3s air-gap installation</a></li>
+        </ul>
+        <p class="muted">References were selected from standards bodies, government guidance, and official upstream documentation available at the research cutoff. Recheck effective dates and supersession whenever a policy pack is released.</p>
+      </section>
+
+      <footer>
+        Source: TECHNICAL_DESIGN.md · Self-contained HTML for review · Open this file in any browser
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = [...document.querySelectorAll("nav.toc a")];
+    const sections = links
+      .map((a) => document.querySelector(a.getAttribute("href")))
+      .filter(Boolean);
+
+    const io = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter((e) => e.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (!visible) return;
+      links.forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#" + visible.target.id));
+    }, { rootMargin: "-20% 0px -70% 0px", threshold: [0, 0.2, 0.6] });
+
+    sections.forEach((s) => io.observe(s));
+  </script>
+</body>
+</html>
