@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - name: Install native packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            git-lfs \
+            pkg-config \
+            libpango1.0-dev \
+            libcairo2 \
+            libgdk-pixbuf-2.0-0 \
+            libharfbuzz0b
+          git lfs install
+          git lfs pull
+      - name: Sync Python environment
+        run: uv sync --extra dev
+      - name: Doctor
+        env:
+          SECUREMAIL_CI: "1"
+        run: make doctor
+      - name: Lint
+        run: make lint
+      - name: Analyzer images
+        run: |
+          docker pull zeek/zeek@sha256:73e80e9cd23ff71fd28d158e9a9af5c7b2b0ef5d4036af61521827531347c0e3
+          make zeek-image
+          make tshark-image
+      - name: Test
+        run: make test
+
+  digest-resolve:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve pinned analyzer digests
+        run: |
+          python3 - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          lock = json.loads(Path("tools/analyzer-bundle.lock").read_text())
+          dockerfile = Path("docker/tshark/Dockerfile").read_text()
+          match = re.search(r"debian:trixie-slim@(sha256:[0-9a-f]+)", dockerfile)
+          if match is None:
+              raise SystemExit("could not parse debian digest from docker/tshark/Dockerfile")
+          print(f"zeek={lock['zeek_image_digest']}")
+          print(f"tshark_base={match.group(1)}")
+          Path("/tmp/zeek_digest").write_text(lock["zeek_image_digest"])
+          Path("/tmp/debian_digest").write_text(match.group(1))
+          PY
+          docker manifest inspect "zeek/zeek@$(cat /tmp/zeek_digest)" >/dev/null
+          docker manifest inspect "debian@$(cat /tmp/debian_digest)" >/dev/null
+          echo "pinned digests resolved"

@@ -1,0 +1,10 @@
+{
+  "created_at": "2026-01-01T00:00:00Z",
+  "generator": "tests/fixtures/generators/empty_capture.py --out tests/fixtures/empty/capture.pcapng",
+  "notes": "Trivial unrelated packets (ARP, ICMP, DNS, TCP/80) used only to prove the Step 0 analyze pipeline runs end to end. Not mail-protocol evidence.",
+  "sha256": "225125ebb1b384ef77c8c3217e5936deed7c56d1404454fb8929d6c4ffe791cc",
+  "source": "scapy",
+  "tool_versions": {
+    "scapy": "2.7.0"
+  }
+}

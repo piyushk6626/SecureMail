@@ -1,0 +1,11 @@
+{
+  "run_identity": {
+    "analyzer_bundle_digest": "afbe7b26f9aee50903da41fbbbc7333a046df9aa5cfdc4875cd40d77f3a0ca06",
+    "capture_sha256": "225125ebb1b384ef77c8c3217e5936deed7c56d1404454fb8929d6c4ffe791cc",
+    "configuration_digest": "c7880cd2e9f330fdd998bad53c56971b313a7fb6f89a926fe5631c49166da46c",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0"
+}

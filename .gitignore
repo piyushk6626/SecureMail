@@ -14,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -95,10 +94,7 @@ ipython_config.py
 # Pipfile.lock
 
 # UV
-#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-# uv.lock
+# uv.lock is committed; it is part of AnalysisRun reproducibility.
 
 # poetry
 #   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
@@ -233,9 +229,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Generated DSA login credentials — do not commit
-scripts/data/dsa_accounts.csv
-scripts/data/seed_approved_dsa_users.sql
+# Analysis output
+out/
 
 # macOS
 .DS_Store
