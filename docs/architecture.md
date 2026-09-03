@@ -1,0 +1,134 @@
+# Architecture (as built)
+
+SecureMail uses clean architecture with a single composition root. Import
+boundaries are enforced by import-linter in [`pyproject.toml`](../pyproject.toml),
+not by review convention.
+
+```mermaid
+flowchart TB
+  cli[api_cli_Typer]
+  app[application]
+  domain[domain]
+  ports[ports]
+  adapters[adapters]
+  bootstrap[bootstrap.py]
+  cli --> app
+  app --> domain
+  app --> ports
+  adapters --> ports
+  adapters --> domain
+  bootstrap --> adapters
+  bootstrap --> app
+  bootstrap --> cli
+```
+
+`bootstrap.py` is the **only** module that imports a port and its adapter.
+
+## Layer rules
+
+| Layer | May import | Must not |
+|---|---|---|
+| `domain/` | stdlib, Pydantic, other `domain/` | `adapters/`, `ports/`, `application/`, `api/`, I/O, Docker, subprocess |
+| `application/` | `domain/`, `ports/` | concrete `adapters/`, `docker`, SQLAlchemy |
+| `adapters/` | `ports/`, `domain/` | `application/`, `api/` |
+| `api/` | `application/` (via bootstrap wiring) | business rules, Zeek/TShark, PKI crypto |
+| `ports/` | stdlib, typing, domain types as signatures | `docker`, `subprocess` |
+
+Three import-linter contracts:
+
+1. Domain has no outward dependencies.
+2. Application does not import concrete adapters.
+3. Domain, application, adapters, and ports are independent of `api`.
+
+Canonical records that exist today: `AnalysisRun` (inside `EvidenceDocument`),
+`CapturePreflight`, `Flow`, `EmailSession`. The names `Case`, `Capture`,
+`TlsHandshake`, `CertificateEvidence`, `Finding`, `AnomalyResult`,
+`ReportManifest`, and `AuditEvent` are design vocabulary from
+[`plans/TECHNICAL_DESIGN.md`](../plans/TECHNICAL_DESIGN.md); they are not live
+models except where a placeholder file already occupies the scaffold path.
+
+## Composition root
+
+[`src/securemail/bootstrap.py`](../src/securemail/bootstrap.py) constructs:
+
+- `DockerZeekRunner`
+- `DockerCapinfosRunner`
+- `DockerTSharkRunner`
+
+and closes them over `_analyze`, which calls `run_analysis`. `create_cli()`
+passes that function into `build_app` so the Typer layer never imports adapters.
+
+## Live modules
+
+### `api/`
+
+| Path | Role |
+|---|---|
+| `api/cli/main.py` | Typer app; registers `analyze`; writes JSON |
+| `api/cli/commands/*.py` | Stubs except that `analyze` actually lives in `main.py` |
+| `api/main.py`, `api/dependencies.py`, `api/routers/` | Step 11 placeholders |
+
+Console script: `securemail = "securemail.api.cli.main:main"` in
+`pyproject.toml`. `main()` imports `create_cli` from bootstrap (lazy, to keep
+`api` from importing adapters at module load).
+
+### `application/`
+
+| Path | Role |
+|---|---|
+| `run_analysis.py` | Intake hash, PCAP magic check, capinfos, Zeek, optional TShark, assemble `EvidenceDocument` |
+| `normalize_flows.py` | Zeek `conn.log` / `weird.log` / `capture_loss.log` / `sm_tcp_recon.log` → `Flow` |
+| `normalize_sessions.py` | `sm_email.log` + optional TShark frames + `ssl.log` → `EmailSession` |
+| `advisory_pipeline.py` | Step 10 placeholder |
+
+Domain models are constructed here. They do not parse raw Zeek/TShark output
+themselves.
+
+### `domain/`
+
+| Path | Role |
+|---|---|
+| `evidence/run.py` | `EvidenceState`, `AnalysisRun`, `CapturePreflight`, `EvidenceDocument`, schema version `v0` |
+| `evidence/flow.py` | `Flow` + pure `classify_reconstruction` |
+| `evidence/session.py` | `EmailSession`, protocol/port/payload enums, upgrade and implicit-TLS models |
+| `policies/starttls/smtp_upgrade.py` | SMTP STARTTLS machine |
+| `policies/starttls/imap_upgrade.py` | IMAP STARTTLS machine |
+| `policies/starttls/pop3_upgrade.py` | POP3 STLS machine |
+| `policies/starttls/implicit_tls.py` | ALPN correlation; port is never proof |
+| `evidence/handshake.py`, `certificate.py`, `findings/`, `reports/`, TLS/PKI/rule packs | Placeholders for Steps 4–9 |
+
+### `ports/`
+
+| Path | Role |
+|---|---|
+| `analyzers.py` | `ZeekRunner`, `TSharkRunner`, `CapturePreflightRunner` protocols and result models |
+| `artifacts.py` | `ArtifactStore` protocol (`put`/`get` by SHA-256) — no adapter yet |
+| `persistence.py`, `ml.py` | Step 11 / Step 10 placeholders |
+
+### `adapters/`
+
+| Path | Role |
+|---|---|
+| `analyzers/sandbox.py` | Shared Docker flags, image refs, argv guard |
+| `analyzers/bundle_lock.py` | Load/verify `tools/analyzer-bundle.lock`; hash `zeek/` |
+| `analyzers/zeek_runner.py` | Pinned `docker run` of `securemail/zeek:step0` |
+| `analyzers/tshark_runner.py` | Pinned bounded TShark field dump |
+| `analyzers/capinfos_runner.py` | capinfos inside the TShark image (same sandbox) |
+| PKI, reports, ML, reference data | Placeholders |
+
+## Toolchain (what the package actually pins)
+
+- CPython **3.13** (`requires-python = ">=3.13,<3.14"`), installed via `uv`
+- Default deps: pydantic v2, typer, cryptography, pyyaml, jinja2
+- Extras `reports`, `ml`, and `api` are declared for later steps; they are not
+  required to run `analyze`
+- Dev extra: pytest, hypothesis, import-linter, ruff, mypy, pre-commit,
+  playwright, scapy
+- Analyzers: Docker images, `--network=none` (see [analyzers.md](analyzers.md))
+
+## Not in this build
+
+No FastAPI app factory with routes, no Celery workers, no SQLAlchemy
+repositories, no React tree under `frontend/` (only `.nvmrc` + README). The
+scaffold directories exist so later steps fill named files instead of inventing
+layout.

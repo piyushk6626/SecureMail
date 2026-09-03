@@ -3,10 +3,14 @@
 Offline, deterministic-first cryptographic posture analysis for SMTP, IMAP, and
 POP3 traffic captured in PCAP/PCAPNG files.
 
-This repository is at **Step 0** of `plans/build_plan.md`: package layout, sandboxed
-Zeek/TShark runners, the v0 evidence schema, and one empty-capture fixture. Later
-steps fill the named files in `plans/PROJECT_SCAFFOLD.md`; they do not invent new
-top-level layout.
+This repository has completed **Steps 0–3** of `plans/build_plan.md`: package
+layout, sandboxed Zeek/TShark runners, TCP reconstruction quality, payload-driven
+protocol identification, and STARTTLS/STLS plus implicit-TLS assessment. The live
+command is `securemail analyze`. Steps 4–11 remain named placeholders.
+
+**As-built documentation** (what the code does today) lives in
+[`docs/README.md`](docs/README.md). Plan contracts (what to build next) remain in
+`plans/`.
 
 ## Prerequisites
 
@@ -31,6 +35,25 @@ uv run securemail analyze tests/fixtures/empty/capture.pcapng --out out/empty.js
 On macOS, `make sync` and `make doctor` set `DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib`
 so the uv-managed interpreter can load Homebrew Pango. Do not `brew install weasyprint`.
 
+## Proof commands (completed steps)
+
+```bash
+# Step 0 — empty capture
+uv run securemail analyze tests/fixtures/empty/capture.pcapng --out out/empty.json
+
+# Step 1 — TCP reconstruction (snaplen truncation is incomplete)
+uv run securemail analyze tests/fixtures/tcp_snaplen_truncation/capture.pcapng --out out/tcp.json
+
+# Step 2 — protocol ID from payload on a nonstandard port
+uv run securemail analyze tests/fixtures/pop3_nonstandard_port/capture.pcapng --out out/pop3.json
+
+# Step 3 — STARTTLS after stripped capability (`downgrade_consistent`)
+uv run securemail analyze tests/fixtures/imap_starttls_capability_stripped/capture.pcapng --out out/imap.json
+```
+
+`--out` is required. Output is a v0 `EvidenceDocument` JSON file (flows +
+sessions). There is no `score`, `report`, or `evaluate-ml` command yet.
+
 ## Layout
 
 Clean architecture, enforced by import-linter:
@@ -41,3 +64,6 @@ Clean architecture, enforced by import-linter:
 - `src/securemail/ports/` — `typing.Protocol` interfaces
 - `src/securemail/adapters/` — Zeek/TShark runners and later I/O
 - `src/securemail/bootstrap.py` — the only composition root
+
+See [`docs/architecture.md`](docs/architecture.md) for the live module map and
+[`docs/current-state.md`](docs/current-state.md) for done vs placeholder.

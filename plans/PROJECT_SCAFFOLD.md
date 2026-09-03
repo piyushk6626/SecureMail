@@ -335,8 +335,19 @@ SecureMail/
     PROJECT_SCAFFOLD.md                  # this document
 
   docs/
+    README.md                            # as-built hub (what the code does today)
+    current-state.md                     # Steps 0–3 done; 4–11 placeholders
+    architecture.md
+    pipeline.md
+    evidence-model.md
+    analyzers.md
+    tcp-reconstruction.md
+    protocol-identification.md
+    starttls.md
+    cli-and-development.md
+    fixtures.md
     decisions/
-      .gitkeep                           # [Step 2] step2-imap-pop3-depth.md lands here
+      step2-imap-pop3-depth.md           # [Step 2] IMAP/POP3 depth ADR (amended Step 3)
 
   zeek/                                  # policy-script bundle, hashed as a unit
     site/
