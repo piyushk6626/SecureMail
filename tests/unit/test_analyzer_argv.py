@@ -4,7 +4,11 @@ from pathlib import Path
 
 from securemail.adapters.analyzers.capinfos_runner import DockerCapinfosRunner
 from securemail.adapters.analyzers.sandbox import sandbox_docker_flags
-from securemail.adapters.analyzers.tshark_runner import TSHARK_FIELDS, DockerTSharkRunner
+from securemail.adapters.analyzers.tshark_runner import (
+    TSHARK_DISPLAY_FILTER,
+    TSHARK_FIELDS,
+    DockerTSharkRunner,
+)
 from securemail.adapters.analyzers.zeek_runner import DockerZeekRunner
 
 
@@ -46,7 +50,11 @@ def test_tshark_argv_uses_allowlisted_fields_only(tmp_path: Path) -> None:
     assert "-T" in argv
     asserted_fields = [argv[index + 1] for index, part in enumerate(argv) if part == "-e"]
     assert asserted_fields == list(TSHARK_FIELDS)
-    assert "frame" in argv
+    assert TSHARK_DISPLAY_FILTER in argv
+    assert "imap.request.username" not in argv
+    assert "imap.request.password" not in argv
+    assert "imap.line" not in argv
+    assert "pop.request.parameter" not in argv
 
 
 def test_capinfos_argv_is_fixed_and_offline(tmp_path: Path) -> None:

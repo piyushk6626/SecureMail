@@ -1,5 +1,5 @@
 {
   "tshark_image_digest": "7a905e8094a26fc8eff375eaa7419d14b0b7c34e9eb287404ada0091b93f30df",
-  "zeek_bundle_sha256": "b67d9aa2007408f1dda5868040b1501ef7f0585c9c1bcb32d798afe456b04452",
+  "zeek_bundle_sha256": "0ac3dc1615d2252e14fdea426c48743cebc37adc9e3166ed012826246e276222",
   "zeek_image_digest": "sha256:73e80e9cd23ff71fd28d158e9a9af5c7b2b0ef5d4036af61521827531347c0e3"
 }

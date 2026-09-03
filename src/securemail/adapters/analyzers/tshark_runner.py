@@ -29,6 +29,7 @@ from securemail.ports.analyzers import TSharkRunResult
 _DOCKER = "docker"
 
 # Bounded field allowlist. Callers cannot extend this list.
+# IMAP/POP command verbs and status only — never usernames, passwords, or full lines.
 TSHARK_FIELDS: tuple[str, ...] = (
     "frame.number",
     "frame.time_epoch",
@@ -38,9 +39,14 @@ TSHARK_FIELDS: tuple[str, ...] = (
     "ipv6.dst",
     "tcp.srcport",
     "tcp.dstport",
-    "udp.srcport",
-    "udp.dstport",
+    "imap.request.command",
+    "imap.response.status",
+    "imap.tag",
+    "imap.isrequest",
+    "pop.request.command",
+    "pop.response.indicator",
 )
+TSHARK_DISPLAY_FILTER = "imap or pop"
 
 
 class DockerTSharkRunner:
@@ -66,7 +72,7 @@ class DockerTSharkRunner:
             "-r",
             "/data/capture.pcapng",
             "-Y",
-            "frame",
+            TSHARK_DISPLAY_FILTER,
             "-T",
             "fields",
             "-E",

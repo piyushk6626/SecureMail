@@ -294,11 +294,12 @@ def classify_reconstruction(facts: ReconstructionFacts) -> ReconstructionVerdict
 
 
 def _rebuild_evidence_document() -> None:
-    """Resolve the `Flow` forward reference on `EvidenceDocument` without a cycle."""
+    """Resolve forward references on `EvidenceDocument` without a cycle."""
 
     from securemail.domain.evidence.run import EvidenceDocument
+    from securemail.domain.evidence.session import EmailSession
 
-    EvidenceDocument.model_rebuild(_types_namespace={"Flow": Flow})
+    EvidenceDocument.model_rebuild(_types_namespace={"Flow": Flow, "EmailSession": EmailSession})
 
 
 _rebuild_evidence_document()

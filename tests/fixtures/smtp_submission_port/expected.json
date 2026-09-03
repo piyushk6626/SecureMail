@@ -1,0 +1,188 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.054778958,
+    "file_time_precision": "nanosecond",
+    "original_packet_bytes": 2093,
+    "packet_count": 24,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "SF",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShAdDafF",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "172.18.0.3",
+        "port": 57578
+      },
+      "orig_bytes": 314,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "172.18.0.2",
+        "port": 587
+      },
+      "resp_bytes": 179,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "run_identity": {
+    "analyzer_bundle_digest": "8a21dac92121ac621397cf1e14ac787fe0f8ce2465327ca0d3cb6e6e696cab15",
+    "capture_sha256": "a5467ae2b6893d8be5c1d4c24c0c3d60d3379a18bfa617be211001142bffe402",
+    "configuration_digest": "5134b33ccd425f333bd317732ae633187fcb80f98da0388cbbd53471f4ac2be6",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0",
+  "sessions": [
+    {
+      "corroboration": "zeek",
+      "events": [
+        {
+          "argument": null,
+          "command": ">",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 220,
+          "text": "1ad98b5641c0 Python SMTP proxy version 0.3"
+        },
+        {
+          "argument": "[172.18.0.3]",
+          "command": "EHLO",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "EHLO",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "1ad98b5641c0"
+        },
+        {
+          "argument": null,
+          "command": "EHLO",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "SIZE 33554432"
+        },
+        {
+          "argument": null,
+          "command": "EHLO",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "8BITMIME"
+        },
+        {
+          "argument": null,
+          "command": "EHLO",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "HELP"
+        },
+        {
+          "argument": "<redacted>",
+          "command": "MAIL",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "MAIL",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "<redacted>"
+        },
+        {
+          "argument": "<redacted>",
+          "command": "RCPT",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "RCPT",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "<redacted>"
+        },
+        {
+          "argument": null,
+          "command": "DATA",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "DATA",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 354,
+          "text": "End data with <CR><LF>.<CR><LF>"
+        },
+        {
+          "argument": ".",
+          "command": ".",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": ".",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "QUIT",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "QUIT",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 221,
+          "text": "Bye"
+        }
+      ],
+      "evidence_state": "observed",
+      "identification_confidence": null,
+      "payload_evidence": "smtp",
+      "port_hint": "smtp",
+      "protocol": "smtp",
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ]
+}

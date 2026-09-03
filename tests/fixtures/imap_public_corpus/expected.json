@@ -1,0 +1,616 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 25.781028,
+    "file_time_precision": "microsecond",
+    "original_packet_bytes": 29409,
+    "packet_count": 124,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "SF",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShAdDaFf",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "131.151.32.21",
+        "port": 4167
+      },
+      "orig_bytes": 746,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "131.151.37.122",
+        "port": 143
+      },
+      "resp_bytes": 20769,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    },
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "OTH",
+      "evidence_state": "incomplete",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "DTdA",
+      "missed_bytes": 0,
+      "observed_conditions": [
+        "duplicate_segments"
+      ],
+      "orig": {
+        "host": "131.151.32.91",
+        "port": 1065
+      },
+      "orig_bytes": 96,
+      "proto": "tcp",
+      "reason_code": "missing_syn",
+      "reconstruction_quality": "incomplete",
+      "resp": {
+        "host": "131.151.37.117",
+        "port": 1065
+      },
+      "resp_bytes": 128,
+      "uid": "CcvuMe3KIDgdxGsNCd"
+    },
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "OTH",
+      "evidence_state": "incomplete",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "DTdA",
+      "missed_bytes": 0,
+      "observed_conditions": [
+        "duplicate_segments"
+      ],
+      "orig": {
+        "host": "131.151.32.91",
+        "port": 3614
+      },
+      "orig_bytes": 192,
+      "proto": "tcp",
+      "reason_code": "missing_syn",
+      "reconstruction_quality": "incomplete",
+      "resp": {
+        "host": "131.151.37.122",
+        "port": 1065
+      },
+      "resp_bytes": 432,
+      "uid": "Cj5C653qaTXsxKtqD2"
+    },
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "S0",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "D",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "131.151.37.122",
+        "port": 1350
+      },
+      "orig_bytes": 0,
+      "proto": "udp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "131.151.32.91",
+        "port": 1056
+      },
+      "resp_bytes": 0,
+      "uid": "CRdT6w4PA64qWKmBk3"
+    },
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "S0",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "D",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "131.151.37.122",
+        "port": 1359
+      },
+      "orig_bytes": 0,
+      "proto": "udp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "131.151.32.91",
+        "port": 1063
+      },
+      "resp_bytes": 0,
+      "uid": "CJioLj2aEkGc9R3T0b"
+    },
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "S0",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "D",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "131.151.37.122",
+        "port": 1360
+      },
+      "orig_bytes": 0,
+      "proto": "udp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "131.151.32.91",
+        "port": 1056
+      },
+      "resp_bytes": 0,
+      "uid": "CpuDPN1X7c0rKhM3Ik"
+    }
+  ],
+  "run_identity": {
+    "analyzer_bundle_digest": "8a21dac92121ac621397cf1e14ac787fe0f8ce2465327ca0d3cb6e6e696cab15",
+    "capture_sha256": "6c320a13a21c67b139d605352ac502500164d4ac9d1963f225affc73ff8e34a5",
+    "configuration_digest": "5134b33ccd425f333bd317732ae633187fcb80f98da0388cbbd53471f4ac2be6",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0",
+  "sessions": [
+    {
+      "corroboration": "zeek+tshark",
+      "events": [
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "confirmation",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "capability",
+          "reply_code": null,
+          "text": "IMAP4 IMAP4rev1 IDLE LITERAL+ LOGIN-REFERRALS MAILBOX-REFERRALS NAMESPACE AUTH=NTLM"
+        },
+        {
+          "argument": null,
+          "command": "CAPABILITY",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "LOGIN",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "LIST",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "SELECT",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "FETCH",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "NOOP",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "NOOP",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "FETCH",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "NOOP",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "NOOP",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "NOOP",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "NOOP",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "NOOP",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "NOOP",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "NOOP",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "NOOP",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "NOOP",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "NOOP",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "NOOP",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "STORE",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "STORE",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "EXPUNGE",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "SELECT",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "FETCH",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "NOOP",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "CLOSE",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK"
+        }
+      ],
+      "evidence_state": "observed",
+      "identification_confidence": null,
+      "payload_evidence": "imap",
+      "port_hint": "imap",
+      "protocol": "imap",
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ]
+}

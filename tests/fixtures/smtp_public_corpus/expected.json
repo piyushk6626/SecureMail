@@ -1,0 +1,342 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 9.198384,
+    "file_time_precision": "microsecond",
+    "original_packet_bytes": 26866,
+    "packet_count": 60,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "OTH",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "192.168.1.1",
+        "port": 3
+      },
+      "orig_bytes": 2192,
+      "proto": "icmp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "10.10.1.4",
+        "port": 4
+      },
+      "resp_bytes": 0,
+      "uid": "Cj5C653qaTXsxKtqD2"
+    },
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "SF",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShAdDaTFf",
+      "missed_bytes": 0,
+      "observed_conditions": [
+        "duplicate_segments"
+      ],
+      "orig": {
+        "host": "10.10.1.4",
+        "port": 1470
+      },
+      "orig_bytes": 14705,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "74.53.140.153",
+        "port": 25
+      },
+      "resp_bytes": 538,
+      "uid": "CRdT6w4PA64qWKmBk3"
+    },
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "S0",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "D",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "10.10.1.20",
+        "port": 138
+      },
+      "orig_bytes": 0,
+      "proto": "udp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "10.10.1.255",
+        "port": 138
+      },
+      "resp_bytes": 0,
+      "uid": "CJioLj2aEkGc9R3T0b"
+    },
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "SF",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "Dd",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "10.10.1.4",
+        "port": 56166
+      },
+      "orig_bytes": 34,
+      "proto": "udp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "10.10.1.1",
+        "port": 53
+      },
+      "resp_bytes": 100,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "run_identity": {
+    "analyzer_bundle_digest": "8a21dac92121ac621397cf1e14ac787fe0f8ce2465327ca0d3cb6e6e696cab15",
+    "capture_sha256": "75349ef8a9a5b923f08a73cb545e299e2a34c05e4ef350b534ad00eeb9566042",
+    "configuration_digest": "5134b33ccd425f333bd317732ae633187fcb80f98da0388cbbd53471f4ac2be6",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0",
+  "sessions": [
+    {
+      "corroboration": "zeek",
+      "events": [
+        {
+          "argument": null,
+          "command": ">",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 220,
+          "text": "xc90.websitewelcome.com ESMTP Exim 4.69 #1 Mon, 05 Oct 2009 01:05:54 -0500"
+        },
+        {
+          "argument": null,
+          "command": ">",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 220,
+          "text": "We do not authorize the use of this system to transport unsolicited,"
+        },
+        {
+          "argument": null,
+          "command": ">",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 220,
+          "text": "and/or bulk e-mail."
+        },
+        {
+          "argument": "GP",
+          "command": "EHLO",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "EHLO",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "xc90.websitewelcome.com Hello GP [122.162.143.157]"
+        },
+        {
+          "argument": null,
+          "command": "EHLO",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "SIZE 52428800"
+        },
+        {
+          "argument": null,
+          "command": "EHLO",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "PIPELINING"
+        },
+        {
+          "argument": null,
+          "command": "EHLO",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "AUTH PLAIN LOGIN"
+        },
+        {
+          "argument": null,
+          "command": "EHLO",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "STARTTLS"
+        },
+        {
+          "argument": null,
+          "command": "EHLO",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "HELP"
+        },
+        {
+          "argument": "<redacted>",
+          "command": "AUTH",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "AUTH",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 334,
+          "text": "<redacted>"
+        },
+        {
+          "argument": "<redacted>",
+          "command": "**",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "AUTH_ANSWER",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 334,
+          "text": "<redacted>"
+        },
+        {
+          "argument": "<redacted>",
+          "command": "**",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "AUTH_ANSWER",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 235,
+          "text": "<redacted>"
+        },
+        {
+          "argument": "<redacted>",
+          "command": "MAIL",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "MAIL",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "<redacted>"
+        },
+        {
+          "argument": "<redacted>",
+          "command": "RCPT",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "RCPT",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "<redacted>"
+        },
+        {
+          "argument": null,
+          "command": "DATA",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "DATA",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 354,
+          "text": "Enter message, ending with \".\" on a line by itself"
+        },
+        {
+          "argument": ".",
+          "command": ".",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": ".",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "OK id=1Mugho-0003Dg-Un"
+        },
+        {
+          "argument": null,
+          "command": "QUIT",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "QUIT",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 221,
+          "text": "xc90.websitewelcome.com closing connection"
+        }
+      ],
+      "evidence_state": "observed",
+      "identification_confidence": null,
+      "payload_evidence": "smtp",
+      "port_hint": "smtp",
+      "protocol": "smtp",
+      "uid": "CRdT6w4PA64qWKmBk3"
+    }
+  ]
+}

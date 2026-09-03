@@ -1,0 +1,116 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.16,
+    "file_time_precision": "microsecond",
+    "original_packet_bytes": 1039,
+    "packet_count": 17,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "SF",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShAdDaFf",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "192.0.2.10",
+        "port": 49152
+      },
+      "orig_bytes": 32,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "192.0.2.25",
+        "port": 2525
+      },
+      "resp_bytes": 89,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "run_identity": {
+    "analyzer_bundle_digest": "8a21dac92121ac621397cf1e14ac787fe0f8ce2465327ca0d3cb6e6e696cab15",
+    "capture_sha256": "dcb4435e3d50c0d144d7f4bc24824df07ac0ecc976e9e62d9f33f96f0f271f8f",
+    "configuration_digest": "5134b33ccd425f333bd317732ae633187fcb80f98da0388cbbd53471f4ac2be6",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0",
+  "sessions": [
+    {
+      "corroboration": "zeek",
+      "events": [
+        {
+          "argument": null,
+          "command": ">",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 220,
+          "text": "mail.example.test ESMTP"
+        },
+        {
+          "argument": "client.example.test",
+          "command": "EHLO",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "EHLO",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "mail.example.test Hello"
+        },
+        {
+          "argument": null,
+          "command": "EHLO",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "STARTTLS"
+        },
+        {
+          "argument": null,
+          "command": "EHLO",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 250,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "QUIT",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "QUIT",
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": 221,
+          "text": "Bye"
+        }
+      ],
+      "evidence_state": "observed",
+      "identification_confidence": null,
+      "payload_evidence": "smtp",
+      "port_hint": "none",
+      "protocol": "smtp",
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ]
+}

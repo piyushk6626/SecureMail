@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 if TYPE_CHECKING:
     from securemail.domain.evidence.flow import Flow
+    from securemail.domain.evidence.session import EmailSession
 
 NORMALIZATION_SCHEMA_VERSION: Literal["v0"] = "v0"
 
@@ -62,3 +63,4 @@ class EvidenceDocument(BaseModel):
     run_identity: AnalysisRun
     capture_preflight: CapturePreflight
     flows: list[Flow] = Field(default_factory=list)
+    sessions: list[EmailSession] = Field(default_factory=list)

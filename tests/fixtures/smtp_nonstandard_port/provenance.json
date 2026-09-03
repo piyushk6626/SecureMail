@@ -1,0 +1,10 @@
+{
+  "created_at": "2026-09-03T00:00:00Z",
+  "generator": "tests/fixtures/generators/scapy_protocol_captures.py --case smtp_nonstandard_port --out tests/fixtures/smtp_nonstandard_port/capture.pcapng",
+  "notes": "Scapy SMTP EHLO/QUIT on TCP/2525. Payload identification, not port.",
+  "sha256": "dcb4435e3d50c0d144d7f4bc24824df07ac0ecc976e9e62d9f33f96f0f271f8f",
+  "source": "scapy",
+  "tool_versions": {
+    "scapy": "2.7.0"
+  }
+}

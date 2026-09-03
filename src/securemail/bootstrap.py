@@ -7,6 +7,7 @@ from pathlib import Path
 import typer
 
 from securemail.adapters.analyzers.capinfos_runner import DockerCapinfosRunner
+from securemail.adapters.analyzers.tshark_runner import DockerTSharkRunner
 from securemail.adapters.analyzers.zeek_runner import DockerZeekRunner
 from securemail.application.run_analysis import AnalyzeRequest, run_analysis
 from securemail.domain.evidence.run import EvidenceDocument
@@ -17,6 +18,7 @@ def _analyze(capture: Path) -> EvidenceDocument:
         AnalyzeRequest(capture_path=capture),
         zeek_runner=DockerZeekRunner(),
         preflight_runner=DockerCapinfosRunner(),
+        tshark_runner=DockerTSharkRunner(),
     )
 
 

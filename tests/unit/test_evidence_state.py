@@ -54,3 +54,4 @@ def test_v0_document_requires_run_identity_fields() -> None:
     assert identity["normalization_schema_version"] == "v0"
     assert identity["policy_pack_version"] is None
     assert identity["trust_store_digest"] is None
+    assert payload["sessions"] == []

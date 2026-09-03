@@ -1,0 +1,14 @@
+{
+  "created_at": "2026-09-03T19:36:35Z",
+  "generator": "tests/fixtures/generators/lab_mail_protocol_captures.py --case imap_standard_port --out tests/fixtures/imap_standard_port/capture.pcapng (docker network securemail-step2-imap_standard_port-net; dumpcap sidecar --network container:securemail-step2-imap_standard_port-srv)",
+  "notes": "Lab plaintext IMAP CAPABILITY/LOGOUT on TCP/143 using a Docker bridge and dumpcap sidecar in the server netns.",
+  "sha256": "2ab95284d0be62aaad5cafa20087c13fcc6b2897a017916e8b8f5772ba43e003",
+  "source": "lab",
+  "tool_versions": {
+    "debian_base_digest": "sha256:d7e12182ce18b85b93007c1dedf31f2d29e01ccf3182cc4017c709b6259bc132",
+    "dumpcap": "Dumpcap (Wireshark) 4.4.18.",
+    "python": "3.11.15",
+    "python_image": "python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3",
+    "tshark_image": "securemail/tshark:step0"
+  }
+}

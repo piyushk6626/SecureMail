@@ -84,12 +84,13 @@
     }
   ],
   "run_identity": {
-    "analyzer_bundle_digest": "9503191abe752a095f76eae02693c4f322530b626e858b1892b2837989b77cc8",
+    "analyzer_bundle_digest": "8a21dac92121ac621397cf1e14ac787fe0f8ce2465327ca0d3cb6e6e696cab15",
     "capture_sha256": "225125ebb1b384ef77c8c3217e5936deed7c56d1404454fb8929d6c4ffe791cc",
-    "configuration_digest": "89af48407fc44a67993ccbd1b9866b288aa9791a1fb034dd94c391df5209b540",
+    "configuration_digest": "5134b33ccd425f333bd317732ae633187fcb80f98da0388cbbd53471f4ac2be6",
     "normalization_schema_version": "v0",
     "policy_pack_version": null,
     "trust_store_digest": null
   },
-  "schema_version": "v0"
+  "schema_version": "v0",
+  "sessions": []
 }

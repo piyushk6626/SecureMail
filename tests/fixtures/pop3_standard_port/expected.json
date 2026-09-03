@@ -1,0 +1,140 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.001708458,
+    "file_time_precision": "nanosecond",
+    "original_packet_bytes": 955,
+    "packet_count": 13,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "SF",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShAdDaFf",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "172.18.0.3",
+        "port": 52130
+      },
+      "orig_bytes": 12,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "172.18.0.2",
+        "port": 110
+      },
+      "resp_bytes": 69,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "run_identity": {
+    "analyzer_bundle_digest": "8a21dac92121ac621397cf1e14ac787fe0f8ce2465327ca0d3cb6e6e696cab15",
+    "capture_sha256": "2e544d990fac1315cf51bcdb4ca879a67d18189bd1dd82a6b89596ba65ca9d0a",
+    "configuration_digest": "5134b33ccd425f333bd317732ae633187fcb80f98da0388cbbd53471f4ac2be6",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0",
+  "sessions": [
+    {
+      "corroboration": "zeek+tshark",
+      "events": [
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK POP3 ready"
+        },
+        {
+          "argument": null,
+          "command": "CAPA",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK Capability list follows"
+        },
+        {
+          "argument": null,
+          "command": "QUIT",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "OK Bye"
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "+OK"
+        },
+        {
+          "argument": null,
+          "command": "CAPA",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "+OK"
+        },
+        {
+          "argument": null,
+          "command": "QUIT",
+          "direction": "orig",
+          "kind": "request",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "reply",
+          "reply_code": null,
+          "text": "+OK"
+        }
+      ],
+      "evidence_state": "observed",
+      "identification_confidence": null,
+      "payload_evidence": "pop3",
+      "port_hint": "pop3",
+      "protocol": "pop3",
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ]
+}

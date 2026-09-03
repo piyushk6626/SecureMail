@@ -1,0 +1,15 @@
+{
+  "conversion": "editcap -F pcapng <source> tests/fixtures/<case_id>/capture.pcapng",
+  "created_at": "2026-09-03T19:36:22Z",
+  "generator": "tests/fixtures/generators/import_public_corpus.py --case imap_public_corpus",
+  "license": "Wireshark wiki SampleCaptures / IMAP page contribution; used as an independent regression cross-check only, not as sole proof of a rule.",
+  "notes": "Public Wireshark SampleCaptures imap.cap (IMAP on TCP/143). Converted to pcapng with editcap -F pcapng; packets are otherwise unmodified.",
+  "sha256": "6c320a13a21c67b139d605352ac502500164d4ac9d1963f225affc73ff8e34a5",
+  "source": "public_corpus",
+  "source_sha256": "fa9a9bcca7b7f2943d740d46b075565b0dbbcc0f60ab321bf577a7be9724b5a8",
+  "source_url": "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/imap.cap",
+  "tool_versions": {
+    "editcap": "Editcap (Wireshark) 4.4.18.",
+    "tshark_image": "securemail/tshark:step0"
+  }
+}

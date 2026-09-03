@@ -1,0 +1,76 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.16,
+    "file_time_precision": "microsecond",
+    "original_packet_bytes": 1078,
+    "packet_count": 17,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "SF",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShAdDaFf",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "192.0.2.10",
+        "port": 49152
+      },
+      "orig_bytes": 30,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "192.0.2.25",
+        "port": 1143
+      },
+      "resp_bytes": 130,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "run_identity": {
+    "analyzer_bundle_digest": "8a21dac92121ac621397cf1e14ac787fe0f8ce2465327ca0d3cb6e6e696cab15",
+    "capture_sha256": "21bee86bd9e4773cac7f751d78fecc4f8a9f78f08b452ce7b80b3234e18f13a7",
+    "configuration_digest": "5134b33ccd425f333bd317732ae633187fcb80f98da0388cbbd53471f4ac2be6",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0",
+  "sessions": [
+    {
+      "corroboration": "zeek",
+      "events": [
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "confirmation",
+          "reply_code": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "kind": "capability",
+          "reply_code": null,
+          "text": "IMAP4rev1 STARTTLS"
+        }
+      ],
+      "evidence_state": "observed",
+      "identification_confidence": null,
+      "payload_evidence": "imap",
+      "port_hint": "none",
+      "protocol": "imap",
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ]
+}

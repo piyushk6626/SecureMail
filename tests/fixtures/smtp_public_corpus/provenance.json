@@ -1,0 +1,15 @@
+{
+  "conversion": "editcap -F pcapng <source> tests/fixtures/<case_id>/capture.pcapng",
+  "created_at": "2026-09-03T19:36:20Z",
+  "generator": "tests/fixtures/generators/import_public_corpus.py --case smtp_public_corpus",
+  "license": "Wireshark wiki SampleCaptures contribution; used as an independent regression cross-check only, not as sole proof of a rule.",
+  "notes": "Public Wireshark SampleCaptures smtp.pcap (SMTP on TCP/25). Converted to pcapng with editcap -F pcapng; packets are otherwise unmodified.",
+  "sha256": "75349ef8a9a5b923f08a73cb545e299e2a34c05e4ef350b534ad00eeb9566042",
+  "source": "public_corpus",
+  "source_sha256": "17ad230db1b6fd5dd18eb311092df1cf6eb162054bdb47697b89bef5a86a47ab",
+  "source_url": "https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/smtp.pcap",
+  "tool_versions": {
+    "editcap": "Editcap (Wireshark) 4.4.18.",
+    "tshark_image": "securemail/tshark:step0"
+  }
+}

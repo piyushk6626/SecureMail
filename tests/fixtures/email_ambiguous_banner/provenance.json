@@ -1,0 +1,10 @@
+{
+  "created_at": "2026-09-03T00:00:00Z",
+  "generator": "tests/fixtures/generators/scapy_protocol_captures.py --case email_ambiguous_banner --out tests/fixtures/email_ambiguous_banner/capture.pcapng",
+  "notes": "Scapy CRLF greeting on TCP/25 that is not SMTP, IMAP, or POP3.",
+  "sha256": "a2aaac97ad0f8c68a64635cbcbbcca20f5a8ac27d19b9086ea9806bc74300f72",
+  "source": "scapy",
+  "tool_versions": {
+    "scapy": "2.7.0"
+  }
+}
