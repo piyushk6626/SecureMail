@@ -177,7 +177,9 @@ packets, source: Scapy) is added purely to prove the pipeline runs end to end.
 **Implementation.**
 - *Zeek/TShark side:* `Dockerfile.zeek` and `Dockerfile.tshark` pinned by digest,
   built with `--network=none` at run time; a digest lockfile
-  (`tools/analyzer-bundle.lock`) recording both image digests plus the Zeek policy
+  (`tools/analyzer-bundle.lock`) recording the Zeek image digest, the SHA-256 of
+  `docker/tshark/Dockerfile` (not a local built-image digest; more reproducible,
+  still a deviation — see PROJECT_SCAFFOLD Section 8), plus the Zeek policy
   script bundle hash. Zeek invoked with `LogAscii::use_json=T` for structured
   output.
 - *Python side:* create the `securemail` package using the layout from

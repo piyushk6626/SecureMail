@@ -152,8 +152,9 @@ tshark`, which transitively pulls `capinfos`, `editcap`, and `mergecap` in via t
 GPL-2.0-or-later and is deliberately kept in its own image, invoked as a separate subprocess, never
 statically linked into anything (TECHNICAL_DESIGN Section 6.2).
 
-`tools/analyzer-bundle.lock` (Section 4.7) is the single file that records both digests above plus
-the SHA-256 of the `zeek/` policy-script bundle. Regenerating it after a deliberate upgrade is one
+`tools/analyzer-bundle.lock` (Section 4.7) is the single file that records the Zeek image digest,
+the SHA-256 of `docker/tshark/Dockerfile` (not a local TShark image ID; see Section 8), and the
+SHA-256 of the `zeek/` policy-script bundle. Regenerating it after a deliberate upgrade is one
 command (Section 4.7); an unreviewed change to it should look exactly like an unreviewed change to
 `uv.lock` — a diff a reviewer reads, not a file anyone hand-edits.
 
@@ -352,7 +353,7 @@ SecureMail/
       Dockerfile                         # pinned FROM debian:trixie-slim@sha256:..., installs tshark
 
   tools/
-    analyzer-bundle.lock                 # [Step 0] digests: zeek image, tshark image, zeek/ bundle hash
+    analyzer-bundle.lock                 # [Step 0] zeek image digest, TShark Dockerfile SHA-256, zeek/ bundle hash
     refresh_analyzer_lock.py             # regenerates the lock file; never hand-edit the lock
 
   src/
@@ -591,19 +592,29 @@ through the full pipeline.
 
 ### 4.7 `tools/analyzer-bundle.lock`
 
-A small JSON/TOML file (format decided at Step 0) recording exactly three facts:
+A small JSON file recording exactly three facts:
 
 ```json
 {
   "zeek_image_digest": "sha256:73e80e9c...",
-  "tshark_image_digest": "sha256:<built-image-digest-after-first-build>",
+  "tshark_image_digest": "<sha256-hex of docker/tshark/Dockerfile>",
   "zeek_bundle_sha256": "<sha256 of the zeek/ directory tree>"
 }
 ```
 
+`zeek_image_digest` is the registry digest of `zeek/zeek:8.0.10` from Section 2.4.
+
+`tshark_image_digest` is the SHA-256 of `docker/tshark/Dockerfile` bytes (the recipe, including the
+pinned `FROM debian:trixie-slim@sha256:...` line). It is **not** the digest of the image produced by
+`docker build` / `make tshark-image`. A local built-image ID is not stable across machines or
+rebuilds; hashing the Dockerfile is. This is still a deviation from pinning a published TShark
+image the way Zeek is pinned — see Section 8.
+
 `AnalysisRun` (TECHNICAL_DESIGN Section 5.4) includes this file's content hash in its own identity
 tuple (build_plan Section 5.5's idempotency key). `refresh_analyzer_lock.py` is the only thing
 allowed to write it — never edit `analyzer-bundle.lock` by hand, the same discipline as `uv.lock`.
+The TShark runner fails closed if the Dockerfile bytes do not match the lock; it still requires
+`securemail/tshark:step0` to exist locally.
 
 ### 4.8 `application/`
 
@@ -757,9 +768,11 @@ required to be filled in before Step 11.
 
 Runs on Linux (where `/usr/bin/openssl` genuinely is OpenSSL, so the Step 6 differential test needs
 no path override there), executing: `make doctor` (minus the Docker Desktop-specific checks),
-`make lint`, `make test`, and — once `tools/analyzer-bundle.lock` exists — a job that pulls both
-pinned digests and asserts they still resolve, so a registry-side rug-pull is caught by CI rather
-than by a developer's confused bug report.
+`make lint`, `make test`, and — once `tools/analyzer-bundle.lock` exists — a job that
+`docker manifest inspect`s the pinned Zeek image digest and the TShark Debian base digest and
+asserts they still resolve, so a registry-side rug-pull is caught by CI rather than by a
+developer's confused bug report. The lock's `tshark_image_digest` is the Dockerfile hash, not a
+registry image (Section 4.7 / Section 8).
 
 ## 7. Fixture and evidence conventions
 
@@ -820,6 +833,14 @@ and this document has to pick one:
      reference a `scripts/data/` DSA-accounts path that has no connection to anything in
      OBJECTIVE.MD, TECHNICAL_DESIGN.md, or build_plan.md — almost certainly copied in from an
      unrelated project's `.gitignore`. Remove both lines.
+6. **`tshark_image_digest` is the SHA-256 of `docker/tshark/Dockerfile`, not the built-image
+   digest originally specified in Section 4.7.** There is no published TShark image to pin the way
+   Zeek is pinned. Locking a local `docker build` ID would churn across contributors and CI (cache,
+   timestamps, builder identity). The Dockerfile hash is more reproducible: the same recipe,
+   including the digest-pinned Debian base, yields the same lock value on every machine. Runners
+   still require `make tshark-image` and fail closed on a recipe mismatch. This remains a deviation
+   from "pin the built image by digest." CI therefore `docker manifest inspect`s the Zeek image and
+   the Debian base, not a TShark image digest that is not in the lock.
 
 ## 9. Ordered bootstrap sequence
 
@@ -877,7 +898,9 @@ Before Step 1 of build_plan begins, all of the following must be true:
   a comment explaining which step fills it in).
 - `make doctor` passes on a clean checkout on at least one contributor's machine and in CI.
 - `import-linter`'s three contracts (Section 5) run in CI as a required, not advisory, check.
-- `tools/analyzer-bundle.lock` exists and both digests in it resolve via `docker manifest inspect`.
+- `tools/analyzer-bundle.lock` exists. `zeek_image_digest` and the Debian base in
+  `docker/tshark/Dockerfile` resolve via `docker manifest inspect`. `tshark_image_digest` is the
+  SHA-256 of that Dockerfile (Section 4.7 / Section 8), not a built-image digest.
 - The `tests/fixtures/empty` fixture exists with all three required files and passes through
   `fixture_harness.py`.
 - The two `.gitignore` fixes from Section 8 item 5 are applied.

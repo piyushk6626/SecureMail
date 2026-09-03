@@ -45,11 +45,10 @@ or TLS record decoding. Zeek is the primary processing engine.
 
 ## 2. Current project state
 
-This repository is at the **pre-development baseline**. Step 0 of `build_plan.md`
-has not started. `plans/` is the only real content. The tree in
-`PROJECT_SCAFFOLD.md` Section 3 is the **promised layout**: Step 0 creates every
-path as a starter file or a labeled placeholder; later steps **fill named files**,
-they do not invent new top-level layout.
+This repository is at **Step 0** of `build_plan.md`: package layout, sandboxed
+Zeek/TShark runners, the v0 evidence schema, and one empty-capture fixture.
+The tree in `PROJECT_SCAFFOLD.md` Section 3 is the layout Step 0 created;
+later steps **fill named files**, they do not invent new top-level layout.
 
 Do not:
 
@@ -194,6 +193,10 @@ Authoritative tree: `plans/PROJECT_SCAFFOLD.md` Section 3. Reconciled deviations
 - Zeek scripts live in top-level `zeek/` (hashed as one bundle), not a loose
   `scripts/securemail-email.zeek`.
 - Images: `docker/zeek/Dockerfile` and `docker/tshark/Dockerfile`.
+- `tshark_image_digest` in `tools/analyzer-bundle.lock` is the SHA-256 of
+  `docker/tshark/Dockerfile`, not the built-image digest originally named in
+  scaffold §4.7. That is more reproducible than a local docker build id; it is
+  still a deviation.
 - Fixtures: `tests/fixtures/<case_id>/`, not `tests/golden_pcaps/`.
 - Until Step 11, the only real `api/` adapter is `api/cli/` (Typer). `api/main.py`
   and `api/routers/` exist from Step 0 as empty placeholders.
@@ -225,7 +228,7 @@ silently changing versions.
 | Deps | `uv` + committed `uv.lock`. `uv sync --extra dev` for Steps 0–8. |
 | Analyzers | Docker images **pinned by digest**, `--network=none`, `--read-only`, non-root `65532`, `--cap-drop=ALL`, `--security-opt=no-new-privileges`, `--pids-limit=256`, `--memory=2g`, `--cpus=2`. |
 | Zeek | `zeek/zeek:8.0.10` LTS, digest in the scaffold / lockfile — not 8.2 or 9.x unless the lockfile + every fixture are deliberately refreshed. |
-| TShark | Separate image from `debian:trixie-slim` digest; GPL; never statically linked. |
+| TShark | Separate image from `debian:trixie-slim` digest; lock records Dockerfile SHA-256, not the built-image digest; GPL; never statically linked. |
 | OpenSSL cross-check | Homebrew `/opt/homebrew/bin/openssl` on macOS. **Never** `/usr/bin/openssl` (LibreSSL). Production validation uses Python `cryptography`; OpenSSL is test-only. |
 | Fixtures | git-lfs for `*.pcap`, `*.pcapng`, `*.der`, `*.p12`, `*.pfx`. JSON stays normal git text. |
 | PDF | WeasyPrint + Homebrew `pango`; `DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib` on macOS. Bundled fonts under `adapters/reports/fonts/`, never system fonts. Do not `brew install weasyprint`. |
