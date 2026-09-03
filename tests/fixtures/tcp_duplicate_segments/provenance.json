@@ -1,0 +1,10 @@
+{
+  "created_at": "2026-09-03T00:00:00Z",
+  "generator": "tests/fixtures/generators/tcp_degradation_captures.py --case tcp_duplicate_segments --out tests/fixtures/tcp_duplicate_segments/capture.pcapng",
+  "notes": "Scapy SMTP-port TCP flow with an identical retransmission of the first data segment before ACK.",
+  "sha256": "a3ff1faef10996280d0e828e95b3880bfe1e8d52ccf07fa70b5334d436360446",
+  "source": "scapy",
+  "tool_versions": {
+    "scapy": "2.7.0"
+  }
+}

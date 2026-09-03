@@ -1,9 +1,14 @@
 """Canonical run identity and the shared evidence-state vocabulary (schema v0)."""
 
+from __future__ import annotations
+
 from enum import StrEnum
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+
+if TYPE_CHECKING:
+    from securemail.domain.evidence.flow import Flow
 
 NORMALIZATION_SCHEMA_VERSION: Literal["v0"] = "v0"
 
@@ -33,6 +38,21 @@ class AnalysisRun(BaseModel):
     trust_store_digest: str | None = None
 
 
+class CapturePreflight(BaseModel):
+    """capinfos facts recorded before any analyzer mutates a working copy."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    packet_count: int = Field(ge=0)
+    file_time_precision: str
+    packet_size_limit: int | None = None
+    packet_size_limit_min_inferred: int | None = None
+    packet_size_limit_max_inferred: int | None = None
+    truncated_packets_present: bool
+    original_packet_bytes: int | None = None
+    capture_duration_seconds: float | None = None
+
+
 class EvidenceDocument(BaseModel):
     """v0 canonical JSON envelope produced by `securemail analyze`."""
 
@@ -40,3 +60,5 @@ class EvidenceDocument(BaseModel):
 
     schema_version: Literal["v0"] = "v0"
     run_identity: AnalysisRun
+    capture_preflight: CapturePreflight
+    flows: list[Flow] = Field(default_factory=list)

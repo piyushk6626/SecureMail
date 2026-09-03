@@ -61,6 +61,7 @@ class DockerZeekRunner:
             ZEEK_LOCAL_IMAGE,
             "zeek",
             "-C",
+            "-D",
             "-r",
             "/data/capture.pcapng",
             "LogAscii::use_json=T",

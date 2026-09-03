@@ -3,9 +3,10 @@
 from hypothesis import given
 from hypothesis import strategies as st
 
-from securemail.domain.evidence.run import (
+from securemail.domain.evidence import (
     NORMALIZATION_SCHEMA_VERSION,
     AnalysisRun,
+    CapturePreflight,
     EvidenceDocument,
     EvidenceState,
 )
@@ -39,6 +40,12 @@ def test_v0_document_requires_run_identity_fields() -> None:
             policy_pack_version=None,
             trust_store_digest=None,
         ),
+        capture_preflight=CapturePreflight(
+            packet_count=0,
+            file_time_precision="microsecond",
+            truncated_packets_present=False,
+        ),
+        flows=[],
     )
     payload = document.model_dump(mode="json")
     identity = payload["run_identity"]

@@ -1,0 +1,49 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.1,
+    "file_time_precision": "microsecond",
+    "original_packet_bytes": 786,
+    "packet_count": 11,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "SF",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShADTdFaf",
+      "missed_bytes": 0,
+      "observed_conditions": [
+        "out_of_order_segments"
+      ],
+      "orig": {
+        "host": "192.0.2.10",
+        "port": 49152
+      },
+      "orig_bytes": 128,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "192.0.2.25",
+        "port": 25
+      },
+      "resp_bytes": 64,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "run_identity": {
+    "analyzer_bundle_digest": "9503191abe752a095f76eae02693c4f322530b626e858b1892b2837989b77cc8",
+    "capture_sha256": "71eb838445146211fca0c425a29474089b54af466446b04981e10016ac8fbab8",
+    "configuration_digest": "89af48407fc44a67993ccbd1b9866b288aa9791a1fb034dd94c391df5209b540",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0"
+}

@@ -5,6 +5,8 @@ from typing import Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict
 
+from securemail.domain.evidence.run import CapturePreflight
+
 
 class AnalyzerError(Exception):
     """Raised by analyzer adapters when a sandboxed run cannot complete."""
@@ -39,3 +41,9 @@ class ZeekRunner(Protocol):
 class TSharkRunner(Protocol):
     def run(self, capture_path: Path) -> TSharkRunResult:
         """Run a bounded TShark pass over `capture_path`."""
+
+
+@runtime_checkable
+class CapturePreflightRunner(Protocol):
+    def run(self, capture_path: Path) -> CapturePreflight:
+        """Record capinfos facts for `capture_path` before Zeek runs."""

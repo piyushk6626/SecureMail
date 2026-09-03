@@ -1,0 +1,54 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.09,
+    "file_time_precision": "microsecond",
+    "original_packet_bytes": 940,
+    "packet_count": 10,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "flows": [
+    {
+      "conflicting_byte_ranges": [
+        {
+          "direction": "orig",
+          "end": 201,
+          "exact": true,
+          "start": 51
+        }
+      ],
+      "conn_state": "SF",
+      "evidence_state": "conflicting",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShADaFf",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "192.0.2.10",
+        "port": 49152
+      },
+      "orig_bytes": 250,
+      "proto": "tcp",
+      "reason_code": "overlapping_retransmission_conflict",
+      "reconstruction_quality": "conflicting",
+      "resp": {
+        "host": "192.0.2.25",
+        "port": 25
+      },
+      "resp_bytes": 0,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "run_identity": {
+    "analyzer_bundle_digest": "9503191abe752a095f76eae02693c4f322530b626e858b1892b2837989b77cc8",
+    "capture_sha256": "c4e22a6ecdaee30cb7295fa7f8732677491e71b4ec925046bef966db9347382c",
+    "configuration_digest": "89af48407fc44a67993ccbd1b9866b288aa9791a1fb034dd94c391df5209b540",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0"
+}

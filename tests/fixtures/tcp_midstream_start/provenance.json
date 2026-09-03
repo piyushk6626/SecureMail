@@ -1,0 +1,10 @@
+{
+  "created_at": "2026-09-03T00:00:00Z",
+  "generator": "tests/fixtures/generators/tcp_degradation_captures.py --case tcp_midstream_start --out tests/fixtures/tcp_midstream_start/capture.pcapng",
+  "notes": "Scapy SMTP-port TCP flow with handshake present and the first client payload segment omitted (known prefix gap).",
+  "sha256": "e54ff6b2332c478364010077b65c77ba749fc74d31ef266a0ccaac6ffbb7ec69",
+  "source": "scapy",
+  "tool_versions": {
+    "scapy": "2.7.0"
+  }
+}

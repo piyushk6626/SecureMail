@@ -228,11 +228,17 @@ securemail analyze tests/fixtures/empty/capture.pcapng --out out/empty.json
 **Test contract.**
 - For the clean baseline, `expected.json` declares `reconstruction_quality:
   complete` with zero gap bytes.
-- For every degradation fixture, `expected.json` declares `incomplete` or
-  `conflicting` (never `complete`), names the specific reason (e.g.
-  `missing_syn`, `snaplen_truncation`, `overlapping_retransmission_conflict`),
-  and states the exact gap byte count / conflicting byte ranges where
-  applicable.
+- Fully recovered out-of-order segments and identical duplicate/retransmitted
+  segments remain `complete`; `observed_conditions` records
+  `out_of_order_segments` and/or `duplicate_segments` without degrading quality.
+- For every true degradation fixture (missing SYN, missing FIN, mid-stream
+  start, snaplen truncation, overlapping retransmissions with conflicting
+  bytes), `expected.json` declares `incomplete` or `conflicting` (never
+  `complete`), names the specific reason (e.g. `missing_syn`,
+  `snaplen_truncation`, `overlapping_retransmission_conflict`), and states the
+  exact gap byte count / conflicting byte ranges where applicable. When Zeek
+  cannot observe an exact range, `gap_bytes_exact` is false — never invent
+  bytes.
 - A truncated stream must never be silently reported as a complete stream with
   fewer bytes — the test explicitly asserts the state field is set, not just
   that byte counts look smaller.
@@ -255,8 +261,9 @@ securemail analyze tests/fixtures/tcp_snaplen_truncation/capture.pcapng
 ```
 
 **Exit criteria.** All TCP-reconstruction fixtures pass, including every
-degradation mode; the "never silently report complete" assertion is a named,
-independent test case, not an incidental check.
+true degradation mode and the recoverable reorder/duplicate cases (complete
+with `observed_conditions`); the "never silently report complete" assertion
+is a named, independent test case, not an incidental check.
 
 ### Step 2 — Automatic SMTP/IMAP/POP3 identification
 
