@@ -1,6 +1,10 @@
 """Session normalization: port_hint stays independent of payload evidence."""
 
-from securemail.application.normalize_sessions import normalize_sessions, port_hint_for_flow
+from securemail.application.normalize_sessions import (
+    needs_tshark_corroboration,
+    normalize_sessions,
+    port_hint_for_flow,
+)
 from securemail.domain.evidence.flow import Flow, ReconstructionQuality
 from securemail.domain.evidence.run import EvidenceState
 from securemail.domain.evidence.session import (
@@ -8,6 +12,7 @@ from securemail.domain.evidence.session import (
     PayloadEvidence,
     PortHint,
     SessionEventKind,
+    UpgradeState,
 )
 
 
@@ -196,3 +201,195 @@ def test_event_order_is_preserved_and_bounded() -> None:
         SessionEventKind.REQUEST,
     ]
     assert sessions[0].events[0].reply_code == 220
+
+
+def test_tshark_frames_merge_by_timestamp_and_attach_frame_numbers() -> None:
+    logs = {
+        "sm_email.log": [
+            {
+                "uid": "Cmail",
+                "ts": 1.0,
+                "protocol": "imap",
+                "is_orig": False,
+                "event_type": "capability",
+                "text": "IMAP4rev1 STARTTLS",
+            }
+        ]
+    }
+    frames = [
+        {
+            "frame.number": "4",
+            "frame.time_epoch": "0.5",
+            "ip.src": "192.0.2.10",
+            "tcp.srcport": "49152",
+            "ip.dst": "192.0.2.25",
+            "tcp.dstport": "143",
+            "imap.request.command": "CAPABILITY",
+            "imap.tag": "a001",
+        },
+        {
+            "frame.number": "6",
+            "frame.time_epoch": "1.5",
+            "ip.src": "192.0.2.10",
+            "tcp.srcport": "49152",
+            "ip.dst": "192.0.2.25",
+            "tcp.dstport": "143",
+            "imap.request.command": "STARTTLS",
+            "imap.tag": "a002",
+        },
+    ]
+    sessions = normalize_sessions(logs, [_flow("Cmail", resp_port=143)], tshark_frames=frames)
+    commands = [event.command for event in sessions[0].events]
+    assert commands[0] == "CAPABILITY"
+    assert sessions[0].events[0].frame_number == 4
+    assert sessions[0].events[0].tag == "a001"
+    assert "STARTTLS" in commands
+    assert sessions[0].explicit_upgrade is not None
+    assert sessions[0].explicit_upgrade.state is not None
+
+
+def test_duplicate_zeek_capabilities_are_deduped() -> None:
+    logs = {
+        "sm_email.log": [
+            {
+                "uid": "Cmail",
+                "ts": 1.0,
+                "protocol": "imap",
+                "event_type": "capability",
+                "text": "IMAP4rev1 STARTTLS",
+            },
+            {
+                "uid": "Cmail",
+                "ts": 1.01,
+                "protocol": "imap",
+                "event_type": "capability",
+                "text": "IMAP4rev1 STARTTLS",
+            },
+        ]
+    }
+    sessions = normalize_sessions(logs, [_flow("Cmail", resp_port=143)])
+    capability_events = [
+        event for event in sessions[0].events if event.kind is SessionEventKind.CAPABILITY
+    ]
+    assert len(capability_events) == 1
+
+
+def test_ssl_client_hello_promotes_accepted_to_tls_established() -> None:
+    logs = {
+        "sm_email.log": [
+            {
+                "uid": "Cmail",
+                "ts": 1.0,
+                "protocol": "smtp",
+                "event_type": "reply",
+                "command": "EHLO",
+                "reply_code": 250,
+                "text": "STARTTLS",
+            },
+            {
+                "uid": "Cmail",
+                "ts": 2.0,
+                "protocol": "smtp",
+                "is_orig": True,
+                "event_type": "request",
+                "command": "STARTTLS",
+            },
+            {
+                "uid": "Cmail",
+                "ts": 3.0,
+                "protocol": "smtp",
+                "event_type": "reply",
+                "reply_code": 220,
+                "text": "Ready",
+            },
+        ],
+        "ssl.log": [{"uid": "Cmail", "ssl_history": "Csx", "established": True}],
+    }
+    sessions = normalize_sessions(logs, [_flow()])
+    assert sessions[0].explicit_upgrade is not None
+    assert sessions[0].explicit_upgrade.state is UpgradeState.TLS_ESTABLISHED
+
+
+def test_implicit_tls_without_alpn_is_indeterminate_not_identified() -> None:
+    logs = {
+        "ssl.log": [{"uid": "Cmail", "ssl_history": "Csx", "established": True}],
+    }
+    sessions = normalize_sessions(logs, [_flow("Cmail", resp_port=993)])
+    assert len(sessions) == 1
+    assert sessions[0].port_hint is PortHint.IMAP
+    assert sessions[0].protocol is None
+    assert sessions[0].payload_evidence is PayloadEvidence.INDETERMINATE
+    assert sessions[0].evidence_state is EvidenceState.INDETERMINATE
+    assert sessions[0].implicit_tls is not None
+    assert sessions[0].implicit_tls.correlated_protocol is None
+    assert sessions[0].implicit_tls.evidence_state is EvidenceState.INDETERMINATE
+
+
+def test_implicit_tls_alpn_identifies_payload_not_port() -> None:
+    logs = {
+        "ssl.log": [
+            {
+                "uid": "Cmail",
+                "ssl_history": "Csx",
+                "established": True,
+                "next_protocol": "imap",
+            }
+        ],
+    }
+    sessions = normalize_sessions(logs, [_flow("Cmail", resp_port=993)])
+    assert sessions[0].protocol is MailProtocol.IMAP
+    assert sessions[0].payload_evidence is PayloadEvidence.IMAP
+    assert sessions[0].port_hint is PortHint.IMAP
+    assert sessions[0].implicit_tls is not None
+    assert sessions[0].implicit_tls.source == "alpn"
+    assert sessions[0].implicit_tls.evidence_state is EvidenceState.OBSERVED
+
+
+def test_tshark_smtp_star_maps_to_starttls_and_merges() -> None:
+    logs = {
+        "sm_email.log": [
+            {
+                "uid": "Cmail",
+                "ts": 1.0,
+                "protocol": "smtp",
+                "is_orig": True,
+                "event_type": "request",
+                "command": "STARTTLS",
+            }
+        ]
+    }
+    frames = [
+        {
+            "frame.number": "9",
+            "frame.time_epoch": "1.0",
+            "ip.src": "192.0.2.10",
+            "tcp.srcport": "49152",
+            "ip.dst": "192.0.2.25",
+            "tcp.dstport": "25",
+            "smtp.req.command": "STAR",
+        }
+    ]
+    sessions = normalize_sessions(logs, [_flow()], tshark_frames=frames)
+    starttls = [event for event in sessions[0].events if event.command == "STARTTLS"]
+    assert len(starttls) == 1
+    assert starttls[0].frame_number == 9
+    assert starttls[0].source is not None
+    assert "STAR" not in {event.command for event in sessions[0].events}
+
+
+def test_smtp_and_implicit_tls_ports_need_tshark_corroboration() -> None:
+    smtp = normalize_sessions(
+        {
+            "sm_email.log": [
+                {"uid": "Cmail", "protocol": "smtp", "event_type": "request", "command": "EHLO"}
+            ]
+        },
+        [_flow()],
+    )
+    assert needs_tshark_corroboration(smtp, [_flow()])
+    implicit_flow = _flow("Ctls", resp_port=993)
+    assert needs_tshark_corroboration(
+        [],
+        [implicit_flow],
+        {"ssl.log": [{"uid": "Ctls", "ssl_history": "C"}]},
+    )

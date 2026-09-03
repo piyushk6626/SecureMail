@@ -1,0 +1,10 @@
+{
+  "created_at": "2026-09-03T00:00:00Z",
+  "generator": "tests/fixtures/generators/scapy_starttls_captures.py --case imap_starttls_capability_stripped --out tests/fixtures/imap_starttls_capability_stripped/capture.pcapng",
+  "notes": "Scapy IMAP CAPABILITY omits STARTTLS but the server still accepts STARTTLS.",
+  "sha256": "4d698e066a4d530bfa59ac2d6a67fc50ba508611ca02ad74d43eedec2f4274dc",
+  "source": "scapy",
+  "tool_versions": {
+    "scapy": "2.7.0"
+  }
+}

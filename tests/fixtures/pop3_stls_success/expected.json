@@ -1,0 +1,186 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.04797275,
+    "file_time_precision": "nanosecond",
+    "original_packet_bytes": 6053,
+    "packet_count": 21,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "RSTO",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShAdDaFR",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "172.18.0.3",
+        "port": 60262
+      },
+      "orig_bytes": 1627,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "172.18.0.2",
+        "port": 110
+      },
+      "resp_bytes": 3024,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "run_identity": {
+    "analyzer_bundle_digest": "73627a8875f130609b6513f715c6ae5b873c9484cb356bb14d0f9d9c38727594",
+    "capture_sha256": "a438e1f557be9472da886d185a2f57f0a6bf761719a238a464988195ce3e3188",
+    "configuration_digest": "f60054b7f1ed181f41ea1fc696ee8b9d1c8b701ca2e5787201dabed63662e5a0",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0",
+  "sessions": [
+    {
+      "corroboration": "zeek+tshark",
+      "events": [
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": null,
+          "kind": "reply",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": "OK POP3 ready"
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": 4,
+          "kind": "reply",
+          "reply_code": null,
+          "source": "tshark",
+          "tag": null,
+          "text": "+OK"
+        },
+        {
+          "argument": null,
+          "command": "CAPA",
+          "direction": "orig",
+          "frame_number": 6,
+          "kind": "request",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": null,
+          "kind": "reply",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": "OK Capability list follows"
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": null,
+          "kind": "capability",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": "STLS"
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": null,
+          "kind": "capability",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": "USER"
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": 8,
+          "kind": "reply",
+          "reply_code": null,
+          "source": "tshark",
+          "tag": null,
+          "text": "+OK"
+        },
+        {
+          "argument": null,
+          "command": "STLS",
+          "direction": "orig",
+          "frame_number": 9,
+          "kind": "request",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "orig",
+          "frame_number": null,
+          "kind": "starttls",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": 10,
+          "kind": "reply",
+          "reply_code": null,
+          "source": "tshark",
+          "tag": null,
+          "text": "+OK"
+        }
+      ],
+      "evidence_state": "observed",
+      "explicit_upgrade": {
+        "downgrade_consistent": false,
+        "evidence_frames": [
+          9,
+          10,
+          11
+        ],
+        "evidence_state": "observed",
+        "state": "tls_established"
+      },
+      "identification_confidence": null,
+      "implicit_tls": {
+        "correlated_protocol": null,
+        "evidence_frames": [],
+        "evidence_state": "not_observable",
+        "source": null
+      },
+      "payload_evidence": "pop3",
+      "port_hint": "pop3",
+      "protocol": "pop3",
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ]
+}

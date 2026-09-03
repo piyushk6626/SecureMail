@@ -55,6 +55,12 @@ def test_tshark_argv_uses_allowlisted_fields_only(tmp_path: Path) -> None:
     assert "imap.request.password" not in argv
     assert "imap.line" not in argv
     assert "pop.request.parameter" not in argv
+    assert "pop.request.data" not in argv
+    assert "pop.response.data" not in argv
+    assert "smtp.req.parameter" not in argv
+    assert "smtp.auth.password" not in argv
+    assert "tls.handshake.type" in asserted_fields
+    assert "smtp.req.command" in asserted_fields
 
 
 def test_capinfos_argv_is_fixed_and_offline(tmp_path: Path) -> None:

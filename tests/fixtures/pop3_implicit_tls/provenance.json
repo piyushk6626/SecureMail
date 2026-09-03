@@ -1,0 +1,13 @@
+{
+  "created_at": "2026-09-03T21:18:11Z",
+  "generator": "tests/fixtures/generators/lab_starttls_captures.py --case pop3_implicit_tls --out tests/fixtures/pop3_implicit_tls/capture.pcapng (docker network securemail-step3-pop3_implicit_tls-net; dumpcap sidecar --network container:securemail-step3-pop3_implicit_tls-srv)",
+  "notes": "Lab implicit TLS on TCP/995 with negotiated ALPN pop3.",
+  "sha256": "09ad5e14387c423563372c711de50c7632f8660f78f3d37727ffbbc0d581d4e1",
+  "source": "lab",
+  "tool_versions": {
+    "dumpcap": "Dumpcap (Wireshark) 4.4.18.",
+    "python": "3.11.15",
+    "python_image": "python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3",
+    "tshark_image": "securemail/tshark:step0"
+  }
+}

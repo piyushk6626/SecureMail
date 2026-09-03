@@ -4,18 +4,29 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from typing import Literal, cast
 
 from securemail.domain.evidence.flow import Flow, StreamDirection
 from securemail.domain.evidence.run import EvidenceState
 from securemail.domain.evidence.session import (
     EmailSession,
+    EventSource,
+    ExplicitUpgrade,
     MailProtocol,
     PayloadEvidence,
     PortHint,
     ProtocolEvent,
     SessionEventKind,
 )
+from securemail.domain.policies.starttls.imap_upgrade import imap_upgrade
+from securemail.domain.policies.starttls.implicit_tls import (
+    IMPLICIT_TLS_PORTS,
+    correlate_implicit_tls,
+    protocol_from_alpn,
+)
+from securemail.domain.policies.starttls.pop3_upgrade import pop3_upgrade
+from securemail.domain.policies.starttls.smtp_upgrade import smtp_upgrade
 
 Corroboration = Literal["zeek", "zeek+tshark"]
 
@@ -23,13 +34,16 @@ _MAX_UID_LEN = 64
 _MAX_HOST_LEN = 253
 _MAX_TEXT_LEN = 128
 _MAX_COMMAND_LEN = 32
+_MAX_TAG_LEN = 32
 _MAX_RECORDS = 10_000
 _MAX_EVENTS_PER_SESSION = 256
 _MAX_FRAMES = 10_000
+_MERGE_WINDOW_SECONDS = 2.0
 
 SMTP_PORTS = frozenset({25, 465, 587})
 IMAP_PORTS = frozenset({143, 993})
 POP3_PORTS = frozenset({110, 995})
+MAIL_SERVICE_PORTS = SMTP_PORTS | IMAP_PORTS | POP3_PORTS
 
 _SECRET_COMMANDS = frozenset(
     {
@@ -52,6 +66,7 @@ _CONFIRMING_KINDS = frozenset(
         SessionEventKind.CAPABILITY,
         SessionEventKind.STARTTLS,
         SessionEventKind.CONFIRMATION,
+        SessionEventKind.UNEXPECTED,
     }
 )
 _PROTOCOL_BY_NAME: dict[str, MailProtocol] = {
@@ -62,6 +77,22 @@ _PROTOCOL_BY_NAME: dict[str, MailProtocol] = {
 _KIND_BY_NAME: dict[str, SessionEventKind] = {kind.value: kind for kind in SessionEventKind}
 
 
+@dataclass(frozen=True)
+class _SslFacts:
+    client_hello: bool
+    next_protocol: str | None
+
+
+@dataclass
+class _Stamped:
+    ts: float
+    order: int
+    uid: str
+    protocol: MailProtocol | None
+    event: ProtocolEvent
+    matched: bool = False
+
+
 def _as_mapping(value: object) -> Mapping[str, object] | None:
     if isinstance(value, Mapping):
         return cast(Mapping[str, object], value)
@@ -69,11 +100,20 @@ def _as_mapping(value: object) -> Mapping[str, object] | None:
 
 
 def _as_str(value: object, *, max_len: int) -> str | None:
-    if not isinstance(value, str):
-        return None
-    if not value or len(value) > max_len:
-        return None
-    return value
+    if isinstance(value, str):
+        if not value or len(value) > max_len:
+            return None
+        return value
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        parts: list[str] = []
+        for item in value:
+            if isinstance(item, str) and item:
+                parts.append(item)
+        if not parts:
+            return None
+        joined = ",".join(parts)
+        return joined[:max_len] if len(joined) > max_len else joined
+    return None
 
 
 def _as_int(value: object) -> int | None:
@@ -85,6 +125,21 @@ def _as_int(value: object) -> int | None:
         return int(value)
     if isinstance(value, str) and value.isdigit():
         return int(value)
+    return None
+
+
+def _as_float(value: object) -> float | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return float(value)
+    if isinstance(value, float):
+        return value
+    if isinstance(value, str):
+        try:
+            return float(value)
+        except ValueError:
+            return None
     return None
 
 
@@ -180,6 +235,7 @@ def _event_from_email_row(row: Mapping[str, object]) -> ProtocolEvent | None:
         argument=argument,
         reply_code=reply_code,
         text=text,
+        source=EventSource.ZEEK,
     )
 
 
@@ -188,9 +244,12 @@ def _resolve_identity(
     *,
     saw_ambiguous: bool,
     tshark_protocols: set[MailProtocol],
+    alpn_protocol: MailProtocol | None = None,
 ) -> tuple[MailProtocol | None, PayloadEvidence, EvidenceState, float | None]:
     zeek_only = set(confirming)
     combined = set(confirming) | set(tshark_protocols)
+    if alpn_protocol is not None:
+        combined.add(alpn_protocol)
     sources_disagree = bool(tshark_protocols) and bool(zeek_only) and zeek_only != tshark_protocols
     if sources_disagree:
         return None, PayloadEvidence.INDETERMINATE, EvidenceState.CONFLICTING, 0.5
@@ -233,10 +292,18 @@ def _tshark_protocol(frame: Mapping[str, object]) -> MailProtocol | None:
         frame.get("pop.response.indicator"), max_len=_MAX_COMMAND_LEN
     ):
         return MailProtocol.POP3
+    if _as_str(frame.get("smtp.req.command"), max_len=_MAX_COMMAND_LEN) or _as_str(
+        frame.get("smtp.response.code"), max_len=_MAX_COMMAND_LEN
+    ):
+        return MailProtocol.SMTP
     return None
 
 
 def _tshark_event(frame: Mapping[str, object], protocol: MailProtocol) -> ProtocolEvent | None:
+    frame_number = _as_int(frame.get("frame.number"))
+    if frame_number is not None and frame_number < 1:
+        frame_number = None
+    tag = _as_str(frame.get("imap.tag"), max_len=_MAX_TAG_LEN)
     if protocol is MailProtocol.IMAP:
         request = _as_str(frame.get("imap.request.command"), max_len=_MAX_COMMAND_LEN)
         if request is not None:
@@ -246,6 +313,9 @@ def _tshark_event(frame: Mapping[str, object], protocol: MailProtocol) -> Protoc
                 kind=SessionEventKind.REQUEST,
                 command=command,
                 argument=_redact_argument(command, None),
+                frame_number=frame_number,
+                source=EventSource.TSHARK,
+                tag=tag,
             )
         status = _as_str(frame.get("imap.response.status"), max_len=_MAX_COMMAND_LEN)
         if status is not None:
@@ -253,6 +323,9 @@ def _tshark_event(frame: Mapping[str, object], protocol: MailProtocol) -> Protoc
                 direction=StreamDirection.RESP,
                 kind=SessionEventKind.REPLY,
                 text=_bound_text(status.upper()),
+                frame_number=frame_number,
+                source=EventSource.TSHARK,
+                tag=tag,
             )
     if protocol is MailProtocol.POP3:
         request = _as_str(frame.get("pop.request.command"), max_len=_MAX_COMMAND_LEN)
@@ -263,6 +336,8 @@ def _tshark_event(frame: Mapping[str, object], protocol: MailProtocol) -> Protoc
                 kind=SessionEventKind.REQUEST,
                 command=command,
                 argument=_redact_argument(command, None),
+                frame_number=frame_number,
+                source=EventSource.TSHARK,
             )
         indicator = _as_str(frame.get("pop.response.indicator"), max_len=_MAX_COMMAND_LEN)
         if indicator is not None:
@@ -270,6 +345,31 @@ def _tshark_event(frame: Mapping[str, object], protocol: MailProtocol) -> Protoc
                 direction=StreamDirection.RESP,
                 kind=SessionEventKind.REPLY,
                 text=_bound_text(indicator.upper()),
+                frame_number=frame_number,
+                source=EventSource.TSHARK,
+            )
+    if protocol is MailProtocol.SMTP:
+        request = _as_str(frame.get("smtp.req.command"), max_len=_MAX_COMMAND_LEN)
+        if request is not None:
+            command = request.upper()
+            if command == "STAR":
+                command = "STARTTLS"
+            return ProtocolEvent(
+                direction=StreamDirection.ORIG,
+                kind=SessionEventKind.REQUEST,
+                command=command,
+                argument=_redact_argument(command, None),
+                frame_number=frame_number,
+                source=EventSource.TSHARK,
+            )
+        code = _as_int(frame.get("smtp.response.code"))
+        if code is not None:
+            return ProtocolEvent(
+                direction=StreamDirection.RESP,
+                kind=SessionEventKind.REPLY,
+                reply_code=code,
+                frame_number=frame_number,
+                source=EventSource.TSHARK,
             )
     return None
 
@@ -288,15 +388,175 @@ def _match_frame_uid(frame: Mapping[str, object], flows: Sequence[Flow]) -> str 
     return matches[0]
 
 
-def needs_imap_pop_corroboration(sessions: Sequence[EmailSession]) -> bool:
-    """True when a bounded IMAP/POP TShark pass can add command-level evidence."""
+def _is_client_hello_frame(frame: Mapping[str, object]) -> bool:
+    raw = frame.get("tls.handshake.type")
+    if raw == 1 or raw == 1.0:
+        return True
+    if isinstance(raw, str) and raw.split(",")[0].strip() in {"1", "1.0"}:
+        return True
+    return False
 
-    interesting = {MailProtocol.IMAP, MailProtocol.POP3}
-    payloads = {PayloadEvidence.IMAP, PayloadEvidence.POP3}
-    return any(
+
+def _ssl_facts(logs: Mapping[str, list[dict[str, object]]]) -> dict[str, _SslFacts]:
+    facts: dict[str, _SslFacts] = {}
+    for row in _bounded_records(logs.get("ssl.log", [])):
+        uid = _as_str(row.get("uid"), max_len=_MAX_UID_LEN)
+        if uid is None:
+            continue
+        history = _as_str(row.get("ssl_history"), max_len=64) or ""
+        next_protocol = _as_str(row.get("next_protocol"), max_len=32)
+        facts[uid] = _SslFacts(
+            client_hello="C" in history,
+            next_protocol=next_protocol,
+        )
+    return facts
+
+
+def _compatible(zeek_event: ProtocolEvent, tshark_event: ProtocolEvent) -> bool:
+    if zeek_event.direction != tshark_event.direction:
+        return False
+    if (
+        zeek_event.tag is not None
+        and tshark_event.tag is not None
+        and zeek_event.tag != tshark_event.tag
+    ):
+        return False
+    zcmd = (zeek_event.command or "").upper()
+    tcmd = (tshark_event.command or "").upper()
+    if (
+        zeek_event.kind is SessionEventKind.REQUEST
+        and tshark_event.kind is SessionEventKind.REQUEST
+    ):
+        return zcmd == tcmd
+    if zeek_event.kind is SessionEventKind.REPLY and tshark_event.kind is SessionEventKind.REPLY:
+        if zeek_event.reply_code is not None and tshark_event.reply_code is not None:
+            return zeek_event.reply_code == tshark_event.reply_code
+        ztext = (zeek_event.text or "").upper()
+        ttext = (tshark_event.text or "").upper()
+        first_zeek_token = ztext.split()[0] if ztext else ""
+        texts_overlap = (
+            bool(ttext)
+            and bool(ztext)
+            and (ttext in ztext or ztext.startswith(ttext) or ttext.startswith(first_zeek_token))
+        )
+        if texts_overlap:
+            return True
+        return bool(zcmd) and zcmd == tcmd
+    if (
+        zeek_event.kind is SessionEventKind.STARTTLS
+        and tshark_event.kind is SessionEventKind.REQUEST
+        and tcmd in {"STARTTLS", "STLS"}
+    ):
+        return False
+    return False
+
+
+def _with_tshark_evidence(zeek_event: ProtocolEvent, tshark_event: ProtocolEvent) -> ProtocolEvent:
+    return zeek_event.model_copy(
+        update={
+            "frame_number": tshark_event.frame_number or zeek_event.frame_number,
+            "tag": tshark_event.tag or zeek_event.tag,
+        }
+    )
+
+
+def _is_duplicate_capability(previous: ProtocolEvent | None, current: ProtocolEvent) -> bool:
+    if previous is None or current.kind is not SessionEventKind.CAPABILITY:
+        return False
+    if previous.kind is not SessionEventKind.CAPABILITY:
+        return False
+    return previous.text == current.text and previous.direction == current.direction
+
+
+def _merge_events(zeek: list[_Stamped], tshark: list[_Stamped]) -> list[_Stamped]:
+    for extra in tshark:
+        if extra.event.kind is SessionEventKind.REQUEST and extra.event.command is None:
+            extra.matched = True
+            continue
+        best: _Stamped | None = None
+        best_delta = _MERGE_WINDOW_SECONDS
+        for candidate in zeek:
+            if candidate.matched or candidate.uid != extra.uid:
+                continue
+            if not _compatible(candidate.event, extra.event):
+                continue
+            delta = abs(candidate.ts - extra.ts)
+            if delta <= best_delta:
+                best = candidate
+                best_delta = delta
+        if best is None:
+            continue
+        best.event = _with_tshark_evidence(best.event, extra.event)
+        best.matched = True
+        extra.matched = True
+    merged = [*zeek, *[item for item in tshark if not item.matched]]
+    merged.sort(key=lambda item: (item.ts, item.order))
+    return merged
+
+
+def needs_tshark_corroboration(
+    sessions: Sequence[EmailSession],
+    flows: Sequence[Flow] = (),
+    logs: Mapping[str, list[dict[str, object]]] | None = None,
+) -> bool:
+    """True when a bounded mail/TLS TShark pass can add frame-level evidence."""
+
+    interesting = {MailProtocol.SMTP, MailProtocol.IMAP, MailProtocol.POP3}
+    payloads = {PayloadEvidence.SMTP, PayloadEvidence.IMAP, PayloadEvidence.POP3}
+    if any(
         session.protocol in interesting or session.payload_evidence in payloads
         for session in sessions
+    ):
+        return True
+    ssl_uids: set[str] = set()
+    if logs is not None:
+        for row in _bounded_records(logs.get("ssl.log", [])):
+            uid = _as_str(row.get("uid"), max_len=_MAX_UID_LEN)
+            if uid is not None:
+                ssl_uids.add(uid)
+    for flow in flows:
+        if flow.resp.port in IMPLICIT_TLS_PORTS:
+            return True
+        if flow.uid in ssl_uids and flow.resp.port in MAIL_SERVICE_PORTS:
+            return True
+    return False
+
+
+def needs_imap_pop_corroboration(sessions: Sequence[EmailSession]) -> bool:
+    """Backward-compatible alias used by Step 2 tests."""
+
+    return needs_tshark_corroboration(sessions)
+
+
+def _assess_session(
+    session: EmailSession,
+    flow: Flow,
+    ssl: _SslFacts | None,
+    hello_frames: Sequence[int],
+) -> EmailSession:
+    client_hello = bool(hello_frames) or (ssl.client_hello if ssl is not None else False)
+    frames = list(hello_frames)
+    if session.protocol is MailProtocol.SMTP:
+        upgrade = smtp_upgrade(
+            session.events, client_hello_observed=client_hello, client_hello_frames=frames
+        )
+    elif session.protocol is MailProtocol.IMAP:
+        upgrade = imap_upgrade(
+            session.events, client_hello_observed=client_hello, client_hello_frames=frames
+        )
+    elif session.protocol is MailProtocol.POP3:
+        upgrade = pop3_upgrade(
+            session.events, client_hello_observed=client_hello, client_hello_frames=frames
+        )
+    else:
+        upgrade = ExplicitUpgrade(state=None, evidence_state=EvidenceState.NOT_OBSERVABLE)
+    implicit = correlate_implicit_tls(
+        responder_port=flow.resp.port,
+        tls_on_connection=ssl is not None or bool(hello_frames),
+        negotiated_alpn=ssl.next_protocol if ssl is not None else None,
+        alpn_frames=frames if ssl is not None and protocol_from_alpn(ssl.next_protocol) else (),
     )
+    return session.model_copy(update={"explicit_upgrade": upgrade, "implicit_tls": implicit})
 
 
 def normalize_sessions(
@@ -307,12 +567,15 @@ def normalize_sessions(
     """Join `sm_email.log` to flows; keep `port_hint` independent of payload identity."""
 
     flow_by_uid = {flow.uid: flow for flow in flows}
+    ssl_by_uid = _ssl_facts(logs)
     rows = _bounded_records(logs.get("sm_email.log", []))
-    events_by_uid: dict[str, list[ProtocolEvent]] = defaultdict(list)
+    zeek_by_uid: dict[str, list[_Stamped]] = defaultdict(list)
     confirming_by_uid: dict[str, set[MailProtocol]] = defaultdict(set)
     ambiguous_uids: set[str] = set()
     seen_uids: list[str] = []
+    order = 0
 
+    previous_by_uid: dict[str, ProtocolEvent] = {}
     for row in rows:
         uid = _as_str(row.get("uid"), max_len=_MAX_UID_LEN)
         if uid is None or uid not in flow_by_uid:
@@ -320,11 +583,24 @@ def normalize_sessions(
         event = _event_from_email_row(row)
         if event is None:
             continue
-        if uid not in events_by_uid:
+        if _is_duplicate_capability(previous_by_uid.get(uid), event):
+            continue
+        previous_by_uid[uid] = event
+        ts = _as_float(row.get("ts"))
+        if ts is None:
+            ts = float(order)
+        if uid not in zeek_by_uid:
             seen_uids.append(uid)
-        if len(events_by_uid[uid]) < _MAX_EVENTS_PER_SESSION:
-            events_by_uid[uid].append(event)
-        protocol = _protocol_from_name(_as_str(row.get("protocol"), max_len=16))
+        stamped = _Stamped(
+            ts=ts,
+            order=order,
+            uid=uid,
+            protocol=_protocol_from_name(_as_str(row.get("protocol"), max_len=16)),
+            event=event,
+        )
+        order += 1
+        zeek_by_uid[uid].append(stamped)
+        protocol = stamped.protocol
         if event.kind is SessionEventKind.AMBIGUOUS_BANNER:
             ambiguous_uids.add(uid)
             continue
@@ -332,52 +608,103 @@ def normalize_sessions(
             confirming_by_uid[uid].add(protocol)
 
     tshark_by_uid: dict[str, set[MailProtocol]] = defaultdict(set)
+    tshark_events: dict[str, list[_Stamped]] = defaultdict(list)
+    hello_frames: dict[str, list[int]] = defaultdict(list)
     used_tshark = False
     for frame in _bounded_records(tshark_frames or [], limit=_MAX_FRAMES):
-        protocol = _tshark_protocol(frame)
-        if protocol is None:
-            continue
         uid = _match_frame_uid(frame, flows)
         if uid is None:
             continue
         used_tshark = True
+        if _is_client_hello_frame(frame):
+            frame_number = _as_int(frame.get("frame.number"))
+            if (
+                frame_number is not None
+                and frame_number >= 1
+                and frame_number not in hello_frames[uid]
+            ):
+                hello_frames[uid].append(frame_number)
+        protocol = _tshark_protocol(frame)
+        if protocol is None:
+            continue
         tshark_by_uid[uid].add(protocol)
         extra = _tshark_event(frame, protocol)
         if extra is None:
             continue
-        if uid not in events_by_uid:
+        ts = _as_float(frame.get("frame.time_epoch"))
+        if ts is None:
+            ts = float(order)
+        if uid not in zeek_by_uid and uid not in tshark_events:
             seen_uids.append(uid)
-        if len(events_by_uid[uid]) < _MAX_EVENTS_PER_SESSION:
-            events_by_uid[uid].append(extra)
+        tshark_events[uid].append(
+            _Stamped(ts=ts, order=order, uid=uid, protocol=protocol, event=extra)
+        )
+        order += 1
 
-    session_uids = list(dict.fromkeys([*seen_uids, *tshark_by_uid]))
+    events_by_uid: dict[str, list[ProtocolEvent]] = {}
+    for uid in dict.fromkeys([*seen_uids, *tshark_by_uid, *ssl_by_uid]):
+        merged = _merge_events(zeek_by_uid.get(uid, []), tshark_events.get(uid, []))
+        bounded: list[ProtocolEvent] = []
+        last: ProtocolEvent | None = None
+        for item in merged:
+            if _is_duplicate_capability(last, item.event):
+                continue
+            if len(bounded) >= _MAX_EVENTS_PER_SESSION:
+                break
+            bounded.append(item.event)
+            last = item.event
+        events_by_uid[uid] = bounded
+
+    session_uids = list(
+        dict.fromkeys(
+            [
+                *seen_uids,
+                *tshark_by_uid,
+                *[uid for uid, flow in flow_by_uid.items() if uid in ssl_by_uid],
+            ]
+        )
+    )
     sessions: list[EmailSession] = []
     for uid in session_uids:
         flow = flow_by_uid.get(uid)
         if flow is None:
             continue
+        ssl = ssl_by_uid.get(uid)
+        alpn_protocol = protocol_from_alpn(ssl.next_protocol) if ssl is not None else None
         protocol, payload, state, confidence = _resolve_identity(
             confirming_by_uid.get(uid, set()),
             saw_ambiguous=uid in ambiguous_uids,
             tshark_protocols=tshark_by_uid.get(uid, set()),
+            alpn_protocol=alpn_protocol,
         )
-        if payload is PayloadEvidence.NONE and uid not in ambiguous_uids:
+        implicit_candidate = flow.resp.port in IMPLICIT_TLS_PORTS and ssl is not None
+        if payload is PayloadEvidence.NONE and uid not in ambiguous_uids and not implicit_candidate:
             continue
+        if implicit_candidate and payload is PayloadEvidence.NONE:
+            if alpn_protocol is not None:
+                protocol = alpn_protocol
+                payload = PayloadEvidence(alpn_protocol.value)
+                state = EvidenceState.OBSERVED
+            else:
+                payload = PayloadEvidence.INDETERMINATE
+                state = EvidenceState.INDETERMINATE
+                protocol = None
         corroboration: Corroboration = (
             "zeek+tshark" if used_tshark and uid in tshark_by_uid else "zeek"
         )
-        sessions.append(
-            EmailSession(
-                uid=uid,
-                protocol=protocol,
-                port_hint=port_hint_for_flow(flow),
-                payload_evidence=payload,
-                evidence_state=state,
-                identification_confidence=confidence,
-                corroboration=corroboration,
-                events=list(events_by_uid.get(uid, ())),
-            )
+        if used_tshark and hello_frames.get(uid) and uid not in tshark_by_uid:
+            corroboration = "zeek+tshark"
+        session = EmailSession(
+            uid=uid,
+            protocol=protocol,
+            port_hint=port_hint_for_flow(flow),
+            payload_evidence=payload,
+            evidence_state=state,
+            identification_confidence=confidence,
+            corroboration=corroboration,
+            events=list(events_by_uid.get(uid, ())),
         )
+        sessions.append(_assess_session(session, flow, ssl, hello_frames.get(uid, ())))
 
     sessions.sort(
         key=lambda session: (

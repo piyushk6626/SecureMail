@@ -1,0 +1,13 @@
+{
+  "created_at": "2026-09-03T21:18:06Z",
+  "generator": "tests/fixtures/generators/lab_starttls_captures.py --case imap_implicit_tls --out tests/fixtures/imap_implicit_tls/capture.pcapng (docker network securemail-step3-imap_implicit_tls-net; dumpcap sidecar --network container:securemail-step3-imap_implicit_tls-srv)",
+  "notes": "Lab implicit TLS on TCP/993 with negotiated ALPN imap.",
+  "sha256": "8e0aeea8f0e805a4f0cf2ce263e615a4f5c6ee8b68bb991c50c4f79514c54956",
+  "source": "lab",
+  "tool_versions": {
+    "dumpcap": "Dumpcap (Wireshark) 4.4.18.",
+    "python": "3.11.15",
+    "python_image": "python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3",
+    "tshark_image": "securemail/tshark:step0"
+  }
+}

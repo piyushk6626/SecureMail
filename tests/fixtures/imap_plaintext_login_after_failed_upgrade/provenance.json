@@ -1,0 +1,10 @@
+{
+  "created_at": "2026-09-03T00:00:00Z",
+  "generator": "tests/fixtures/generators/scapy_starttls_captures.py --case imap_plaintext_login_after_failed_upgrade --out tests/fixtures/imap_plaintext_login_after_failed_upgrade/capture.pcapng",
+  "notes": "Scapy IMAP LOGIN after a rejected STARTTLS upgrade.",
+  "sha256": "2af484358468c8698ba1980d68be21bd5e311b7c562d98c27c4c6f31526be6f0",
+  "source": "scapy",
+  "tool_versions": {
+    "scapy": "2.7.0"
+  }
+}

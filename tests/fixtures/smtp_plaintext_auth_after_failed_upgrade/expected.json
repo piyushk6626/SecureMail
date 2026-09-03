@@ -1,0 +1,175 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.2,
+    "file_time_precision": "microsecond",
+    "original_packet_bytes": 1316,
+    "packet_count": 21,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "SF",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShAdDaFf",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "192.0.2.10",
+        "port": 49152
+      },
+      "orig_bytes": 65,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "192.0.2.25",
+        "port": 25
+      },
+      "resp_bytes": 117,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "run_identity": {
+    "analyzer_bundle_digest": "73627a8875f130609b6513f715c6ae5b873c9484cb356bb14d0f9d9c38727594",
+    "capture_sha256": "a234a5a6a1847246c75527528654d1c4fdedf52d3246b3776b3ece1c6aa4cc59",
+    "configuration_digest": "f60054b7f1ed181f41ea1fc696ee8b9d1c8b701ca2e5787201dabed63662e5a0",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0",
+  "sessions": [
+    {
+      "corroboration": "zeek+tshark",
+      "events": [
+        {
+          "argument": null,
+          "command": ">",
+          "direction": "resp",
+          "frame_number": 4,
+          "kind": "reply",
+          "reply_code": 220,
+          "source": "zeek",
+          "tag": null,
+          "text": "mail.example.test ESMTP"
+        },
+        {
+          "argument": "client.example.test",
+          "command": "EHLO",
+          "direction": "orig",
+          "frame_number": 6,
+          "kind": "request",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "EHLO",
+          "direction": "resp",
+          "frame_number": null,
+          "kind": "reply",
+          "reply_code": 250,
+          "source": "zeek",
+          "tag": null,
+          "text": "mail.example.test Hello"
+        },
+        {
+          "argument": null,
+          "command": "EHLO",
+          "direction": "resp",
+          "frame_number": null,
+          "kind": "reply",
+          "reply_code": 250,
+          "source": "zeek",
+          "tag": null,
+          "text": "STARTTLS"
+        },
+        {
+          "argument": null,
+          "command": "EHLO",
+          "direction": "resp",
+          "frame_number": 8,
+          "kind": "reply",
+          "reply_code": 250,
+          "source": "zeek",
+          "tag": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": "STARTTLS",
+          "direction": "orig",
+          "frame_number": 10,
+          "kind": "request",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "STARTTLS",
+          "direction": "resp",
+          "frame_number": 12,
+          "kind": "reply",
+          "reply_code": 454,
+          "source": "zeek",
+          "tag": null,
+          "text": "TLS not available"
+        },
+        {
+          "argument": "<redacted>",
+          "command": "AUTH",
+          "direction": "orig",
+          "frame_number": 14,
+          "kind": "request",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": "AUTH",
+          "direction": "resp",
+          "frame_number": 16,
+          "kind": "reply",
+          "reply_code": 235,
+          "source": "zeek",
+          "tag": null,
+          "text": "<redacted>"
+        }
+      ],
+      "evidence_state": "observed",
+      "explicit_upgrade": {
+        "downgrade_consistent": false,
+        "evidence_frames": [
+          10,
+          12,
+          14
+        ],
+        "evidence_state": "observed",
+        "state": "plaintext_fallback"
+      },
+      "identification_confidence": null,
+      "implicit_tls": {
+        "correlated_protocol": null,
+        "evidence_frames": [],
+        "evidence_state": "not_observable",
+        "source": null
+      },
+      "payload_evidence": "smtp",
+      "port_hint": "smtp",
+      "protocol": "smtp",
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ]
+}

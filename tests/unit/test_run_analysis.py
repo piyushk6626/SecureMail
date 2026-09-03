@@ -125,3 +125,58 @@ def test_run_analysis_normalizes_email_sessions(tmp_path: Path) -> None:
     assert document.sessions[0].protocol.value == "smtp"
     assert document.sessions[0].port_hint.value == "none"
     assert document.sessions[0].payload_evidence.value == "smtp"
+
+
+def test_run_analysis_assesses_starttls_from_ssl_history(tmp_path: Path) -> None:
+    capture = tmp_path / "capture.pcapng"
+    capture.write_bytes(b"\x0a\x0d\x0d\x0a" + b"\x00" * 32)
+    logs: dict[str, list[dict[str, object]]] = {
+        "conn.log": [
+            {
+                "uid": "Ctest",
+                "id.orig_h": "192.0.2.10",
+                "id.orig_p": 49152,
+                "id.resp_h": "192.0.2.25",
+                "id.resp_p": 25,
+                "proto": "tcp",
+                "history": "ShADadFf",
+                "conn_state": "SF",
+                "missed_bytes": 0,
+                "orig_bytes": 64,
+                "resp_bytes": 64,
+            }
+        ],
+        "sm_email.log": [
+            {
+                "uid": "Ctest",
+                "protocol": "smtp",
+                "event_type": "reply",
+                "command": "EHLO",
+                "reply_code": 250,
+                "text": "STARTTLS",
+            },
+            {
+                "uid": "Ctest",
+                "protocol": "smtp",
+                "is_orig": True,
+                "event_type": "request",
+                "command": "STARTTLS",
+            },
+            {
+                "uid": "Ctest",
+                "protocol": "smtp",
+                "event_type": "reply",
+                "reply_code": 220,
+                "text": "Ready",
+            },
+        ],
+        "ssl.log": [{"uid": "Ctest", "ssl_history": "Csx", "established": True}],
+    }
+    document = run_analysis(
+        AnalyzeRequest(capture_path=capture),
+        zeek_runner=_FakeZeek([], logs),
+        preflight_runner=_FakePreflight([]),
+    )
+    assert document.sessions[0].explicit_upgrade is not None
+    assert document.sessions[0].explicit_upgrade.state is not None
+    assert document.sessions[0].explicit_upgrade.state.value == "tls_established"

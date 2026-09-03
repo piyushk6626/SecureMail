@@ -36,9 +36,9 @@
     }
   ],
   "run_identity": {
-    "analyzer_bundle_digest": "8a21dac92121ac621397cf1e14ac787fe0f8ce2465327ca0d3cb6e6e696cab15",
+    "analyzer_bundle_digest": "73627a8875f130609b6513f715c6ae5b873c9484cb356bb14d0f9d9c38727594",
     "capture_sha256": "2ab95284d0be62aaad5cafa20087c13fcc6b2897a017916e8b8f5772ba43e003",
-    "configuration_digest": "5134b33ccd425f333bd317732ae633187fcb80f98da0388cbbd53471f4ac2be6",
+    "configuration_digest": "f60054b7f1ed181f41ea1fc696ee8b9d1c8b701ca2e5787201dabed63662e5a0",
     "normalization_schema_version": "v0",
     "policy_pack_version": null,
     "trust_store_digest": null
@@ -52,77 +52,105 @@
           "argument": null,
           "command": null,
           "direction": "resp",
+          "frame_number": null,
           "kind": "confirmation",
           "reply_code": null,
+          "source": "zeek",
+          "tag": null,
           "text": null
-        },
-        {
-          "argument": null,
-          "command": null,
-          "direction": "resp",
-          "kind": "capability",
-          "reply_code": null,
-          "text": "IMAP4rev1 STARTTLS"
-        },
-        {
-          "argument": null,
-          "command": null,
-          "direction": "resp",
-          "kind": "capability",
-          "reply_code": null,
-          "text": "IMAP4rev1 STARTTLS"
         },
         {
           "argument": null,
           "command": "CAPABILITY",
           "direction": "orig",
+          "frame_number": 6,
           "kind": "request",
           "reply_code": null,
+          "source": "tshark",
+          "tag": "BMBN0",
           "text": null
         },
         {
           "argument": null,
           "command": null,
           "direction": "resp",
+          "frame_number": null,
+          "kind": "capability",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": "IMAP4rev1 STARTTLS"
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": 9,
           "kind": "reply",
           "reply_code": null,
+          "source": "tshark",
+          "tag": "BMBN0",
           "text": "OK"
         },
         {
           "argument": null,
           "command": "CAPABILITY",
           "direction": "orig",
+          "frame_number": 11,
           "kind": "request",
           "reply_code": null,
+          "source": "tshark",
+          "tag": "BMBN1",
           "text": null
         },
         {
           "argument": null,
           "command": null,
           "direction": "resp",
+          "frame_number": 13,
           "kind": "reply",
           "reply_code": null,
+          "source": "tshark",
+          "tag": "BMBN1",
           "text": "OK"
         },
         {
           "argument": null,
           "command": "LOGOUT",
           "direction": "orig",
+          "frame_number": 15,
           "kind": "request",
           "reply_code": null,
+          "source": "tshark",
+          "tag": "BMBN2",
           "text": null
         },
         {
           "argument": null,
           "command": null,
           "direction": "resp",
+          "frame_number": 17,
           "kind": "reply",
           "reply_code": null,
+          "source": "tshark",
+          "tag": "BMBN2",
           "text": "OK"
         }
       ],
       "evidence_state": "observed",
+      "explicit_upgrade": {
+        "downgrade_consistent": false,
+        "evidence_frames": [],
+        "evidence_state": "observed",
+        "state": "advertised"
+      },
       "identification_confidence": null,
+      "implicit_tls": {
+        "correlated_protocol": null,
+        "evidence_frames": [],
+        "evidence_state": "not_observable",
+        "source": null
+      },
       "payload_evidence": "imap",
       "port_hint": "imap",
       "protocol": "imap",

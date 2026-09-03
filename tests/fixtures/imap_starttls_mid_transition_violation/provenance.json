@@ -1,0 +1,10 @@
+{
+  "created_at": "2026-09-03T00:00:00Z",
+  "generator": "tests/fixtures/generators/scapy_starttls_captures.py --case imap_starttls_mid_transition_violation --out tests/fixtures/imap_starttls_mid_transition_violation/capture.pcapng",
+  "notes": "Scapy IMAP LOGIN issued in plaintext after STARTTLS was accepted.",
+  "sha256": "4760bbf34713828e101eaecf7ad64d80cd017eab0c54ab97f26e2e172eb0f364",
+  "source": "scapy",
+  "tool_versions": {
+    "scapy": "2.7.0"
+  }
+}

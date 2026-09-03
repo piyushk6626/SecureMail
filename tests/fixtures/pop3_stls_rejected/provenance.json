@@ -1,0 +1,10 @@
+{
+  "created_at": "2026-09-03T00:00:00Z",
+  "generator": "tests/fixtures/generators/scapy_starttls_captures.py --case pop3_stls_rejected --out tests/fixtures/pop3_stls_rejected/capture.pcapng",
+  "notes": "Scapy POP3 STLS rejected with -ERR after STLS was advertised in CAPA.",
+  "sha256": "e45a0190fbf6352d3daec71f78be45a20066b9b62a50acb8de57d47e64b7382a",
+  "source": "scapy",
+  "tool_versions": {
+    "scapy": "2.7.0"
+  }
+}

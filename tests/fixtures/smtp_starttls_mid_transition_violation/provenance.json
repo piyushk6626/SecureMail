@@ -1,0 +1,10 @@
+{
+  "created_at": "2026-09-03T00:00:00Z",
+  "generator": "tests/fixtures/generators/scapy_starttls_captures.py --case smtp_starttls_mid_transition_violation --out tests/fixtures/smtp_starttls_mid_transition_violation/capture.pcapng",
+  "notes": "Scapy SMTP AUTH issued in plaintext after STARTTLS was accepted.",
+  "sha256": "88cbbe30696856a89b4f911da14fbcdc5e25dc82ee128fe8accfbb066257a5d9",
+  "source": "scapy",
+  "tool_versions": {
+    "scapy": "2.7.0"
+  }
+}

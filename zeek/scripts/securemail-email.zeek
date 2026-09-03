@@ -40,6 +40,7 @@ const pop3_ports: set[port] = { 110/tcp };
 
 global confirmed_uids: set[string];
 global greeting_uids: set[string];
+global pop3_capa_uids: set[string];
 
 function bound_text(s: string): string
 	{
@@ -100,7 +101,7 @@ event smtp_reply(c: connection, is_orig: bool, code: count, cmd: string, msg: st
 
 event smtp_starttls(c: connection)
 	{
-	Log::write(LOG, write_row(c, "smtp", F, "starttls"));
+	Log::write(LOG, write_row(c, "smtp", T, "starttls"));
 	mark_confirmed(c$uid);
 	}
 
@@ -114,7 +115,7 @@ event imap_capabilities(c: connection, capabilities: string_vec)
 
 event imap_starttls(c: connection)
 	{
-	Log::write(LOG, write_row(c, "imap", F, "starttls"));
+	Log::write(LOG, write_row(c, "imap", T, "starttls"));
 	mark_confirmed(c$uid);
 	}
 
@@ -126,6 +127,10 @@ event pop3_request(c: connection, is_orig: bool, command: string, arg: string)
 		rec$argument = redact_argument(command, arg);
 	Log::write(LOG, rec);
 	mark_confirmed(c$uid);
+	if ( rec$command == "CAPA" )
+		add pop3_capa_uids[c$uid];
+	else
+		delete pop3_capa_uids[c$uid];
 	}
 
 event pop3_reply(c: connection, is_orig: bool, cmd: string, msg: string)
@@ -146,7 +151,34 @@ event pop3_reply(c: connection, is_orig: bool, cmd: string, msg: string)
 
 event pop3_starttls(c: connection)
 	{
-	Log::write(LOG, write_row(c, "pop3", F, "starttls"));
+	Log::write(LOG, write_row(c, "pop3", T, "starttls"));
+	mark_confirmed(c$uid);
+	}
+
+event pop3_data(c: connection, is_orig: bool, data: string)
+	{
+	if ( c$uid !in pop3_capa_uids )
+		return;
+	if ( data == "." )
+		{
+		delete pop3_capa_uids[c$uid];
+		return;
+		}
+	if ( |data| == 0 )
+		return;
+	local rec = write_row(c, "pop3", is_orig, "capability");
+	rec$text = bound_text(data);
+	Log::write(LOG, rec);
+	mark_confirmed(c$uid);
+	}
+
+event pop3_unexpected(c: connection, is_orig: bool, msg: string, detail: string)
+	{
+	# `detail` is intentionally unused: it can contain credentials or raw lines.
+	local rec = write_row(c, "pop3", is_orig, "unexpected");
+	if ( |msg| > 0 )
+		rec$text = bound_text(msg);
+	Log::write(LOG, rec);
 	mark_confirmed(c$uid);
 	}
 

@@ -84,9 +84,9 @@
     }
   ],
   "run_identity": {
-    "analyzer_bundle_digest": "8a21dac92121ac621397cf1e14ac787fe0f8ce2465327ca0d3cb6e6e696cab15",
+    "analyzer_bundle_digest": "73627a8875f130609b6513f715c6ae5b873c9484cb356bb14d0f9d9c38727594",
     "capture_sha256": "225125ebb1b384ef77c8c3217e5936deed7c56d1404454fb8929d6c4ffe791cc",
-    "configuration_digest": "5134b33ccd425f333bd317732ae633187fcb80f98da0388cbbd53471f4ac2be6",
+    "configuration_digest": "f60054b7f1ed181f41ea1fc696ee8b9d1c8b701ca2e5787201dabed63662e5a0",
     "normalization_schema_version": "v0",
     "policy_pack_version": null,
     "trust_store_digest": null

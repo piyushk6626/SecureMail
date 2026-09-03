@@ -1,0 +1,73 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.044135042,
+    "file_time_precision": "nanosecond",
+    "original_packet_bytes": 2493,
+    "packet_count": 12,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "SF",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShADadFf",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "172.18.0.3",
+        "port": 45428
+      },
+      "orig_bytes": 293,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "172.18.0.2",
+        "port": 995
+      },
+      "resp_bytes": 1392,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "run_identity": {
+    "analyzer_bundle_digest": "73627a8875f130609b6513f715c6ae5b873c9484cb356bb14d0f9d9c38727594",
+    "capture_sha256": "09ad5e14387c423563372c711de50c7632f8660f78f3d37727ffbbc0d581d4e1",
+    "configuration_digest": "f60054b7f1ed181f41ea1fc696ee8b9d1c8b701ca2e5787201dabed63662e5a0",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0",
+  "sessions": [
+    {
+      "corroboration": "zeek+tshark",
+      "events": [],
+      "evidence_state": "observed",
+      "explicit_upgrade": {
+        "downgrade_consistent": false,
+        "evidence_frames": [],
+        "evidence_state": "not_observable",
+        "state": null
+      },
+      "identification_confidence": null,
+      "implicit_tls": {
+        "correlated_protocol": "pop3",
+        "evidence_frames": [
+          4
+        ],
+        "evidence_state": "observed",
+        "source": "alpn"
+      },
+      "payload_evidence": "pop3",
+      "port_hint": "pop3",
+      "protocol": "pop3",
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ]
+}

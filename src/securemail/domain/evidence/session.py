@@ -1,4 +1,4 @@
-"""Canonical email-session identification (Step 2)."""
+"""Canonical email-session identification and STARTTLS/STLS assessments."""
 
 from __future__ import annotations
 
@@ -47,6 +47,26 @@ class SessionEventKind(StrEnum):
     STARTTLS = "starttls"
     CONFIRMATION = "confirmation"
     AMBIGUOUS_BANNER = "ambiguous_banner"
+    UNEXPECTED = "unexpected"
+
+
+class EventSource(StrEnum):
+    """Analyzer that produced a protocol observation."""
+
+    ZEEK = "zeek"
+    TSHARK = "tshark"
+    SSL = "ssl"
+
+
+class UpgradeState(StrEnum):
+    """Terminal STARTTLS/STLS state-machine outcome."""
+
+    ADVERTISED = "advertised"
+    REQUESTED = "requested"
+    ACCEPTED = "accepted"
+    TLS_ESTABLISHED = "tls_established"
+    PLAINTEXT_FALLBACK = "plaintext_fallback"
+    VIOLATION = "violation"
 
 
 class ProtocolEvent(BaseModel):
@@ -60,6 +80,31 @@ class ProtocolEvent(BaseModel):
     argument: str | None = None
     reply_code: int | None = Field(default=None, ge=0)
     text: str | None = None
+    frame_number: int | None = Field(default=None, ge=1)
+    source: EventSource | None = None
+    tag: str | None = None
+
+
+class ExplicitUpgrade(BaseModel):
+    """STARTTLS/STLS assessment. `downgrade_consistent` is never proof of attack."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    state: UpgradeState | None = None
+    evidence_state: EvidenceState
+    evidence_frames: list[int] = Field(default_factory=list)
+    downgrade_consistent: bool = False
+
+
+class ImplicitTls(BaseModel):
+    """Implicit-TLS correlation. Port alone never sets `correlated_protocol`."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    correlated_protocol: MailProtocol | None = None
+    evidence_state: EvidenceState
+    source: Literal["alpn", "none"] | None = None
+    evidence_frames: list[int] = Field(default_factory=list)
 
 
 class EmailSession(BaseModel):
@@ -75,6 +120,8 @@ class EmailSession(BaseModel):
     identification_confidence: float | None = Field(default=None, ge=0.0, le=1.0)
     corroboration: Literal["zeek", "zeek+tshark"] = "zeek"
     events: list[ProtocolEvent] = Field(default_factory=list)
+    explicit_upgrade: ExplicitUpgrade | None = None
+    implicit_tls: ImplicitTls | None = None
 
 
 def _rebuild_evidence_document() -> None:

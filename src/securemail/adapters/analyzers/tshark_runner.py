@@ -29,7 +29,8 @@ from securemail.ports.analyzers import TSharkRunResult
 _DOCKER = "docker"
 
 # Bounded field allowlist. Callers cannot extend this list.
-# IMAP/POP command verbs and status only — never usernames, passwords, or full lines.
+# Mail command verbs/status and TLS ClientHello type only — never usernames,
+# passwords, or full lines.
 TSHARK_FIELDS: tuple[str, ...] = (
     "frame.number",
     "frame.time_epoch",
@@ -45,8 +46,11 @@ TSHARK_FIELDS: tuple[str, ...] = (
     "imap.isrequest",
     "pop.request.command",
     "pop.response.indicator",
+    "smtp.req.command",
+    "smtp.response.code",
+    "tls.handshake.type",
 )
-TSHARK_DISPLAY_FILTER = "imap or pop"
+TSHARK_DISPLAY_FILTER = "smtp or imap or pop or tls.handshake.type == 1"
 
 
 class DockerTSharkRunner:

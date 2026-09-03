@@ -1,0 +1,13 @@
+{
+  "created_at": "2026-09-03T21:05:24Z",
+  "generator": "tests/fixtures/generators/lab_starttls_captures.py --case smtp_starttls_success --out tests/fixtures/smtp_starttls_success/capture.pcapng (docker network securemail-step3-smtp_starttls_success-net; dumpcap sidecar --network container:securemail-step3-smtp_starttls_success-srv)",
+  "notes": "Lab SMTP STARTTLS upgrade on TCP/587 with a real TLS ClientHello.",
+  "sha256": "bb59afad366152ea817b4472170ff680b935ee2a69793d2e2ec329a059942b89",
+  "source": "lab",
+  "tool_versions": {
+    "dumpcap": "Dumpcap (Wireshark) 4.4.18.",
+    "python": "3.11.15",
+    "python_image": "python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3",
+    "tshark_image": "securemail/tshark:step0"
+  }
+}

@@ -1,0 +1,252 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.24,
+    "file_time_precision": "microsecond",
+    "original_packet_bytes": 1491,
+    "packet_count": 25,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "SF",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShAdDaFf",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "192.0.2.10",
+        "port": 49152
+      },
+      "orig_bytes": 39,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "192.0.2.25",
+        "port": 110
+      },
+      "resp_bytes": 102,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "run_identity": {
+    "analyzer_bundle_digest": "73627a8875f130609b6513f715c6ae5b873c9484cb356bb14d0f9d9c38727594",
+    "capture_sha256": "8ee7377f83ff08f9a88084a67d5c05cc5174b50d8ad72a81e0bbd5d81425f37d",
+    "configuration_digest": "f60054b7f1ed181f41ea1fc696ee8b9d1c8b701ca2e5787201dabed63662e5a0",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0",
+  "sessions": [
+    {
+      "corroboration": "zeek+tshark",
+      "events": [
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": null,
+          "kind": "reply",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": "OK POP3 ready"
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": 4,
+          "kind": "reply",
+          "reply_code": null,
+          "source": "tshark",
+          "tag": null,
+          "text": "+OK"
+        },
+        {
+          "argument": null,
+          "command": "CAPA",
+          "direction": "orig",
+          "frame_number": 6,
+          "kind": "request",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": null,
+          "kind": "reply",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": "OK Capability list follows"
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": null,
+          "kind": "capability",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": "STLS"
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": null,
+          "kind": "capability",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": "USER"
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": 8,
+          "kind": "reply",
+          "reply_code": null,
+          "source": "tshark",
+          "tag": null,
+          "text": "+OK"
+        },
+        {
+          "argument": null,
+          "command": "STLS",
+          "direction": "orig",
+          "frame_number": 10,
+          "kind": "request",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": null,
+          "kind": "reply",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": "ERR TLS unavailable"
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": 12,
+          "kind": "reply",
+          "reply_code": null,
+          "source": "tshark",
+          "tag": null,
+          "text": "-ERR"
+        },
+        {
+          "argument": "<redacted>",
+          "command": "USER",
+          "direction": "orig",
+          "frame_number": 14,
+          "kind": "request",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": null,
+          "kind": "reply",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": "OK"
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": 16,
+          "kind": "reply",
+          "reply_code": null,
+          "source": "tshark",
+          "tag": null,
+          "text": "+OK"
+        },
+        {
+          "argument": "<redacted>",
+          "command": "PASS",
+          "direction": "orig",
+          "frame_number": 18,
+          "kind": "request",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": null
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": null,
+          "kind": "reply",
+          "reply_code": null,
+          "source": "zeek",
+          "tag": null,
+          "text": "OK Logged in"
+        },
+        {
+          "argument": null,
+          "command": null,
+          "direction": "resp",
+          "frame_number": 20,
+          "kind": "reply",
+          "reply_code": null,
+          "source": "tshark",
+          "tag": null,
+          "text": "+OK"
+        }
+      ],
+      "evidence_state": "observed",
+      "explicit_upgrade": {
+        "downgrade_consistent": false,
+        "evidence_frames": [
+          10,
+          14,
+          18
+        ],
+        "evidence_state": "observed",
+        "state": "plaintext_fallback"
+      },
+      "identification_confidence": null,
+      "implicit_tls": {
+        "correlated_protocol": null,
+        "evidence_frames": [],
+        "evidence_state": "not_observable",
+        "source": null
+      },
+      "payload_evidence": "pop3",
+      "port_hint": "pop3",
+      "protocol": "pop3",
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ]
+}

@@ -21,11 +21,15 @@ from securemail.domain.evidence.run import (
 )
 from securemail.domain.evidence.session import (
     EmailSession,
+    EventSource,
+    ExplicitUpgrade,
+    ImplicitTls,
     MailProtocol,
     PayloadEvidence,
     PortHint,
     ProtocolEvent,
     SessionEventKind,
+    UpgradeState,
 )
 
 EvidenceDocument.model_rebuild(_types_namespace={"Flow": Flow, "EmailSession": EmailSession})
@@ -36,8 +40,11 @@ __all__ = [
     "ByteRange",
     "CapturePreflight",
     "EmailSession",
+    "EventSource",
     "EvidenceDocument",
     "EvidenceState",
+    "ExplicitUpgrade",
+    "ImplicitTls",
     "Flow",
     "FlowEndpoint",
     "MailProtocol",
@@ -51,5 +58,6 @@ __all__ = [
     "ReconstructionVerdict",
     "SessionEventKind",
     "StreamDirection",
+    "UpgradeState",
     "classify_reconstruction",
 ]

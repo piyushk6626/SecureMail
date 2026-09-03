@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from securemail.application.normalize_flows import normalize_flows
 from securemail.application.normalize_sessions import (
-    needs_imap_pop_corroboration,
+    needs_tshark_corroboration,
     normalize_sessions,
 )
 from securemail.domain.evidence.run import (
@@ -39,8 +39,9 @@ _CONFIGURATION = {
     "zeek_deterministic": True,
     "capinfos_entry": "capinfos",
     "flow_normalization": "v1",
-    "session_normalization": "v1",
-    "tshark_corroboration": "imap_pop",
+    "session_normalization": "v2",
+    "tshark_corroboration": "smtp_imap_pop_tls_clienthello",
+    "starttls_evaluation": "v1",
 }
 
 
@@ -97,7 +98,7 @@ def run_analysis(
         raise AnalysisError(str(exc)) from exc
     flows = normalize_flows(zeek_result.logs, preflight)
     sessions = normalize_sessions(zeek_result.logs, flows)
-    if tshark_runner is not None and needs_imap_pop_corroboration(sessions):
+    if tshark_runner is not None and needs_tshark_corroboration(sessions, flows, zeek_result.logs):
         try:
             tshark_result = tshark_runner.run(capture_path)
         except AnalyzerError as exc:

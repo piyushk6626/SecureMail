@@ -1,0 +1,13 @@
+{
+  "created_at": "2026-09-03T21:05:29Z",
+  "generator": "tests/fixtures/generators/lab_starttls_captures.py --case imap_starttls_success --out tests/fixtures/imap_starttls_success/capture.pcapng (docker network securemail-step3-imap_starttls_success-net; dumpcap sidecar --network container:securemail-step3-imap_starttls_success-srv)",
+  "notes": "Lab IMAP STARTTLS upgrade on TCP/143 with a real TLS ClientHello.",
+  "sha256": "cd90e062bc66e2bfc6383b52e8503856074e545743b57eed0c7a3c52870def4a",
+  "source": "lab",
+  "tool_versions": {
+    "dumpcap": "Dumpcap (Wireshark) 4.4.18.",
+    "python": "3.11.15",
+    "python_image": "python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3",
+    "tshark_image": "securemail/tshark:step0"
+  }
+}
