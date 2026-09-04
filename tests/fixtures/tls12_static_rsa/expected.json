@@ -31,7 +31,29 @@
       "syntax_valid": true,
       "uid": "CJKFoj4bpHEhTeaRoj",
       "valid_at_analysis_time": true,
-      "valid_at_capture_time": true
+      "valid_at_capture_time": true,
+      "validation": {
+        "certificate_observed": true,
+        "identity_match": null,
+        "identity_mismatch_reasons": [],
+        "indeterminate_reasons": [
+          "reference_identity_unavailable"
+        ],
+        "path_invalid_reasons_at_analysis_time": [
+          "self_signed"
+        ],
+        "path_invalid_reasons_at_capture_time": [
+          "self_signed"
+        ],
+        "path_valid_at_analysis_time": false,
+        "path_valid_at_capture_time": false,
+        "reference_identity": null,
+        "reference_identity_source": null,
+        "revocation_status": "unknown",
+        "syntax_valid": true,
+        "trust_profile_id": "offline_v1",
+        "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
+      }
     }
   ],
   "flows": [
@@ -163,10 +185,10 @@
   "run_identity": {
     "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
     "capture_sha256": "b2b57e4c926ae58a02b8ada8792074f0b3f205c086ad38d5ff8b77c5f61a6bfd",
-    "configuration_digest": "cc097d0d9274c93df72590c9bbc9c1560e5019496b89f61f5ce38096a3052ca7",
+    "configuration_digest": "b5da7e1eee127dde2ca64be0155142ef462a3baae1bc31df06363a9e8589f11e",
     "normalization_schema_version": "v0",
     "policy_pack_version": null,
-    "trust_store_digest": null
+    "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
   },
   "schema_version": "v0",
   "sessions": []

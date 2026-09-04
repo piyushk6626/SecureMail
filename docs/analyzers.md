@@ -201,5 +201,6 @@ Certificate DER sidecars are content-addressed by SHA-256 next to `--out`
 ## Not in this build
 
 No Spicy analyzers. No unbounded `tshark -V` tree. No AIA/OCSP/CRL/CT/DNS
-lookups from the worker. Zeek `validate-certs` is loaded but Python does not
-yet perform authoritative chain validation (Step 6).
+lookups from the worker. Zeek `validate-certs` is loaded as a cross-check only;
+Python path validation in `domain/policies/pki/chain_validation.py` is
+authoritative.

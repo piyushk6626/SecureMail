@@ -25,6 +25,7 @@ class AnalyzeFn(Protocol):
         artifact_root: Path | None = None,
         analysis_time: datetime | None = None,
         expiry_warning_seconds: int = DEFAULT_EXPIRY_WARNING_SECONDS,
+        expected_hostname: str | None = None,
     ) -> EvidenceDocument: ...
 
 
@@ -65,6 +66,11 @@ def register_analyze(app: typer.Typer, analyze: AnalyzeFn) -> None:
             min=1,
             help="Warning window in days for expires_within_warning_window.",
         ),
+        expected_hostname: str | None = typer.Option(
+            None,
+            "--expected-hostname",
+            help="Configured reference identity for SAN matching. Default: observed SNI.",
+        ),
     ) -> None:
         try:
             parsed_time = parse_analysis_time(analysis_time) if analysis_time else None
@@ -73,6 +79,7 @@ def register_analyze(app: typer.Typer, analyze: AnalyzeFn) -> None:
                 artifact_root=out.parent / "certificates",
                 analysis_time=parsed_time,
                 expiry_warning_seconds=expiry_warning_days * 24 * 60 * 60,
+                expected_hostname=expected_hostname,
             )
         except (AnalysisError, InvalidCaptureError, FileNotFoundError, OSError, ValueError) as exc:
             typer.secho(str(exc), err=True)

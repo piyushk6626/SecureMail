@@ -7,7 +7,7 @@ import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from securemail.application.normalize_certificates import normalize_certificates
 from securemail.application.normalize_flows import normalize_flows
@@ -21,6 +21,7 @@ from securemail.domain.evidence.run import (
     AnalysisRun,
     EvidenceDocument,
 )
+from securemail.domain.policies.pki.chain_validation import TrustStoreSnapshot
 from securemail.domain.policies.tls.key_exchange import (
     TlsParameterIndex,
     empty_tls_parameter_index,
@@ -52,6 +53,7 @@ _CONFIGURATION = {
     "session_normalization": "v2",
     "handshake_normalization": "v1",
     "certificate_normalization": "v1",
+    "chain_validation": "v1",
     "expiry_warning_seconds": DEFAULT_EXPIRY_WARNING_SECONDS,
     "tshark_corroboration": "smtp_imap_pop_tls_handshake",
     "starttls_evaluation": "v1",
@@ -72,6 +74,15 @@ class AnalyzeRequest(BaseModel):
     capture_path: Path = Field(...)
     analysis_time: datetime | None = None
     expiry_warning_seconds: int = Field(default=DEFAULT_EXPIRY_WARNING_SECONDS, ge=1)
+    expected_hostname: str | None = Field(default=None, max_length=253)
+
+    @field_validator("expected_hostname")
+    @classmethod
+    def _normalize_expected_hostname(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        text = value.strip()
+        return text or None
 
 
 class _MemoryArtifactStore:
@@ -91,12 +102,14 @@ def configuration_digest(
     *,
     iana_tls_parameters_sha256: str | None = None,
     expiry_warning_seconds: int = DEFAULT_EXPIRY_WARNING_SECONDS,
+    expected_hostname: str | None = None,
 ) -> str:
     digest = iana_tls_parameters_sha256 or empty_tls_parameter_index().digest
     payload = json.dumps(
         {
             **_CONFIGURATION,
             "expiry_warning_seconds": expiry_warning_seconds,
+            "expected_hostname": expected_hostname,
             "iana_tls_parameters_sha256": digest,
         },
         sort_keys=True,
@@ -124,6 +137,7 @@ def run_analysis(
     tshark_runner: TSharkRunner | None = None,
     tls_parameters: TlsParameterIndex | None = None,
     artifact_store: ArtifactStore | None = None,
+    trust_snapshot: TrustStoreSnapshot | None = None,
 ) -> EvidenceDocument:
     capture_path = request.capture_path
     if not capture_path.is_file():
@@ -173,6 +187,8 @@ def run_analysis(
         analysis_time=analysis_time,
         expiry_warning=warning_window,
         artifact_store=store,
+        trust_snapshot=trust_snapshot,
+        expected_hostname=request.expected_hostname,
     )
     return EvidenceDocument(
         schema_version=NORMALIZATION_SCHEMA_VERSION,
@@ -183,9 +199,10 @@ def run_analysis(
             configuration_digest=configuration_digest(
                 iana_tls_parameters_sha256=identifiers.digest,
                 expiry_warning_seconds=request.expiry_warning_seconds,
+                expected_hostname=request.expected_hostname,
             ),
             policy_pack_version=None,
-            trust_store_digest=None,
+            trust_store_digest=None if trust_snapshot is None else trust_snapshot.digest,
         ),
         capture_preflight=preflight,
         flows=flows,

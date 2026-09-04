@@ -40,10 +40,10 @@
   "run_identity": {
     "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
     "capture_sha256": "a2aaac97ad0f8c68a64635cbcbbcca20f5a8ac27d19b9086ea9806bc74300f72",
-    "configuration_digest": "cc097d0d9274c93df72590c9bbc9c1560e5019496b89f61f5ce38096a3052ca7",
+    "configuration_digest": "b5da7e1eee127dde2ca64be0155142ef462a3baae1bc31df06363a9e8589f11e",
     "normalization_schema_version": "v0",
     "policy_pack_version": null,
-    "trust_store_digest": null
+    "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
   },
   "schema_version": "v0",
   "sessions": [

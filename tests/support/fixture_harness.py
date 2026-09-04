@@ -42,6 +42,9 @@ def _analyze_args(base: Path) -> list[str]:
     warning_days = payload.get("expiry_warning_days")
     if warning_days is not None:
         args.extend(["--expiry-warning-days", str(warning_days)])
+    expected_hostname = payload.get("expected_hostname")
+    if expected_hostname is not None:
+        args.extend(["--expected-hostname", str(expected_hostname)])
     return args
 
 

@@ -1,0 +1,13 @@
+{
+  "created_at": "2026-09-04T08:58:08Z",
+  "generator": "tests/fixtures/generators/lab_chain_captures.py --case cert_chain_lab_trusted --out tests/fixtures/cert_chain_lab_trusted/capture.pcapng (docker network securemail-step6-cert_chain_lab_trusted-net; dumpcap sidecar --network container:securemail-step6-cert_chain_lab_trusted-srv)",
+  "notes": "Lab TLS 1.2 handshake with a throwaway-CA chain (leaf + intermediate). The lab root is in the pinned trust snapshot.",
+  "sha256": "093c1eae0fb98034c09006a622860268f546edf8e5c053c5e9f65a99dc2e920f",
+  "source": "lab",
+  "tool_versions": {
+    "dumpcap": "Dumpcap (Wireshark) 4.4.18.",
+    "openssl": "OpenSSL 3.5.6 7 Apr 2026 (Library: OpenSSL 3.5.6 7 Apr 2026)",
+    "python_image": "python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3",
+    "tshark_image": "securemail/tshark:step0"
+  }
+}

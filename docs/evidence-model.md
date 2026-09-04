@@ -32,13 +32,13 @@ a separate top-level array linked by Zeek `uid` and `chain_index`. There is no
 | `capture_sha256` | 64 hex chars | SHA-256 of the intake file |
 | `analyzer_bundle_digest` | 64 hex chars | SHA-256 of `tools/analyzer-bundle.lock` bytes |
 | `normalization_schema_version` | `"v0"` | constant |
-| `configuration_digest` | 64 hex chars | hash of the config dict plus the IANA snapshot digest |
+| `configuration_digest` | 64 hex chars | hash of the config dict plus the IANA snapshot digest and optional expected hostname |
 | `policy_pack_version` | `str \| null` | always `null` |
-| `trust_store_digest` | `str \| null` | always `null` |
+| `trust_store_digest` | 64 hex chars | SHA-256 of `adapters/pki/trust-store-snapshot.pem` |
 
 Idempotency key from the design (not a stored field) is the tuple of those
-digests. Policy and trust-store slots are reserved so later steps can fill them
-without renaming the record.
+digests. The policy-pack slot is reserved so Step 7 can fill it without
+renaming the record.
 
 ### `CapturePreflight`
 
@@ -216,12 +216,39 @@ the source of certificate bytes.
 | `public_key_algorithm` / `public_key_size` / `public_key_curve` | Parsed key facts |
 | `effective_strength_bits` | From [`key_strength.py`](../src/securemail/domain/policies/pki/key_strength.py); RSA-2048 is 112-bit, P-256 is 128-bit |
 | `signature_algorithm` | The certificate's own signature (e.g. `sha256WithRSAEncryption`), never the handshake `CertificateVerify` algorithm |
+| `validation` | Leaf-only `CertificateValidation`. Intermediates and client certs are `null` |
 
 Parser bounds: 64 KiB DER, 16 constructed ASN.1 levels, 256 certificates per
-run. Oversized or over-nested input is `syntax_valid: false` without calling
-into a large `cryptography` allocation.
+run, chain depth 16. Oversized or over-nested input is `syntax_valid: false`
+without calling into a large `cryptography` allocation.
 
 TLS 1.3 handshakes without history letter `x` emit no certificate records.
+
+### `CertificateValidation`
+
+Attached only to server leaves (`chain_index == 0`). Path validity and identity
+are independent fields. Built by
+[`normalize_certificates`](../src/securemail/application/normalize_certificates.py)
+using [`chain_validation.py`](../src/securemail/domain/policies/pki/chain_validation.py)
+and [`identity.py`](../src/securemail/domain/policies/pki/identity.py).
+
+| Field | Notes |
+|---|---|
+| `certificate_observed` | `true` when this leaf DER was extracted |
+| `syntax_valid` | Copied from the Step 5 leaf fact; path is not evaluated when false |
+| `path_valid_at_capture_time` / `path_valid_at_analysis_time` | Cryptography `PolicyBuilder` path-only check at the TLS observation timestamp and `--analysis-time` |
+| `path_invalid_reasons_at_*` | Stable codes (`self_signed`, `missing_intermediate`, `expired_at_verification_time`, …). Never a bare `false` |
+| `identity_match` | RFC 9525 SAN matching against SNI or `--expected-hostname`. **No CN fallback** |
+| `identity_mismatch_reasons` | e.g. `san_mismatch`, `san_missing` |
+| `reference_identity` / `reference_identity_source` | Observed SNI (`sni`) or configured hostname (`configured`) |
+| `revocation_status` | `good` / `revoked` / `unknown` / `stale`. Always `unknown` in this build (no imported OCSP/CRL) |
+| `trust_profile_id` | `offline_v1` |
+| `trust_store_digest` | Same digest as `run_identity.trust_store_digest` |
+| `indeterminate_reasons` | When path or identity cannot be resolved (`syntax_invalid_leaf`, `reference_identity_unavailable`, `capture_time_unavailable`) |
+
+Missing SNI and missing `--expected-hostname` make `identity_match` `null`, not
+a pass. A trusted path with a wrong SAN is `path_valid_at_*: true` and
+`identity_match: false`.
 
 ## Example (shape, not a golden file)
 
@@ -238,6 +265,5 @@ requires byte-for-field equality with `expected.json`.
 
 ## Not in this build
 
-No path validation, SAN identity matching, or revocation (Step 6). No `Finding`.
-`verified` is a legal enum member but unused by current classifiers. Handshake
-and certificate records do not judge weak suites or forward secrecy.
+No `Finding`. `verified` is a legal enum member but unused by current classifiers.
+Handshake and certificate records do not judge weak suites or forward secrecy.

@@ -11,6 +11,7 @@ from securemail.adapters.analyzers.capinfos_runner import DockerCapinfosRunner
 from securemail.adapters.analyzers.tshark_runner import DockerTSharkRunner
 from securemail.adapters.analyzers.zeek_runner import DockerZeekRunner
 from securemail.adapters.artifacts.certificate_store import CertificateStore
+from securemail.adapters.pki.trust_store import load_trust_store_snapshot
 from securemail.adapters.reference_data.iana_tls_parameters import load_iana_tls_parameters
 from securemail.application.run_analysis import (
     DEFAULT_EXPIRY_WARNING_SECONDS,
@@ -26,6 +27,7 @@ def _analyze(
     artifact_root: Path | None = None,
     analysis_time: datetime | None = None,
     expiry_warning_seconds: int = DEFAULT_EXPIRY_WARNING_SECONDS,
+    expected_hostname: str | None = None,
 ) -> EvidenceDocument:
     store = CertificateStore(root=artifact_root)
     return run_analysis(
@@ -33,12 +35,14 @@ def _analyze(
             capture_path=capture,
             analysis_time=analysis_time,
             expiry_warning_seconds=expiry_warning_seconds,
+            expected_hostname=expected_hostname,
         ),
         zeek_runner=DockerZeekRunner(),
         preflight_runner=DockerCapinfosRunner(),
         tshark_runner=DockerTSharkRunner(),
         tls_parameters=load_iana_tls_parameters(),
         artifact_store=store,
+        trust_snapshot=load_trust_store_snapshot(),
     )
 
 

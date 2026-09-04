@@ -42,7 +42,8 @@ Three import-linter contracts:
 
 Canonical records that exist today: `AnalysisRun` (inside `EvidenceDocument`),
 `CapturePreflight`, `Flow`, `EmailSession`, `TlsHandshake`,
-`CertificateEvidence`. The names `Case`, `Capture`, `Finding`, `AnomalyResult`,
+`CertificateEvidence` (with leaf `CertificateValidation`). The names `Case`,
+`Capture`, `Finding`, `AnomalyResult`,
 `ReportManifest`, and `AuditEvent` are design vocabulary from
 [`plans/TECHNICAL_DESIGN.md`](../plans/TECHNICAL_DESIGN.md); they are not live
 models except where a placeholder file already occupies the scaffold path.
@@ -56,6 +57,7 @@ models except where a placeholder file already occupies the scaffold path.
 - `DockerTSharkRunner`
 - `CertificateStore`
 - `load_iana_tls_parameters()`
+- `load_trust_store_snapshot()`
 
 and closes them over `_analyze`, which calls `run_analysis`. `create_cli()`
 passes that function into `build_app` so the Typer layer never imports adapters.
@@ -78,11 +80,11 @@ Console script: `securemail = "securemail.api.cli.main:main"` in
 
 | Path | Role |
 |---|---|
-| `run_analysis.py` | Intake hash, PCAP magic check, capinfos, Zeek, optional TShark, handshake/certificate normalize, assemble `EvidenceDocument` |
+| `run_analysis.py` | Intake hash, PCAP magic check, capinfos, Zeek, optional TShark, handshake/certificate normalize, chain validation, assemble `EvidenceDocument` |
 | `normalize_flows.py` | Zeek `conn.log` / `weird.log` / `capture_loss.log` / `sm_tcp_recon.log` → `Flow` |
 | `normalize_sessions.py` | `sm_email.log` + optional TShark frames + `ssl.log` → `EmailSession` |
 | `normalize_handshakes.py` | `ssl.log` / ssl-log-ext + optional TShark frames → `TlsHandshake` |
-| `normalize_certificates.py` | Extracted DER + `ssl.log` chain fingerprints → `CertificateEvidence` |
+| `normalize_certificates.py` | Extracted DER + `ssl.log` chain fingerprints → `CertificateEvidence` with leaf `validation` |
 | `advisory_pipeline.py` | Step 10 placeholder |
 
 Domain models are constructed here. They do not parse raw Zeek/TShark output
@@ -101,9 +103,11 @@ themselves.
 | `policies/starttls/implicit_tls.py` | ALPN correlation; port is never proof |
 | `evidence/handshake.py` | `TlsHandshake`, version/cipher/key-exchange evidence, visibility, CertificateVerify signature slot |
 | `policies/tls/key_exchange.py` | Pure version-aware key-exchange classifier (no weakness/FS judgment) |
-| `evidence/certificate.py` | `CertificateEvidence` facts (syntax, validity instants, key strength, cert signature) |
+| `evidence/certificate.py` | `CertificateEvidence` facts plus leaf-only `CertificateValidation` |
 | `policies/pki/key_strength.py` | Data-driven effective-strength table |
-| `findings/`, `reports/`, remaining TLS/PKI/rule packs | Placeholders for Steps 6–9 |
+| `policies/pki/chain_validation.py` | Path validation at an explicit verification time |
+| `policies/pki/identity.py` | RFC 9525 SAN matching; no CN fallback |
+| `findings/`, `reports/`, remaining TLS/rule packs | Placeholders for Steps 7–9 |
 
 ### `ports/`
 
@@ -124,7 +128,10 @@ themselves.
 | `analyzers/capinfos_runner.py` | capinfos inside the TShark image (same sandbox) |
 | `reference_data/iana_tls_parameters.py` | Bounded load of the checked-in IANA TLS Parameters snapshot |
 | `artifacts/certificate_store.py` | Content-addressed DER store (SHA-256 filenames under a caller root) |
-| PKI, reports, ML | Placeholders |
+| `pki/trust_store.py` | Bounded load of the pinned offline PEM trust snapshot |
+| `pki/trust-store-snapshot.pem` | Lab root + USERTrust RSA; SHA-256 is `trust_store_digest` |
+| `pki/openssl_crosscheck.py` | Test-only fixed-argv `openssl verify`; not on the production path |
+| reports, ML | Placeholders |
 
 ## Toolchain (what the package actually pins)
 

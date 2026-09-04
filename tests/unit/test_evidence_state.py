@@ -7,8 +7,11 @@ from securemail.domain.evidence import (
     NORMALIZATION_SCHEMA_VERSION,
     AnalysisRun,
     CapturePreflight,
+    CertificateValidation,
     EvidenceDocument,
     EvidenceState,
+    ReferenceIdentitySource,
+    RevocationStatus,
 )
 
 
@@ -57,3 +60,27 @@ def test_v0_document_requires_run_identity_fields() -> None:
     assert payload["sessions"] == []
     assert payload["handshakes"] == []
     assert payload["certificates"] == []
+
+
+def test_certificate_validation_serializes_leaf_contract() -> None:
+    validation = CertificateValidation(
+        certificate_observed=True,
+        syntax_valid=True,
+        path_valid_at_capture_time=True,
+        path_valid_at_analysis_time=False,
+        path_invalid_reasons_at_analysis_time=["expired_at_verification_time"],
+        identity_match=False,
+        identity_mismatch_reasons=["san_mismatch"],
+        reference_identity="wrong.example.test",
+        reference_identity_source=ReferenceIdentitySource.SNI,
+        revocation_status=RevocationStatus.UNKNOWN,
+        trust_profile_id="offline_v1",
+        trust_store_digest="a" * 64,
+    )
+    payload = validation.model_dump(mode="json")
+    assert payload["path_valid_at_capture_time"] is True
+    assert payload["path_valid_at_analysis_time"] is False
+    assert payload["identity_match"] is False
+    assert payload["revocation_status"] == "unknown"
+    assert payload["reference_identity_source"] == "sni"
+    assert payload["trust_store_digest"] == "a" * 64

@@ -10,7 +10,7 @@ tests/fixtures/<case_id>/
 ```
 
 `<case_id>` is `<protocol_or_area>_<condition>` as named in
-[`plans/build_plan.md`](../plans/build_plan.md). There are **59** committed
+[`plans/build_plan.md`](../plans/build_plan.md). There are **64** committed
 fixture directories. Some are reused as proof in more than one step
 (`tcp_smtp_clean_baseline` in Steps 1–2; `*_nonstandard_port` in Steps 2–3;
 `tls13_psk_only_resumption` is also named for Step 7 later).
@@ -21,8 +21,8 @@ fixture directories. Some are reused as proof in more than one step
 `run_fixture(case_id)`:
 
 1. Invokes `create_cli()` with `analyze <capture> --out <tmp>/actual.json`
-   plus optional `--analysis-time` / `--expiry-warning-days` from
-   `analyze.json`
+   plus optional `--analysis-time` / `--expiry-warning-days` /
+   `--expected-hostname` from `analyze.json`
 2. Parses both JSON documents
 3. Recursively diffs keys, types, list lengths, and values
 4. Fails with field paths like `$.sessions[0].explicit_upgrade.state`
@@ -63,6 +63,10 @@ new fixture. Lab captures on macOS must use a dumpcap sidecar — see
 | `lab_legacy_openssl_captures.py` | TLS 1.2 static RSA, static ECDH, RC4 via OpenSSL 1.0.2u |
 | `scapy_tls_edge_captures.py` | `supported_versions` vs legacy record; truncated ClientHello |
 | `import_tls_public_corpus.py` | Independent TLS 1.2 / TLS 1.3 regression slices |
+| `lab_cert_captures.py` | Step 5 lab certificate-matrix captures |
+| `scapy_cert_malformed_captures.py` | Malformed Certificate message |
+| `import_cert_public_corpus.py` | Independent full-chain TLS 1.2 public-corpus slice |
+| `lab_chain_captures.py` | Step 6 lab CA chain, self-signed, missing intermediate, SAN match/mismatch |
 
 SMTP on TCP/25 reuses the immutable Step 1 capture
 `tcp_smtp_clean_baseline`. Advertised-but-never-requested STARTTLS reuses the
@@ -158,31 +162,41 @@ Step 2 `*_nonstandard_port` Scapy fixtures.
 | `cert_sha1_signed` | lab | Certificate signature `sha1WithRSAEncryption`, kept separate from handshake CV |
 | `cert_expiry_warning` | lab | `analyze.json` freezes analysis time; `expires_within_warning_window=true` |
 | `cert_malformed_asn1` | scapy | `syntax_valid=false` with a reason; completes under analyzer resource limits |
-| `cert_chain_public_corpus` | public_corpus | Independent TLS 1.2 chain (≥2 certs), regression only |
+| `cert_chain_public_corpus` | public_corpus | Independent TLS 1.2 chain (≥2 certs), regression only; also Step 6 |
 
 Pytest parametrizes the unique directories above; overlapping Step 2/3
 directories are listed in both `STEP2_CASES` / `ADVERTISED_NOT_REQUESTED` as
 applicable.
 
+### Step 6 — chain validation and identity
+
+| Case | Source | Asserts |
+|---|---|---|
+| `cert_chain_lab_trusted` | lab | Path valid at both instants; identity matches SNI; revocation `unknown` |
+| `cert_chain_self_signed` | lab | `path_valid_at_*: false` with `self_signed`; identity can still match |
+| `cert_chain_missing_intermediate` | lab | `path_valid_at_*: false` with `missing_intermediate` |
+| `cert_chain_san_match` | lab | Trusted path and `identity_match: true` |
+| `cert_chain_san_mismatch` | lab | Path valid, `identity_match: false`. CLI proof |
+| `cert_chain_public_corpus` | public_corpus | Path valid at capture, expired at analysis; SNI `www.heise.de` |
+
 ## Directory count
 
-Unique fixture directories: **59**.
+Unique fixture directories: **64**.
 
 `empty` (1) + TCP including baseline (8) + remaining Step 2 (`smtp_submission_port`,
 `imap_standard_port`, `pop3_standard_port`, three nonstandard, ambiguous, two
-public) (9) + remaining Step 3 (22) + Step 4 (11) + Step 5 (8) = 59.
+public) (9) + remaining Step 3 (22) + Step 4 (11) + Step 5 (8) + Step 6 lab (5) = 64.
 
 ## Regenerating
 
-After changing Zeek scripts, the lockfile, or `_CONFIGURATION` in
-`run_analysis.py`, golden `run_identity` values change. Re-run
-`uv run python tools/refresh_fixture_expected.py` (or analyze into a temp file)
-and update `expected.json` only for fields that are supposed to change; do not
-edit `capture.pcapng`. Prefer `uv run pytest` on the named `test_*_fixtures.py`
-file rather than hand-diffing.
+After changing Zeek scripts, the lockfile, `_CONFIGURATION` in
+`run_analysis.py`, or `trust-store-snapshot.pem`, golden `run_identity` values
+change. Re-run `uv run python tools/refresh_fixture_expected.py` (or analyze
+into a temp file) and update `expected.json` only for fields that are supposed
+to change; do not edit `capture.pcapng`. Prefer `uv run pytest` on the named
+`test_*_fixtures.py` file rather than hand-diffing.
 
 ## Not in this build
 
-No Step 6+ cases (`cert_chain_san_mismatch`, …). No golden HTML/PDF under
-`tests/fixtures/reports/`. Step 5 records certificate facts; whether RSA-1024
-or SHA-1 is a *finding* is Step 7.
+No golden HTML/PDF under `tests/fixtures/reports/`. Step 6 records path and
+identity facts; whether RSA-1024 or SHA-1 is a *finding* is Step 7.

@@ -4,11 +4,11 @@ This directory describes **what the code does today**, not the full product
 vision. The live surface is a CLI that reads a PCAP/PCAPNG and writes a v0
 `EvidenceDocument` JSON file.
 
-Current implementation: **Steps 0–5** of
+Current implementation: **Steps 0–6** of
 [`plans/build_plan.md`](../plans/build_plan.md) (foundations, TCP reconstruction,
 SMTP/IMAP/POP3 identification, STARTTLS/STLS and implicit TLS, TLS handshake
-version/cipher/key exchange, certificate facts). Steps 6–11 are named
-placeholders only.
+version/cipher/key exchange, certificate facts, chain validation and identity).
+Steps 7–11 are named placeholders only.
 
 ## How these docs relate to the rest of the repo
 
@@ -39,7 +39,7 @@ source under `src/`, `zeek/`, and `tests/fixtures/` wins.
 | [protocol-identification.md](protocol-identification.md) | `port_hint` vs payload, DPD, corroboration, conflict |
 | [starttls.md](starttls.md) | STARTTLS/STLS machines, `downgrade_consistent`, implicit TLS |
 | [cli-and-development.md](cli-and-development.md) | CLI, Make targets, doctor, lint, CI |
-| [fixtures.md](fixtures.md) | Catalog of the 59 committed cases |
+| [fixtures.md](fixtures.md) | Catalog of the 64 committed cases |
 | [decisions/step2-imap-pop3-depth.md](decisions/step2-imap-pop3-depth.md) | ADR: Zeek vs TShark vs Spicy for IMAP/POP3 |
 
 ## Quick start

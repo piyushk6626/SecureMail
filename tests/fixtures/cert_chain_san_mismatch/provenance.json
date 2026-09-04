@@ -1,0 +1,13 @@
+{
+  "created_at": "2026-09-04T08:58:27Z",
+  "generator": "tests/fixtures/generators/lab_chain_captures.py --case cert_chain_san_mismatch --out tests/fixtures/cert_chain_san_mismatch/capture.pcapng (docker network securemail-step6-cert_chain_san_mismatch-net; dumpcap sidecar --network container:securemail-step6-cert_chain_san_mismatch-srv)",
+  "notes": "Lab TLS 1.2 trusted chain with SAN securemail.test and client SNI wrong.example.test. Path validity and identity are independent.",
+  "sha256": "36f9e431b778dba962d7d483f22abb0f59168bce80d04f53fa257782649e11e9",
+  "source": "lab",
+  "tool_versions": {
+    "dumpcap": "Dumpcap (Wireshark) 4.4.18.",
+    "openssl": "OpenSSL 3.5.6 7 Apr 2026 (Library: OpenSSL 3.5.6 7 Apr 2026)",
+    "python_image": "python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3",
+    "tshark_image": "securemail/tshark:step0"
+  }
+}

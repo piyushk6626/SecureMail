@@ -1,4 +1,4 @@
-"""Canonical per-certificate facts (schema v0, Step 5). No path or policy judgment."""
+"""Canonical per-certificate facts (schema v0, Steps 5–6). Path and identity are nested."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from securemail.domain.evidence.run import EvidenceState
 MAX_CERTIFICATE_DER_BYTES = 65_536
 MAX_CERTIFICATES_PER_RUN = 256
 MAX_ASN1_DEPTH = 16
+MAX_CHAIN_DEPTH = 16
 
 
 class CertificateRole(StrEnum):
@@ -21,8 +22,45 @@ class CertificateRole(StrEnum):
     CLIENT = "client"
 
 
+class RevocationStatus(StrEnum):
+    """Revocation outcome. Without imported OCSP/CRL evidence this is unknown."""
+
+    GOOD = "good"
+    REVOKED = "revoked"
+    UNKNOWN = "unknown"
+    STALE = "stale"
+
+
+class ReferenceIdentitySource(StrEnum):
+    """Where the hostname/IP used for identity matching came from."""
+
+    SNI = "sni"
+    CONFIGURED = "configured"
+
+
+class CertificateValidation(BaseModel):
+    """Independent chain and identity outcomes. Attached to server leaves only."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    certificate_observed: bool
+    syntax_valid: bool | None = None
+    path_valid_at_capture_time: bool | None = None
+    path_valid_at_analysis_time: bool | None = None
+    path_invalid_reasons_at_capture_time: list[str] = Field(default_factory=list, max_length=8)
+    path_invalid_reasons_at_analysis_time: list[str] = Field(default_factory=list, max_length=8)
+    identity_match: bool | None = None
+    identity_mismatch_reasons: list[str] = Field(default_factory=list, max_length=8)
+    reference_identity: str | None = None
+    reference_identity_source: ReferenceIdentitySource | None = None
+    revocation_status: RevocationStatus
+    trust_profile_id: str
+    trust_store_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+    indeterminate_reasons: list[str] = Field(default_factory=list, max_length=8)
+
+
 class CertificateEvidence(BaseModel):
-    """One extracted X.509 certificate, parsed as facts only."""
+    """One extracted X.509 certificate. Path/identity live on `validation` for leaves."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -47,6 +85,7 @@ class CertificateEvidence(BaseModel):
     effective_strength_bits: int | None = None
     signature_algorithm: str | None = None
     evidence_state: EvidenceState
+    validation: CertificateValidation | None = None
 
     @field_serializer("not_before", "not_after")
     def _serialize_datetime(self, value: datetime | None) -> str | None:

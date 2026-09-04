@@ -15,11 +15,26 @@ from securemail.domain.evidence.certificate import (
     MAX_ASN1_DEPTH,
     MAX_CERTIFICATE_DER_BYTES,
     MAX_CERTIFICATES_PER_RUN,
+    MAX_CHAIN_DEPTH,
     CertificateEvidence,
     CertificateRole,
+    CertificateValidation,
+    ReferenceIdentitySource,
+    RevocationStatus,
 )
 from securemail.domain.evidence.handshake import HandshakeMessageKind, TlsHandshake
 from securemail.domain.evidence.run import EvidenceState
+from securemail.domain.policies.pki.chain_validation import (
+    ChainValidationInput,
+    PathReasonCode,
+    TrustStoreSnapshot,
+    validate_certificate_path,
+)
+from securemail.domain.policies.pki.identity import (
+    IdentityReasonCode,
+    extract_san_entries,
+    match_service_identity,
+)
 from securemail.domain.policies.pki.key_strength import effective_strength_bits
 from securemail.ports.analyzers import ExtractedCertificate
 from securemail.ports.artifacts import ArtifactStore
@@ -31,7 +46,8 @@ _MAX_RECORDS = 10_000
 _MAX_NAME_LEN = 512
 _MAX_ERROR_LEN = 128
 _MAX_SERIAL_LEN = 128
-_MAX_CHAIN = 16
+_MAX_CHAIN = MAX_CHAIN_DEPTH
+_MAX_SERVER_NAME = 253
 
 _SIGNATURE_ALGORITHM_NAMES: dict[x509.ObjectIdentifier, str] = {
     SignatureAlgorithmOID.RSA_WITH_SHA1: "sha1WithRSAEncryption",
@@ -474,6 +490,175 @@ def _to_evidence(
     )
 
 
+def _ssl_identity_by_uid(
+    logs: Mapping[str, list[dict[str, object]]],
+) -> dict[str, tuple[datetime | None, str | None]]:
+    out: dict[str, tuple[datetime | None, str | None]] = {}
+    for row in _bounded_records(logs.get("ssl.log", [])):
+        uid = _as_str(row.get("uid"), max_len=_MAX_UID_LEN)
+        if uid is None:
+            continue
+        out[uid] = (
+            _epoch_to_datetime(row.get("ts")),
+            _as_str(row.get("server_name"), max_len=_MAX_SERVER_NAME),
+        )
+    return out
+
+
+def _load_x509(digest: str, artifact_store: ArtifactStore) -> x509.Certificate | None:
+    try:
+        payload = artifact_store.get(digest)
+    except KeyError:
+        return None
+    try:
+        return x509.load_der_x509_certificate(payload)
+    except ValueError:
+        return None
+
+
+def _reference_identity(
+    *,
+    expected_hostname: str | None,
+    server_name: str | None,
+) -> tuple[str | None, ReferenceIdentitySource | None]:
+    if expected_hostname:
+        return expected_hostname, ReferenceIdentitySource.CONFIGURED
+    if server_name:
+        return server_name, ReferenceIdentitySource.SNI
+    return None, None
+
+
+def _validate_server_leaf(
+    *,
+    leaf: CertificateEvidence,
+    chain: Sequence[CertificateEvidence],
+    capture_time: datetime | None,
+    server_name: str | None,
+    artifact_store: ArtifactStore,
+    trust_snapshot: TrustStoreSnapshot,
+    analysis_time: datetime,
+    expected_hostname: str | None,
+) -> CertificateValidation:
+    reference, source = _reference_identity(
+        expected_hostname=expected_hostname,
+        server_name=server_name,
+    )
+    indeterminate: list[str] = []
+    if not leaf.syntax_valid:
+        indeterminate.append(PathReasonCode.SYNTAX_INVALID_LEAF.value)
+        if reference is None:
+            indeterminate.append(IdentityReasonCode.REFERENCE_IDENTITY_UNAVAILABLE.value)
+        return CertificateValidation(
+            certificate_observed=True,
+            syntax_valid=False,
+            revocation_status=RevocationStatus.UNKNOWN,
+            trust_profile_id=trust_snapshot.profile_id,
+            trust_store_digest=trust_snapshot.digest,
+            reference_identity=reference,
+            reference_identity_source=source,
+            indeterminate_reasons=indeterminate[:8],
+        )
+    parsed_leaf = _load_x509(leaf.der_sha256, artifact_store)
+    if parsed_leaf is None:
+        return CertificateValidation(
+            certificate_observed=True,
+            syntax_valid=False,
+            revocation_status=RevocationStatus.UNKNOWN,
+            trust_profile_id=trust_snapshot.profile_id,
+            trust_store_digest=trust_snapshot.digest,
+            reference_identity=reference,
+            reference_identity_source=source,
+            indeterminate_reasons=[PathReasonCode.SYNTAX_INVALID_LEAF.value],
+        )
+    intermediates: list[x509.Certificate] = []
+    for item in chain:
+        if item.chain_index == 0 or not item.syntax_valid:
+            continue
+        parsed = _load_x509(item.der_sha256, artifact_store)
+        if parsed is not None:
+            intermediates.append(parsed)
+    capture_valid: bool | None = None
+    capture_reasons: list[str] = []
+    if capture_time is None:
+        indeterminate.append(PathReasonCode.CAPTURE_TIME_UNAVAILABLE.value)
+    else:
+        capture_result = validate_certificate_path(
+            ChainValidationInput(
+                leaf=parsed_leaf,
+                intermediates=tuple(intermediates),
+                trust_store=trust_snapshot,
+                verification_time=capture_time,
+            )
+        )
+        capture_valid = capture_result.valid
+        capture_reasons = list(capture_result.reason_codes)
+    analysis_result = validate_certificate_path(
+        ChainValidationInput(
+            leaf=parsed_leaf,
+            intermediates=tuple(intermediates),
+            trust_store=trust_snapshot,
+            verification_time=analysis_time,
+        )
+    )
+    identity = match_service_identity(
+        reference_identity=reference,
+        san_entries=extract_san_entries(parsed_leaf),
+    )
+    if identity.match is None:
+        indeterminate.extend(identity.reason_codes)
+    return CertificateValidation(
+        certificate_observed=True,
+        syntax_valid=True,
+        path_valid_at_capture_time=capture_valid,
+        path_valid_at_analysis_time=analysis_result.valid,
+        path_invalid_reasons_at_capture_time=capture_reasons,
+        path_invalid_reasons_at_analysis_time=list(analysis_result.reason_codes),
+        identity_match=identity.match,
+        identity_mismatch_reasons=list(identity.reason_codes) if identity.match is False else [],
+        reference_identity=reference,
+        reference_identity_source=source,
+        revocation_status=RevocationStatus.UNKNOWN,
+        trust_profile_id=trust_snapshot.profile_id,
+        trust_store_digest=trust_snapshot.digest,
+        indeterminate_reasons=indeterminate[:8],
+    )
+
+
+def _attach_validations(
+    records: Sequence[CertificateEvidence],
+    logs: Mapping[str, list[dict[str, object]]],
+    *,
+    artifact_store: ArtifactStore,
+    trust_snapshot: TrustStoreSnapshot,
+    analysis_time: datetime,
+    expected_hostname: str | None,
+) -> list[CertificateEvidence]:
+    ssl_by_uid = _ssl_identity_by_uid(logs)
+    attached: list[CertificateEvidence] = []
+    for item in records:
+        if item.role is not CertificateRole.SERVER or item.chain_index != 0:
+            attached.append(item)
+            continue
+        chain = [
+            candidate
+            for candidate in records
+            if candidate.uid == item.uid and candidate.role is CertificateRole.SERVER
+        ]
+        capture_time, server_name = ssl_by_uid.get(item.uid, (None, None))
+        validation = _validate_server_leaf(
+            leaf=item,
+            chain=chain,
+            capture_time=capture_time,
+            server_name=server_name,
+            artifact_store=artifact_store,
+            trust_snapshot=trust_snapshot,
+            analysis_time=analysis_time,
+            expected_hostname=expected_hostname,
+        )
+        attached.append(item.model_copy(update={"validation": validation}))
+    return attached
+
+
 def normalize_certificates(
     logs: Mapping[str, list[dict[str, object]]],
     extracted: Sequence[ExtractedCertificate],
@@ -482,6 +667,8 @@ def normalize_certificates(
     analysis_time: datetime,
     expiry_warning: timedelta,
     artifact_store: ArtifactStore,
+    trust_snapshot: TrustStoreSnapshot | None = None,
+    expected_hostname: str | None = None,
 ) -> list[CertificateEvidence]:
     """Build top-level certificate records from Zeek-extracted DER plus ssl.log linkage."""
 
@@ -579,4 +766,14 @@ def normalize_certificates(
             )
 
     records.sort(key=lambda item: (item.uid, item.role.value, item.chain_index, item.der_sha256))
-    return records
+    if trust_snapshot is None:
+        return records
+    hostname = expected_hostname.strip() if expected_hostname else None
+    return _attach_validations(
+        records,
+        logs,
+        artifact_store=artifact_store,
+        trust_snapshot=trust_snapshot,
+        analysis_time=analysis_time,
+        expected_hostname=hostname or None,
+    )

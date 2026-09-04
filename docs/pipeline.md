@@ -132,6 +132,12 @@ timestamp. Analysis-time validity uses `--analysis-time` (default now). The
 expiry warning window defaults to 30 days. TLS 1.3 UIDs without history letter
 `x` emit no certificates.
 
+When a trust snapshot is wired (production CLI always does), each **server
+leaf** also gets `validation`: path checks at capture time and analysis time
+plus RFC 9525 SAN identity against `ssl.log` `server_name` or
+`--expected-hostname`. Intermediates keep `validation: null`. Revocation is
+`unknown`. The OpenSSL CLI adapter is not on this path.
+
 ## 9. Emit `EvidenceDocument`
 
 ```text
@@ -141,8 +147,9 @@ run_identity.analyzer_bundle_digest    = SHA-256(lockfile)
 run_identity.normalization_schema_version = "v0"
 run_identity.configuration_digest      = SHA-256 of the frozen config dict
                                          plus iana_tls_parameters_sha256
+                                         and expected_hostname
 run_identity.policy_pack_version       = null
-run_identity.trust_store_digest        = null
+run_identity.trust_store_digest        = SHA-256 of trust-store-snapshot.pem
 capture_preflight, flows, sessions, handshakes, certificates
 ```
 
@@ -163,9 +170,11 @@ sort_keys=True, ensure_ascii=False)` plus a trailing newline.
     "session_normalization": "v2",
     "handshake_normalization": "v1",
     "certificate_normalization": "v1",
+    "chain_validation": "v1",
     "expiry_warning_seconds": 2592000,
     "tshark_corroboration": "smtp_imap_pop_tls_handshake",
     "starttls_evaluation": "v1",
+    "expected_hostname": None,
     "iana_tls_parameters_sha256": "<SHA-256 of iana-tls-parameters.json>",
 }
 ```
@@ -173,7 +182,9 @@ sort_keys=True, ensure_ascii=False)` plus a trailing newline.
 Changing any of those strings, or the checked-in IANA snapshot bytes, changes
 every fixture’s `expected.json` `run_identity.configuration_digest`. Current
 fixtures pin
-`cc097d0d9274c93df72590c9bbc9c1560e5019496b89f61f5ce38096a3052ca7`.
+`b5da7e1eee127dde2ca64be0155142ef462a3baae1bc31df06363a9e8589f11e`.
+`run_identity.trust_store_digest` is
+`c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae`.
 
 ## Idempotency
 

@@ -105,6 +105,7 @@ def test_tls12_certificate_is_parsed_from_extracted_der() -> None:
     assert certs[0].valid_at_capture_time is True
     assert certs[0].valid_at_analysis_time is True
     assert certs[0].signature_algorithm == "sha256WithRSAEncryption"
+    assert certs[0].validation is None
     assert handshakes[0].certificate_verify_signature.evidence_state is EvidenceState.NOT_OBSERVABLE
     assert (
         handshakes[0].certificate_verify_signature.algorithm != certs[0].signature_algorithm
@@ -139,3 +140,47 @@ def test_tls13_without_certificate_history_is_not_fabricated() -> None:
     )
     assert certs == []
     assert handshakes[0].server_certificate_state is EvidenceState.NOT_OBSERVABLE
+
+
+def test_server_leaf_gets_independent_path_and_identity_fields() -> None:
+    from securemail.adapters.pki.trust_store import load_trust_store_snapshot
+    from securemail.domain.evidence.certificate import RevocationStatus
+
+    payload = _der()
+    extracted = ExtractedCertificate(sha256=sha256(payload).hexdigest(), fuid="F1", payload=payload)
+    logs = {
+        "ssl.log": [
+            {
+                "uid": "Ctls",
+                "ts": datetime(2024, 1, 1, tzinfo=UTC).timestamp(),
+                "ssl_history": "CsxknGIti",
+                "established": True,
+                "version": "TLSv12",
+                "cipher": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+                "cert_chain_fps": [sha1(payload, usedforsecurity=False).hexdigest()],
+                "server_name": "securemail.test",
+            }
+        ]
+    }
+    snapshot = load_trust_store_snapshot()
+    certs = normalize_certificates(
+        logs,
+        [extracted],
+        normalize_handshakes(logs, [_flow()], _index()),
+        analysis_time=datetime(2026, 9, 4, tzinfo=UTC),
+        expiry_warning=timedelta(days=30),
+        artifact_store=_Store(),
+        trust_snapshot=snapshot,
+        expected_hostname="wrong.example.test",
+    )
+    assert len(certs) == 1
+    validation = certs[0].validation
+    assert validation is not None
+    assert validation.certificate_observed is True
+    assert validation.path_valid_at_capture_time is False
+    assert validation.path_invalid_reasons_at_capture_time
+    assert validation.identity_match is False
+    assert validation.reference_identity == "wrong.example.test"
+    assert validation.reference_identity_source.value == "configured"
+    assert validation.revocation_status is RevocationStatus.UNKNOWN
+    assert validation.trust_store_digest == snapshot.digest

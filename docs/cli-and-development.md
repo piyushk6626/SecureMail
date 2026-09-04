@@ -13,6 +13,8 @@ uv run securemail analyze <capture.pcap|capture.pcapng> --out <path.json>
 - `--out` is required.
 - Optional `--analysis-time` (RFC 3339 UTC) freezes `valid_at_analysis_time`.
 - Optional `--expiry-warning-days` (default 30) sets the expiry warning window.
+- Optional `--expected-hostname` sets the RFC 9525 reference identity
+  (`reference_identity_source=configured`). Default: observed SNI.
 - Capture must exist, be a file, and be readable (Typer checks).
 - Parent directories of `--out` are created.
 - JSON: `indent=2`, `sort_keys=True`, `ensure_ascii=False`, trailing newline.
@@ -70,7 +72,7 @@ Docker Desktop-specific notes are skipped.
 - CPython **3.13** via uv — not 3.14, not Homebrew/system Python
 - Zeek **8.0.10** digest in the lockfile — not 8.2 / 9.x unless lock + fixtures
   are deliberately refreshed
-- OpenSSL cross-check (unused until Step 6 tests): Homebrew
+- OpenSSL cross-check (Step 6 differential tests): Homebrew
   `/opt/homebrew/bin/openssl` on macOS, never `/usr/bin/openssl` (LibreSSL)
 - git-lfs for `*.pcap`, `*.pcapng`, `*.der`, `*.p12`, `*.pfx`; JSON is ordinary
   git text
@@ -97,6 +99,8 @@ Docker Desktop-specific notes are skipped.
 | `tests/test_protocol_fixtures.py` | Step 2 identity assertions |
 | `tests/test_starttls_fixtures.py` | Step 3 upgrade / implicit TLS assertions |
 | `tests/test_tls_fixtures.py` | Step 4 version/cipher/key-exchange assertions |
+| `tests/test_certificate_fixtures.py` | Step 5 certificate fact assertions |
+| `tests/test_certificate_chain_fixtures.py` | Step 6 path/identity fixtures, no-inet guard |
 | `tests/unit/test_reconstruction_quality.py` | Pure classifier |
 | `tests/unit/test_normalize_flows.py` | Log joining |
 | `tests/unit/test_normalize_sessions.py` | Identity, merge, corroboration gate |
@@ -107,6 +111,10 @@ Docker Desktop-specific notes are skipped.
 | `tests/unit/test_normalize_handshakes.py` | Version precedence, history, HRR frames |
 | `tests/unit/test_key_exchange.py` | TLS 1.2 grammar vs TLS 1.3 key_share/PSK |
 | `tests/unit/test_iana_tls_parameters.py` | Snapshot bounds and lookups |
+| `tests/unit/test_chain_validation.py` | Path validation at explicit times |
+| `tests/unit/test_identity.py` | RFC 9525 SAN matching; no CN fallback |
+| `tests/unit/test_trust_store.py` | Pinned snapshot bounds and digest |
+| `tests/unit/test_openssl_crosscheck.py` | OpenSSL vs cryptography differential |
 | `tests/unit/test_analyzer_argv.py` | No shell metacharacters |
 | `tests/unit/test_bundle_lock.py` | Lock hashing |
 | `tests/unit/test_capinfos_parse.py` | capinfos text |
@@ -115,8 +123,8 @@ Docker Desktop-specific notes are skipped.
 | `tests/unit/test_fixture_diff.py` | Harness diff helper |
 
 The harness compares **every** field, including `run_identity` digests and Zeek
-UIDs. Changing `zeek/`, the lockfile, or `_CONFIGURATION` requires regenerating
-affected `expected.json` files.
+UIDs. Changing `zeek/`, the lockfile, `_CONFIGURATION`, or
+`trust-store-snapshot.pem` requires regenerating affected `expected.json` files.
 
 ## CI
 

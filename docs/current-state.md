@@ -25,12 +25,15 @@ It produces a frozen v0 JSON document with:
   exchange, `ssl_history`, frame-linked messages)
 - top-level certificate facts (DER SHA-256, subject/issuer, validity window,
   public-key algorithm and effective strength, certificate signature algorithm)
+- leaf-only chain validation and RFC 9525 identity matching against a pinned
+  offline trust snapshot
 
-There are **59** committed fixtures under `tests/fixtures/<case_id>/`. The
+There are **64** committed fixtures under `tests/fixtures/<case_id>/`. The
 harness in [`tests/support/fixture_harness.py`](../tests/support/fixture_harness.py)
 runs the real CLI and diffs the entire output against `expected.json` (no
-ignored fields). Optional `analyze.json` supplies `--analysis-time` and
-`--expiry-warning-days` for time-dependent certificate goldens.
+ignored fields). Optional `analyze.json` supplies `--analysis-time`,
+`--expiry-warning-days`, and `--expected-hostname` for time-dependent or
+identity-configured certificate goldens.
 
 ## Step map
 
@@ -42,7 +45,7 @@ ignored fields). Optional `analyze.json` supplies `--analysis-time` and
 | 3 | STARTTLS/STLS state machines + implicit TLS | **Done** |
 | 4 | TLS version / cipher / key exchange | **Done** |
 | 5 | Certificate facts | **Done** |
-| 6 | Chain + identity (offline trust store) | Placeholder (PKI adapters and `trust-store-snapshot.pem`) |
+| 6 | Chain + identity (offline trust store) | **Done** |
 | 7 | Versioned rule packs + forward secrecy | Placeholder (`rule_engine.py`, YAML packs, `forward_secrecy.py`) |
 | 8 | Scoring, dedup, coverage denominators | Placeholder (`domain/findings/*`, `api/cli/commands/score.py`) |
 | 9 | Canonical JSON → HTML/PDF | Placeholder (report adapters/templates, `report.py`) |
@@ -76,6 +79,9 @@ uv run securemail analyze tests/fixtures/tls13_hello_retry_request/capture.pcapn
 
 # Step 5 — expired RSA-1024 certificate facts (not a finding)
 uv run securemail analyze tests/fixtures/cert_expired_rsa1024/capture.pcapng --out out/cert.json
+
+# Step 6 — SAN mismatch with a still-valid path
+uv run securemail analyze tests/fixtures/cert_chain_san_mismatch/capture.pcapng --out out/chain.json
 ```
 
 `--out` is required. Output is JSON with sorted keys, 2-space indent, a trailing
@@ -98,11 +104,13 @@ commands.
 
 The JSON does **not** contain `Finding`, posture scores, or a report manifest.
 Handshake records do not judge forward secrecy or weak-suite policy (Step 7).
-Certificate records are **facts** only: RSA-1024 and SHA-1 signatures are stored
-without becoming findings. Path validation and identity matching are Step 6.
-`run_identity.policy_pack_version` and `run_identity.trust_store_digest` are
-always `null`. No network calls happen during analysis (analyzer containers use
-`--network=none`). No dashboard, no Postgres, no queue.
+Certificate records store facts plus independent path/identity outcomes: RSA-1024
+and SHA-1 signatures are stored without becoming findings. Revocation without
+imported OCSP/CRL is `unknown`. `run_identity.policy_pack_version` is always
+`null`. `run_identity.trust_store_digest` is the SHA-256 of the pinned PEM
+snapshot. No network calls happen during analysis (analyzer containers use
+`--network=none`; chain validation does not fetch AIA/OCSP/CRL/CT/DNS). No
+dashboard, no Postgres, no queue.
 
 See [architecture.md](architecture.md) for the live module map and
 [fixtures.md](fixtures.md) for every committed case.

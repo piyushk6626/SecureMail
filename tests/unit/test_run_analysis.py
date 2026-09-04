@@ -185,3 +185,24 @@ def test_run_analysis_assesses_starttls_from_ssl_history(tmp_path: Path) -> None
     assert len(document.handshakes) == 1
     assert document.handshakes[0].uid == "Ctest"
     assert document.handshakes[0].ssl_history == "Csx"
+
+
+def test_run_analysis_records_trust_store_digest_when_snapshot_provided(
+    tmp_path: Path,
+) -> None:
+    from securemail.adapters.pki.trust_store import load_trust_store_snapshot
+
+    capture = tmp_path / "capture.pcapng"
+    capture.write_bytes(b"\x0a\x0d\x0d\x0a" + b"\x00" * 32)
+    snapshot = load_trust_store_snapshot()
+    hostname = "mail.example.test"
+    document = run_analysis(
+        AnalyzeRequest(capture_path=capture, expected_hostname=hostname),
+        zeek_runner=_FakeZeek([]),
+        preflight_runner=_FakePreflight([]),
+        trust_snapshot=snapshot,
+    )
+    assert document.run_identity.trust_store_digest == snapshot.digest
+    assert document.run_identity.configuration_digest == configuration_digest(
+        expected_hostname=hostname
+    )

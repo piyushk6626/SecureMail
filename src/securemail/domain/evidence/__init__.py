@@ -1,6 +1,12 @@
 """Evidence models. `EvidenceState` is defined only in `run.py`."""
 
-from securemail.domain.evidence.certificate import CertificateEvidence, CertificateRole
+from securemail.domain.evidence.certificate import (
+    CertificateEvidence,
+    CertificateRole,
+    CertificateValidation,
+    ReferenceIdentitySource,
+    RevocationStatus,
+)
 from securemail.domain.evidence.flow import (
     ByteRange,
     Flow,
@@ -60,6 +66,9 @@ __all__ = [
     "CapturePreflight",
     "CertificateEvidence",
     "CertificateRole",
+    "CertificateValidation",
+    "ReferenceIdentitySource",
+    "RevocationStatus",
     "CipherSuiteEvidence",
     "EmailSession",
     "EventSource",

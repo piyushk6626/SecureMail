@@ -3,11 +3,12 @@
 Offline, deterministic-first cryptographic posture analysis for SMTP, IMAP, and
 POP3 traffic captured in PCAP/PCAPNG files.
 
-This repository has completed **Steps 0–5** of `plans/build_plan.md`: package
+This repository has completed **Steps 0–6** of `plans/build_plan.md`: package
 layout, sandboxed Zeek/TShark runners, TCP reconstruction quality, payload-driven
 protocol identification, STARTTLS/STLS plus implicit-TLS assessment, TLS
-version / cipher / key-exchange evidence, and per-certificate facts. The live
-command is `securemail analyze`. Steps 6–11 remain named placeholders.
+version / cipher / key-exchange evidence, per-certificate facts, and offline
+chain validation with RFC 9525 identity matching. The live command is
+`securemail analyze`. Steps 7–11 remain named placeholders.
 
 **As-built documentation** (what the code does today) lives in
 [`docs/README.md`](docs/README.md). Plan contracts (what to build next) remain in
