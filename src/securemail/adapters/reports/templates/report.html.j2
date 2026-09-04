@@ -350,9 +350,9 @@
         <div class="region{% if not report.advisory.present %} muted{% endif %}">
           <h3>Advisory / ML</h3>
           {% if report.advisory.present %}
-          <p>{{ report.advisory.items|length }} advisory items. Not used as compliance judgments.</p>
+          <p>{{ report.advisory['items']|length }} advisory items. Not used as compliance judgments.</p>
           {% else %}
-          <p>Not present in this report (Step 10 is separate).</p>
+          <p>Not present in this export.</p>
           {% endif %}
         </div>
         <div class="region{% if not report.analyst_conclusions.present %} muted{% endif %}">
@@ -742,7 +742,7 @@
       <h2>Advisory / ML</h2>
       {% if report.advisory.present %}
       <ul>
-        {% for item in report.advisory.items %}
+        {% for item in report.advisory['items'] %}
         <li><span class="mono">{{ item.code|forensic_text }}</span> — {{ item.reason|forensic_text }}</li>
         {% endfor %}
       </ul>

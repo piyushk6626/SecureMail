@@ -27,7 +27,7 @@ jobs:
           git lfs install
           git lfs pull
       - name: Sync Python environment
-        run: uv sync --extra dev --extra reports
+        run: uv sync --extra dev --extra reports --extra ml
       - name: Doctor
         env:
           SECUREMAIL_CI: "1"

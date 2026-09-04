@@ -18,6 +18,7 @@ from securemail.application.run_analysis import (
 )
 from securemail.domain.evidence.run import EvidenceDocument, PolicyProfile
 from securemail.domain.findings.posture import PostureAssessment
+from securemail.domain.ml.models import EvaluationReport
 from securemail.domain.reports.schema import CanonicalReport
 
 
@@ -52,7 +53,21 @@ class ReportFn(Protocol):
     def __call__(self, report: CanonicalReport, *, formats: tuple[str, ...]) -> RenderedReport: ...
 
 
-def build_app(analyze: AnalyzeFn, score: ScoreFn, report: ReportFn) -> typer.Typer:
+class EvaluateMlFn(Protocol):
+    def __call__(self, cohort_dir: Path) -> EvaluationReport: ...
+
+
+class ApplyAdvisoryFn(Protocol):
+    def __call__(self, report: CanonicalReport) -> CanonicalReport: ...
+
+
+def build_app(
+    analyze: AnalyzeFn,
+    score: ScoreFn,
+    report: ReportFn,
+    evaluate_ml: EvaluateMlFn,
+    apply_advisory: ApplyAdvisoryFn,
+) -> typer.Typer:
     app = typer.Typer(no_args_is_help=True, add_completion=False)
 
     @app.callback()
@@ -60,11 +75,13 @@ def build_app(analyze: AnalyzeFn, score: ScoreFn, report: ReportFn) -> typer.Typ
         """SecureMail: offline SMTP/IMAP/POP3 cryptographic posture analysis."""
 
     register_analyze(app, analyze)
+    from securemail.api.cli.commands.evaluate_ml import register_evaluate_ml
     from securemail.api.cli.commands.report import register_report
     from securemail.api.cli.commands.score import register_score
 
     register_score(app, score)
-    register_report(app, report)
+    register_report(app, report, apply_advisory=apply_advisory)
+    register_evaluate_ml(app, evaluate_ml)
     return app
 
 

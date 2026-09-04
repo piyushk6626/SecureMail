@@ -31,6 +31,17 @@ tests/fixtures/reports/
   assemble.py         # regenerates the golden from typed models
 ```
 
+Step 10 advisory ML uses a seeded synthetic cohort (no PCAP):
+
+```text
+tests/support/synthetic_cohorts/
+  __init__.py                 # generator (locked seed 20260904)
+  cohort_seeded_v1/
+    manifest.json
+    labels.json
+    windows.json
+```
+
 `<case_id>` is `<protocol_or_area>_<condition>` as named in
 [`plans/build_plan.md`](../plans/build_plan.md). There are **71** committed
 fixture directories. Some are reused as proof in more than one step

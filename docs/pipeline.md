@@ -238,4 +238,5 @@ UIDs — it does not ignore any field.
 
 Analyze does not emit a report envelope. `securemail report` reads
 `securemail.report/v1` JSON and renders RFC 8785 JSON, HTML, and PDF.
-Advisory ML remains Step 10.
+Advisory ML is a separate `evaluate-ml` / `report --advisory` path; see
+[advisory-ml.md](advisory-ml.md).

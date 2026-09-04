@@ -3,15 +3,16 @@
 Offline, deterministic-first cryptographic posture analysis for SMTP, IMAP, and
 POP3 traffic captured in PCAP/PCAPNG files.
 
-This repository has completed **Steps 0–9** of `plans/build_plan.md`: package
+This repository has completed **Steps 0–10** of `plans/build_plan.md`: package
 layout, sandboxed Zeek/TShark runners, TCP reconstruction quality, payload-driven
 protocol identification, STARTTLS/STLS plus implicit-TLS assessment, TLS
 version / cipher / key-exchange evidence, per-certificate facts, offline
 chain validation with RFC 9525 identity matching, versioned rule packs,
-forward-secrecy assessment, posture scoring with coverage denominators, and
-canonical JSON → HTML/PDF reports. The live commands are `securemail analyze`,
-`securemail score`, and `securemail report`. Steps 10–11 remain named
-placeholders.
+forward-secrecy assessment, posture scoring with coverage denominators,
+canonical JSON → HTML/PDF reports, and advisory ML after the deterministic
+baseline. The live commands are `securemail analyze`, `securemail score`,
+`securemail report`, and `securemail evaluate-ml`. Step 11 remains a named
+placeholder.
 
 **As-built documentation** (what the code does today) lives in
 [`docs/README.md`](docs/README.md). Plan contracts (what to build next) remain in
@@ -27,7 +28,7 @@ Pango (needed by WeasyPrint for `securemail report` PDF; `make doctor` checks it
 
 ```bash
 git lfs install
-uv sync --extra dev --extra reports
+uv sync --extra dev --extra reports --extra ml
 docker pull zeek/zeek@sha256:73e80e9cd23ff71fd28d158e9a9af5c7b2b0ef5d4036af61521827531347c0e3
 make tshark-image
 make zeek-image
@@ -72,13 +73,18 @@ uv run securemail score tests/fixtures/synthetic_findings/mixed_severity.json
 
 # Step 9 — canonical JSON → HTML/PDF
 uv run securemail report tests/fixtures/reports/golden_report.json --format json,html,pdf --out out/
+
+# Step 10 — advisory ML evaluation harness
+uv run securemail evaluate-ml tests/support/synthetic_cohorts/cohort_seeded_v1/
 ```
 
 `analyze --out` is required. Analyze output is a v2 `EvidenceDocument` JSON file
 (flows, sessions, handshakes, certificates, session-level findings, policy
 checks, and posture). `score` writes the same posture object to stdout.
 `report` reads a `securemail.report/v1` object and writes RFC 8785 JSON, HTML,
-and PDF from one in-memory dump. There is no `evaluate-ml` command yet.
+and PDF from one in-memory dump. `evaluate-ml` scores the locked synthetic
+cohort and prints detection-delay / precision@K gates. `report --advisory`
+fills the Advisory / ML section without changing deterministic findings.
 
 ## Layout
 

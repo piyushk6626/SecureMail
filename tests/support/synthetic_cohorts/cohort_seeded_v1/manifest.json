@@ -1,0 +1,13 @@
+{
+  "baseline_precision_floor": 0.6,
+  "cohort_id": "cohort_seeded_v1",
+  "detection_delay_windows": 2,
+  "feature_schema_version": "securemail.advisory_features/v1",
+  "isolation_forest_precision_lift": 0.1,
+  "justification": "Daily windows match the cohort grain. Detection within 2 windows is one missed daily job plus the next. Top-5 is a small analyst budget. A 0.60 baseline floor is 3/5 true endpoints in that budget. A +0.10 Isolation Forest lift is a material effect on multivariate templates the per-endpoint MAD/rarity baseline is designed to miss. Development seed 20260101 is held out; locked evaluation uses 20260904.",
+  "min_history_windows": 14,
+  "n_days": 70,
+  "seed": 20260904,
+  "top_k": 5,
+  "warmup_days": 28
+}

@@ -45,16 +45,17 @@ or TLS record decoding. Zeek is the primary processing engine.
 
 ## 2. Current project state
 
-This repository has completed **Steps 0–9** of `build_plan.md`: package layout,
+This repository has completed **Steps 0–10** of `build_plan.md`: package layout,
 sandboxed Zeek/TShark runners, the v1 normalization / v2 evidence envelope,
 TCP reconstruction quality, payload-driven SMTP/IMAP/POP3 identification,
 STARTTLS/STLS plus implicit-TLS assessment, TLS version / cipher / key-exchange
 evidence, per-certificate extraction, offline chain validation with RFC 9525
 identity matching, versioned IETF/NIST/historical rule packs, forward-secrecy
-assessment, posture scoring with coverage denominators, and canonical JSON →
-HTML/PDF reports. The live CLI commands are `securemail analyze`,
-`securemail score`, and `securemail report`. The next step to implement is
-**Step 10** (advisory ML after the deterministic baseline).
+assessment, posture scoring with coverage denominators, canonical JSON →
+HTML/PDF reports, and advisory ML after the deterministic baseline. The live
+CLI commands are `securemail analyze`, `securemail score`, `securemail report`,
+and `securemail evaluate-ml`. The next step to implement is **Step 11**
+(FastAPI + React over the same JSON).
 
 The tree in `PROJECT_SCAFFOLD.md` Section 3 is the layout Step 0 created;
 later steps **fill named files**, they do not invent new top-level layout.
@@ -236,7 +237,7 @@ silently changing versions.
 | Tool | Rule |
 |---|---|
 | Python | **CPython 3.13** via `uv`. Not 3.14, not system Python, not Homebrew Python. |
-| Deps | `uv` + committed `uv.lock`. `uv sync --extra dev --extra reports` (JSON/HTML work without WeasyPrint; PDF needs the `reports` extra). |
+| Deps | `uv` + committed `uv.lock`. `uv sync --extra dev --extra reports --extra ml` (JSON/HTML work without WeasyPrint; PDF needs the `reports` extra; Isolation Forest needs `ml`). |
 | Analyzers | Docker images **pinned by digest**, `--network=none`, `--read-only`, non-root `65532`, `--cap-drop=ALL`, `--security-opt=no-new-privileges`, `--pids-limit=256`, `--memory=2g`, `--cpus=2`. |
 | Zeek | `zeek/zeek:8.0.10` LTS, digest in the scaffold / lockfile — not 8.2 or 9.x unless the lockfile + every fixture are deliberately refreshed. |
 | TShark | Separate image from `debian:trixie-slim` digest; lock records Dockerfile SHA-256, not the built-image digest; GPL; never statically linked. |
@@ -322,9 +323,10 @@ autoescape stays on — never disable per-template.
 
 ## 10. ML / dashboard (when those steps are open)
 
-- Baseline (median/MAD, categorical rarity) is committed and scored first.
-  `isolation_forest.py` must not exist until a committed test shows it beats the
-  baseline by a stated margin.
+- Baseline (median/MAD, categorical rarity, change-point) is committed and
+  scored first. `isolation_forest.py` is in the tree only because a committed
+  harness showed it beating that baseline by the frozen margin. Do not add a
+  second ML model until the same gate is rewritten and passed.
 - `--advisory` is off by default. Reports keep “Deterministic Findings” and
   “Advisory / ML” as separate sections.
 - Every anomaly needs a concrete, evidence-linked reason string, not “anomaly

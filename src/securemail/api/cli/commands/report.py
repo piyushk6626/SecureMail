@@ -9,6 +9,7 @@ from typing import Protocol
 import typer
 from pydantic import ValidationError
 
+from securemail.application.advisory_pipeline import AdvisoryPipelineError
 from securemail.application.render_report import (
     RenderedReport,
     ReportError,
@@ -23,7 +24,15 @@ class ReportFn(Protocol):
     def __call__(self, report: CanonicalReport, *, formats: tuple[str, ...]) -> RenderedReport: ...
 
 
-def register_report(app: typer.Typer, report: ReportFn) -> None:
+class ApplyAdvisoryFn(Protocol):
+    def __call__(self, report: CanonicalReport) -> CanonicalReport: ...
+
+
+def register_report(
+    app: typer.Typer,
+    report: ReportFn,
+    apply_advisory: ApplyAdvisoryFn,
+) -> None:
     @app.command("report")
     def report_command(
         report_json: Path = typer.Argument(
@@ -39,6 +48,11 @@ def register_report(app: typer.Typer, report: ReportFn) -> None:
             "--format",
             help="Comma-separated artifacts: json, html, pdf.",
         ),
+        advisory: bool = typer.Option(
+            False,
+            "--advisory",
+            help="Run shadow-mode ML after deterministic findings. Off by default.",
+        ),
     ) -> None:
         try:
             requested = parse_report_formats(formats)
@@ -51,6 +65,8 @@ def register_report(app: typer.Typer, report: ReportFn) -> None:
             if not isinstance(payload, dict):
                 raise ReportError("report JSON must be an object")
             document = CanonicalReport.model_validate(payload)
+            if advisory:
+                document = apply_advisory(document)
             artifacts = report(document, formats=requested)
         except (
             OSError,
@@ -58,6 +74,7 @@ def register_report(app: typer.Typer, report: ReportFn) -> None:
             json.JSONDecodeError,
             ValidationError,
             ReportError,
+            AdvisoryPipelineError,
             ValueError,
         ) as exc:
             typer.secho(str(exc), err=True)

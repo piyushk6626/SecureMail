@@ -20,7 +20,7 @@ CanonicalReport
   stage_errors: StageError[]          # empty when analysis completed
   suppressed_findings: Finding[]
   exceptions: str[]
-  advisory: { present, items[] }      # empty until Step 10
+  advisory: { present, items[] }      # filled by report --advisory; empty by default
   analyst_conclusions: { present, notes[] }
 ```
 
@@ -37,14 +37,15 @@ Unavailable fields stay labeled. They are not invented.
 ## CLI
 
 ```bash
-uv sync --extra dev --extra reports
+uv sync --extra dev --extra reports --extra ml
 uv run securemail report tests/fixtures/reports/golden_report.json \
   --format json,html,pdf --out out/
 ```
 
 `--out` is required. `--format` is a comma-separated list of `json`, `html`,
-and `pdf` (default: all three). Input is bounded at 8 MiB. Invalid JSON,
-schema, unknown format, or oversize input exits 1. A missing path exits 2.
+and `pdf` (default: all three). `--advisory` is off by default. Input is bounded
+at 8 MiB. Invalid JSON, schema, unknown format, or oversize input exits 1. A
+missing path exits 2.
 
 Artifacts:
 

@@ -14,7 +14,7 @@ from securemail.adapters.reports.html_renderer import (
     template_path,
     template_sha256,
 )
-from securemail.domain.reports.schema import CanonicalReport
+from securemail.domain.reports.schema import AdvisoryItem, AdvisorySection, CanonicalReport
 
 
 def _html() -> str:
@@ -89,3 +89,30 @@ def test_four_regions_are_labeled() -> None:
     assert "Deterministic conclusions" in html
     assert "Advisory / ML" in html
     assert "Analyst conclusions" in html
+    assert "No advisory section" in html
+
+
+def test_advisory_items_render_separately_from_findings() -> None:
+    report = CanonicalReport.model_validate(load_golden_report())
+    updated = report.model_copy(
+        update={
+            "advisory": AdvisorySection(
+                present=True,
+                items=[
+                    AdvisoryItem(
+                        code="ADVISORY_TLS_VERSION_SHIFT",
+                        reason=(
+                            "tls10_share rose versus this endpoint's trailing median; "
+                            "field handshake.version.selected."
+                        ),
+                    )
+                ],
+            )
+        }
+    )
+    html = render_html(updated.model_dump(mode="json"))
+    assert "ADVISORY_TLS_VERSION_SHIFT" in html
+    assert "handshake.version.selected" in html
+    assert "No advisory section" not in html
+    for code in _provenance()["finding_codes"]:
+        assert str(code) in html

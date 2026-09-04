@@ -1,0 +1,59 @@
+{
+  "events": [
+    {
+      "end_day": 46,
+      "endpoint_id": "mx-01",
+      "event_id": "tls_downgrade_mx01",
+      "family": "tls_downgrade",
+      "kind": "univariate",
+      "start_day": 40
+    },
+    {
+      "end_day": 51,
+      "endpoint_id": "mx-02",
+      "event_id": "failure_spike_mx02",
+      "family": "failure_spike",
+      "kind": "univariate",
+      "start_day": 45
+    },
+    {
+      "end_day": 54,
+      "endpoint_id": "sub-01",
+      "event_id": "starttls_fallback_sub01",
+      "family": "starttls_fallback",
+      "kind": "univariate",
+      "start_day": 48
+    },
+    {
+      "end_day": 56,
+      "endpoint_id": "imap-01",
+      "event_id": "subtle_combo_imap01",
+      "family": "subtle_combo",
+      "kind": "multivariate",
+      "start_day": 50
+    },
+    {
+      "end_day": 44,
+      "endpoint_id": "pop-01",
+      "event_id": "subtle_issuer_failure_pop01",
+      "family": "subtle_combo",
+      "kind": "multivariate",
+      "start_day": 38
+    }
+  ],
+  "jitter_endpoints": [
+    "mx-noise-1",
+    "mx-noise-2",
+    "mx-noise-3"
+  ],
+  "maintenance": [
+    {
+      "end_day": 38,
+      "endpoint_id": "mx-03",
+      "start_day": 36
+    }
+  ],
+  "new_endpoints": [
+    "imap-new"
+  ]
+}

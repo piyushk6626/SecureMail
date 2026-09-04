@@ -11,9 +11,12 @@ from securemail.adapters.analyzers.capinfos_runner import DockerCapinfosRunner
 from securemail.adapters.analyzers.tshark_runner import DockerTSharkRunner
 from securemail.adapters.analyzers.zeek_runner import DockerZeekRunner
 from securemail.adapters.artifacts.certificate_store import CertificateStore
+from securemail.adapters.ml.baselines import BaselineAnomalyScorer
+from securemail.adapters.ml.isolation_forest import IsolationForestScorer
 from securemail.adapters.pki.trust_store import load_trust_store_snapshot
 from securemail.adapters.reference_data.iana_tls_parameters import load_iana_tls_parameters
 from securemail.adapters.reference_data.policy_packs import PolicyPackError, load_policy_pack
+from securemail.application.advisory_pipeline import attach_advisories, evaluate_cohort_dir
 from securemail.application.render_report import RenderedReport, render_report
 from securemail.application.run_analysis import (
     DEFAULT_EXPIRY_WARNING_SECONDS,
@@ -23,6 +26,7 @@ from securemail.application.run_analysis import (
     score_findings,
 )
 from securemail.domain.evidence.run import EvidenceDocument, PolicyProfile
+from securemail.domain.ml.models import EvaluationReport
 from securemail.domain.reports.schema import CanonicalReport
 
 
@@ -74,10 +78,32 @@ def _render_report(report: CanonicalReport, *, formats: tuple[str, ...]) -> Rend
     )
 
 
+def _evaluate_ml(cohort_dir: Path) -> EvaluationReport:
+    return evaluate_cohort_dir(
+        cohort_dir,
+        baseline=BaselineAnomalyScorer(),
+        challenger=IsolationForestScorer(),
+    )
+
+
+def _apply_advisory(report: CanonicalReport) -> CanonicalReport:
+    return attach_advisories(
+        report,
+        scorers=(BaselineAnomalyScorer(), IsolationForestScorer()),
+        cohort="capture",
+    )
+
+
 def create_cli() -> typer.Typer:
     from securemail.api.cli.main import build_app
 
-    return build_app(analyze=_analyze, score=score_findings, report=_render_report)
+    return build_app(
+        analyze=_analyze,
+        score=score_findings,
+        report=_render_report,
+        evaluate_ml=_evaluate_ml,
+        apply_advisory=_apply_advisory,
+    )
 
 
 def main() -> None:

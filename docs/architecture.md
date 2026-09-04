@@ -43,8 +43,8 @@ Three import-linter contracts:
 Canonical records that exist today: `AnalysisRun` (inside `EvidenceDocument`),
 `CapturePreflight`, `Flow`, `EmailSession`, `TlsHandshake`,
 `CertificateEvidence` (with leaf `CertificateValidation`), `Finding`,
-`PolicyCheck`, `PostureAssessment`, and `ReportManifest` / `CanonicalReport`.
-The names `Case`, `Capture`, `AnomalyResult`, and `AuditEvent` are design
+`PolicyCheck`, `PostureAssessment`, `AnomalyResult`, and `ReportManifest` /
+`CanonicalReport`. The names `Case`, `Capture`, and `AuditEvent` are design
 vocabulary from [`plans/TECHNICAL_DESIGN.md`](../plans/TECHNICAL_DESIGN.md);
 they are not live models except where a placeholder file already occupies the
 scaffold path.
@@ -70,11 +70,11 @@ the Typer layer never imports adapters.
 
 | Path | Role |
 |---|---|
-| `api/cli/main.py` | Typer app; registers `analyze`, `score`, and `report`; writes JSON |
+| `api/cli/main.py` | Typer app; registers `analyze`, `score`, `report`, and `evaluate-ml` |
 | `api/cli/commands/score.py` | Thin `score` command: bounded JSON in, stdout JSON out |
-| `api/cli/commands/report.py` | Thin `report` command: bounded JSON in, JSON/HTML/PDF out |
+| `api/cli/commands/report.py` | Thin `report` command: bounded JSON in, JSON/HTML/PDF out; `--advisory` |
 | `api/cli/commands/analyze.py` | Unused Step 0 stub; live `analyze` lives in `main.py` |
-| `api/cli/commands/evaluate_ml.py` | Step 10 stub |
+| `api/cli/commands/evaluate_ml.py` | Thin `evaluate-ml` command over a seeded cohort directory |
 | `api/main.py`, `api/dependencies.py`, `api/routers/` | Step 11 placeholders |
 
 Console script: `securemail = "securemail.api.cli.main:main"` in
@@ -91,7 +91,7 @@ Console script: `securemail = "securemail.api.cli.main:main"` in
 | `normalize_sessions.py` | `sm_email.log` + optional TShark frames + `ssl.log` → `EmailSession` |
 | `normalize_handshakes.py` | `ssl.log` / ssl-log-ext + optional TShark frames → `TlsHandshake` |
 | `normalize_certificates.py` | Extracted DER + `ssl.log` chain fingerprints → `CertificateEvidence` with leaf `validation` |
-| `advisory_pipeline.py` | Step 10 placeholder |
+| `advisory_pipeline.py` | Feature extraction from canonical evidence, `AnomalyResult` assembly, cohort evaluation; never mutates `Finding` |
 
 Domain models are constructed here. They do not parse raw Zeek/TShark output
 themselves.
@@ -121,6 +121,8 @@ themselves.
 | `findings/dedup.py` | Session findings → endpoint clusters |
 | `findings/posture.py` | Coverage matrix, prioritized findings, assessment state |
 | `reports/schema.py` | `CanonicalReport` / `ReportManifest`; JSON Schema snapshot |
+| `ml/models.py` | `EndpointWindow`, `AnomalyResult`, cohort labels, evaluation report |
+| `ml/evaluation.py` | Detection delay, precision@K, stratified lift CI, declared thresholds |
 
 ### `ports/`
 
@@ -128,7 +130,8 @@ themselves.
 |---|---|
 | `analyzers.py` | `ZeekRunner`, `TSharkRunner`, `CapturePreflightRunner` protocols and result models |
 | `artifacts.py` | `ArtifactStore` protocol (`put`/`get` by SHA-256) |
-| `persistence.py`, `ml.py` | Step 11 / Step 10 placeholders |
+| `ml.py` | `AnomalyScorer` protocol; sklearn stays in adapters |
+| `persistence.py` | Step 11 placeholder |
 
 ### `adapters/`
 
@@ -150,14 +153,16 @@ themselves.
 | `reports/pdf_renderer.py` | WeasyPrint over the HTML string; `data:`-only URL fetcher |
 | `reports/templates/report.html.j2` | Single HTML template for HTML and PDF |
 | `reports/fonts/` | Bundled Noto Sans / Noto Sans Mono (OFL) |
-| ML | Step 10 placeholders |
+| `ml/baselines.py` | Median/MAD, categorical rarity, Page-Hinkley |
+| `ml/isolation_forest.py` | Isolation Forest challenger; gated by the evaluation harness |
 
 ## Toolchain (what the package actually pins)
 
 - CPython **3.13** (`requires-python = ">=3.13,<3.14"`), installed via `uv`
 - Default deps: pydantic v2, typer, cryptography, pyyaml, jinja2, rfc8785==0.1.4
 - Extra `reports` (WeasyPrint==69.0) is required for PDF; JSON/HTML report rendering
-  uses core deps. Extras `ml` and `api` remain for later steps.
+  uses core deps. Extra `ml` (scikit-learn, numpy, scipy) is required for
+  `securemail evaluate-ml` and `--advisory`. Extra `api` remains for Step 11.
 - Dev extra: pytest, hypothesis, import-linter, ruff, mypy, pre-commit,
   playwright, scapy, jsonschema, pypdf
 - Analyzers: Docker images, `--network=none` (see [analyzers.md](analyzers.md))

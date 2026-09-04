@@ -1,5 +1,5 @@
 {
-  "canonical_json_sha256": "f7b34443191d2e6e6da9c54fae29fe7635de6fcf9a5bf9f4805d6d75a199883e",
+  "canonical_json_sha256": "96a6537688198f3ca2dced8f45474fbca1245a85cfff89717d426a12ea413b0b",
   "created_at": "2026-09-04T12:00:00Z",
   "finding_codes": [
     "CERT_EXPIRED_AT_CAPTURE",
@@ -24,6 +24,6 @@
   "pdf_page_count_min": 8,
   "report_schema_version": "securemail.report/v1",
   "source": "hand-assembled",
-  "template_sha256": "89c8d6fe04df9723a4b53db3111380a633d82336acd035b98fd73a00c4d59be7",
+  "template_sha256": "9af49e7a478bad9d874034675f2268ff1d16dbc4d206b2cb20fecdeb1ff53b9d",
   "weasyprint_version": "69.0"
 }

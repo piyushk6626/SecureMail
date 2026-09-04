@@ -192,7 +192,7 @@ class StageError(BaseModel):
 
 
 class AdvisoryItem(BaseModel):
-    """ML advisory placeholder. Step 10 fills this; Step 9 keeps it empty."""
+    """One shadow-mode ML item shown in the Advisory / ML report section."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -201,6 +201,8 @@ class AdvisoryItem(BaseModel):
 
 
 class AdvisorySection(BaseModel):
+    """Shadow-mode ML output. Empty unless `report --advisory` ran."""
+
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     present: bool = False

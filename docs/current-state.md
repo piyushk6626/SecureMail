@@ -1,9 +1,10 @@
 # Current state
 
-SecureMail is a **CLI-only**, offline, deterministic analyzer of SMTP, IMAP, and
+SecureMail is a **CLI-only**, offline, deterministic-first analyzer of SMTP, IMAP, and
 POP3 traffic in PCAP/PCAPNG files. It scores and deduplicates findings, publishes
-coverage denominators, and exports forensic reports in JSON, HTML, and PDF. It
-does not yet run ML or expose an API.
+coverage denominators, exports forensic reports in JSON, HTML, and PDF, and can
+run a shadow-mode advisory ML stage over endpoint-window features. It does not
+yet expose an API.
 
 Python orchestrates. Zeek is the primary packet engine. A bounded TShark pass
 corroborates mail command/status and TLS handshake message frames when the first
@@ -18,6 +19,7 @@ wired through [`src/securemail/bootstrap.py`](../src/securemail/bootstrap.py):
 - `securemail analyze` — PCAP/PCAPNG → v2 `EvidenceDocument`
 - `securemail score` — synthetic finding JSON → `PostureAssessment` on stdout
 - `securemail report` — canonical report JSON → RFC 8785 JSON, HTML, and PDF
+- `securemail evaluate-ml` — seeded cohort directory → detection-delay / precision@K gates
 
 Analyze produces a frozen v2 JSON document with:
 
@@ -61,7 +63,7 @@ stay stable; the live CLI still defaults analysis time to now.
 | 7 | Versioned rule packs + forward secrecy | **Done** |
 | 8 | Scoring, dedup, coverage denominators | **Done** |
 | 9 | Canonical JSON → HTML/PDF | **Done** |
-| 10 | Advisory ML | Placeholder (`advisory_pipeline.py`, `evaluate_ml.py`, baselines) |
+| 10 | Advisory ML | **Done** (`evaluate-ml`, `--advisory`, baseline + gated Isolation Forest) |
 | 11 | FastAPI + React | Placeholder (`api/main.py`, routers, `frontend/` README only) |
 
 The *why* and the remaining contracts live in
@@ -103,6 +105,9 @@ uv run securemail score tests/fixtures/synthetic_findings/mixed_severity.json
 
 # Step 9 — canonical JSON → HTML/PDF from one in-memory object
 uv run securemail report tests/fixtures/reports/golden_report.json --format json,html,pdf --out out/
+
+# Step 10 — advisory ML evaluation harness (baseline + Isolation Forest gates)
+uv run securemail evaluate-ml tests/support/synthetic_cohorts/cohort_seeded_v1/
 ```
 
 Analyze `--out` is required. Output is JSON with sorted keys, 2-space indent, a
@@ -114,13 +119,8 @@ style to stdout; invalid/oversized input exits 1.
 ## CLI that exists vs files that do not run
 
 [`src/securemail/api/cli/main.py`](../src/securemail/api/cli/main.py) registers
-**`analyze`, `score`, and `report`**. These files exist as Step N stubs and are
-**not** wired:
-
-- `api/cli/commands/analyze.py` — leftover Step 0 stub; the live command is in `main.py`
-- `api/cli/commands/evaluate_ml.py` — Step 10
-
-`securemail evaluate-ml` is not a command.
+**`analyze`, `score`, `report`, and `evaluate-ml`**. `api/cli/commands/analyze.py`
+is a leftover Step 0 stub; the live analyze command is in `main.py`.
 
 ## Not in this build
 
@@ -136,4 +136,5 @@ no queue.
 
 See [architecture.md](architecture.md) for the live module map,
 [scoring.md](scoring.md) for the v1 formula, [reports.md](reports.md) for
-HTML/PDF, and [fixtures.md](fixtures.md) for every committed case.
+HTML/PDF, [advisory-ml.md](advisory-ml.md) for Step 10, and
+[fixtures.md](fixtures.md) for every committed case.

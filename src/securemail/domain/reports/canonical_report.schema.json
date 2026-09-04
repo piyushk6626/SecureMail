@@ -2,7 +2,7 @@
   "$defs": {
     "AdvisoryItem": {
       "additionalProperties": false,
-      "description": "ML advisory placeholder. Step 10 fills this; Step 9 keeps it empty.",
+      "description": "One shadow-mode ML item shown in the Advisory / ML report section.",
       "properties": {
         "code": {
           "maxLength": 64,
@@ -26,6 +26,7 @@
     },
     "AdvisorySection": {
       "additionalProperties": false,
+      "description": "Shadow-mode ML output. Empty unless `report --advisory` ran.",
       "properties": {
         "items": {
           "items": {

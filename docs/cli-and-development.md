@@ -10,6 +10,7 @@ Entry point: `securemail = "securemail.api.cli.main:main"`
 uv run securemail analyze <capture.pcap|capture.pcapng> --out <path.json>
 uv run securemail score <findings.json>
 uv run securemail report <report.json> --format json,html,pdf --out <dir>
+uv run securemail evaluate-ml <cohort_dir>
 ```
 
 - `--out` is required.
@@ -35,17 +36,27 @@ analyze. Invalid JSON, schema, or oversize input exits 1. A missing path exits 2
 `securemail report` reads `securemail.report/v1` JSON (max 8 MiB), validates it,
 and writes RFC 8785 `report.json` plus `report.json.sha256`, `report.html`, and
 `report.pdf` under `--out`. HTML and PDF are rendered from the same in-memory
-object. PDF needs `uv sync --extra reports`. See [reports.md](reports.md).
+object. PDF needs `uv sync --extra reports`. `--advisory` is off by default;
+when set, shadow-mode ML fills the Advisory / ML section without changing
+deterministic findings. See [reports.md](reports.md) and
+[advisory-ml.md](advisory-ml.md).
+
+`securemail evaluate-ml` reads a seeded cohort directory (`manifest.json`,
+`labels.json`, `windows.json`) and prints detection delay, top-K precision, and
+gate results. It needs `uv sync --extra ml`. Exit 1 if a gate fails.
 
 `api/cli/commands/analyze.py` is an unused Step 0 stub; the live analyze command
 is `register_analyze` in [`api/cli/main.py`](../src/securemail/api/cli/main.py).
 The live score command is [`api/cli/commands/score.py`](../src/securemail/api/cli/commands/score.py).
 The live report command is [`api/cli/commands/report.py`](../src/securemail/api/cli/commands/report.py).
+The live evaluate-ml command is
+[`api/cli/commands/evaluate_ml.py`](../src/securemail/api/cli/commands/evaluate_ml.py).
 
 ```bash
 uv run securemail analyze tests/fixtures/empty/capture.pcapng --out out/empty.json
 uv run securemail score tests/fixtures/synthetic_findings/mixed_severity.json
 uv run securemail report tests/fixtures/reports/golden_report.json --format json,html,pdf --out out/
+uv run securemail evaluate-ml tests/support/synthetic_cohorts/cohort_seeded_v1/
 ```
 
 ## Make targets
@@ -157,7 +168,7 @@ UIDs. Changing `zeek/`, the lockfile, `_CONFIGURATION`, or
 
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml):
 
-1. Checkout with LFS, uv Python 3.13, Pango/Cairo apt packages, `uv sync --extra dev --extra reports`
+1. Checkout with LFS, uv Python 3.13, Pango/Cairo apt packages, `uv sync --extra dev --extra reports --extra ml`
 2. `SECUREMAIL_CI=1 make doctor`
 3. `make lint`
 4. Pull pinned Zeek image, `make zeek-image`, `make tshark-image`
@@ -170,7 +181,7 @@ A second job resolves the pinned Zeek and Debian Trixie digests via
 
 ```bash
 git lfs install
-uv sync --extra dev
+uv sync --extra dev --extra reports --extra ml
 docker pull zeek/zeek@sha256:73e80e9cd23ff71fd28d158e9a9af5c7b2b0ef5d4036af61521827531347c0e3
 make tshark-image
 make zeek-image
@@ -186,5 +197,4 @@ container-to-container traffic. Details:
 
 ## Not in this build
 
-No `securemail evaluate-ml`. No `make` target for a frontend dev server. No
-docker-compose control plane.
+No `make` target for a frontend dev server. No docker-compose control plane.
