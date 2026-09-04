@@ -309,6 +309,7 @@ built-in YAML packs still emit `high` / `medium` / `informational`.
 
 ## Not in this build
 
-No report manifest. `verified` is unused by evidence classifiers except as a
-finding `evaluation_state` for negative rules. Handshake and certificate records
-still store facts; YAML decides whether a fact is a finding. HTML/PDF are Step 9.
+`verified` is unused by evidence classifiers except as a finding
+`evaluation_state` for negative rules. Handshake and certificate records
+still store facts; YAML decides whether a fact is a finding. HTML/PDF wrap this
+envelope; see [reports.md](reports.md).

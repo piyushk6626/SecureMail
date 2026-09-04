@@ -45,15 +45,16 @@ or TLS record decoding. Zeek is the primary processing engine.
 
 ## 2. Current project state
 
-This repository has completed **Steps 0–8** of `build_plan.md`: package layout,
+This repository has completed **Steps 0–9** of `build_plan.md`: package layout,
 sandboxed Zeek/TShark runners, the v1 normalization / v2 evidence envelope,
 TCP reconstruction quality, payload-driven SMTP/IMAP/POP3 identification,
 STARTTLS/STLS plus implicit-TLS assessment, TLS version / cipher / key-exchange
 evidence, per-certificate extraction, offline chain validation with RFC 9525
 identity matching, versioned IETF/NIST/historical rule packs, forward-secrecy
-assessment, and posture scoring with coverage denominators. The live CLI
-commands are `securemail analyze` and `securemail score`. The next step to
-implement is **Step 9** (canonical JSON → HTML/PDF).
+assessment, posture scoring with coverage denominators, and canonical JSON →
+HTML/PDF reports. The live CLI commands are `securemail analyze`,
+`securemail score`, and `securemail report`. The next step to implement is
+**Step 10** (advisory ML after the deterministic baseline).
 
 The tree in `PROJECT_SCAFFOLD.md` Section 3 is the layout Step 0 created;
 later steps **fill named files**, they do not invent new top-level layout.
@@ -146,7 +147,7 @@ write-up.
 | 6 | Chain + identity (independent fields; offline trust store) | `… cert_chain_san_mismatch …` |
 | 7 | Versioned rule packs + forward secrecy | `… tls13_psk_only_resumption --policy-profile ietf_current` |
 | 8 | Scoring, dedup, coverage denominators | `securemail score tests/fixtures/synthetic_findings/mixed_severity.json` |
-| 9 | Canonical JSON → HTML/PDF | `securemail report …` |
+| 9 | Canonical JSON → HTML/PDF | `securemail report tests/fixtures/reports/golden_report.json --format json,html,pdf --out out/` |
 | 10 | Advisory ML after baseline gate | `securemail evaluate-ml …` |
 | 11 | FastAPI + React over the same JSON | Playwright + CLI/API diff |
 
@@ -217,7 +218,7 @@ Authoritative tree: `plans/PROJECT_SCAFFOLD.md` Section 3. Reconciled deviations
 | Canonical evidence | `domain/evidence/` |
 | STARTTLS / TLS / PKI / rule packs | `domain/policies/` (pure functions + YAML data) |
 | Scoring / dedup / posture | `domain/findings/` |
-| Use-case orchestration | `application/run_analysis.py` (or `advisory_pipeline.py` at Step 10) |
+| Use-case orchestration | `application/run_analysis.py`, `application/render_report.py` (or `advisory_pipeline.py` at Step 10) |
 | IANA TLS registry, trust store, cert bytes, reports, ML | `adapters/` as named in the scaffold |
 | Wiring | `bootstrap.py` only |
 | Tests that prove a step | `tests/fixtures/<case_id>/` + unit tests next to the pure function |
@@ -235,7 +236,7 @@ silently changing versions.
 | Tool | Rule |
 |---|---|
 | Python | **CPython 3.13** via `uv`. Not 3.14, not system Python, not Homebrew Python. |
-| Deps | `uv` + committed `uv.lock`. `uv sync --extra dev` for Steps 0–8. |
+| Deps | `uv` + committed `uv.lock`. `uv sync --extra dev --extra reports` (JSON/HTML work without WeasyPrint; PDF needs the `reports` extra). |
 | Analyzers | Docker images **pinned by digest**, `--network=none`, `--read-only`, non-root `65532`, `--cap-drop=ALL`, `--security-opt=no-new-privileges`, `--pids-limit=256`, `--memory=2g`, `--cpus=2`. |
 | Zeek | `zeek/zeek:8.0.10` LTS, digest in the scaffold / lockfile — not 8.2 or 9.x unless the lockfile + every fixture are deliberately refreshed. |
 | TShark | Separate image from `debian:trixie-slim` digest; lock records Dockerfile SHA-256, not the built-image digest; GPL; never statically linked. |

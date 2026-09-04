@@ -9,6 +9,7 @@ Entry point: `securemail = "securemail.api.cli.main:main"`
 ```bash
 uv run securemail analyze <capture.pcap|capture.pcapng> --out <path.json>
 uv run securemail score <findings.json>
+uv run securemail report <report.json> --format json,html,pdf --out <dir>
 ```
 
 - `--out` is required.
@@ -31,13 +32,20 @@ uv run securemail score <findings.json>
 it, and writes a `PostureAssessment` to stdout with the same JSON style as
 analyze. Invalid JSON, schema, or oversize input exits 1. A missing path exits 2.
 
+`securemail report` reads `securemail.report/v1` JSON (max 8 MiB), validates it,
+and writes RFC 8785 `report.json` plus `report.json.sha256`, `report.html`, and
+`report.pdf` under `--out`. HTML and PDF are rendered from the same in-memory
+object. PDF needs `uv sync --extra reports`. See [reports.md](reports.md).
+
 `api/cli/commands/analyze.py` is an unused Step 0 stub; the live analyze command
 is `register_analyze` in [`api/cli/main.py`](../src/securemail/api/cli/main.py).
 The live score command is [`api/cli/commands/score.py`](../src/securemail/api/cli/commands/score.py).
+The live report command is [`api/cli/commands/report.py`](../src/securemail/api/cli/commands/report.py).
 
 ```bash
 uv run securemail analyze tests/fixtures/empty/capture.pcapng --out out/empty.json
 uv run securemail score tests/fixtures/synthetic_findings/mixed_severity.json
+uv run securemail report tests/fixtures/reports/golden_report.json --format json,html,pdf --out out/
 ```
 
 ## Make targets
@@ -55,8 +63,8 @@ From [`Makefile`](../Makefile):
 | `make tshark-image` | build `securemail/tshark:step0` |
 
 On Darwin the Makefile exports `DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib`
-so the uv interpreter can load Homebrew Pango (needed later for WeasyPrint;
-doctor already checks Pango). Do not `brew install weasyprint`.
+so the uv interpreter can load Homebrew Pango (needed for WeasyPrint).
+Do not `brew install weasyprint`.
 
 ## Doctor
 
@@ -133,6 +141,11 @@ Docker Desktop-specific notes are skipped.
 | `tests/unit/test_dedup.py` | Endpoint collapse, mixed packs, shuffle stability |
 | `tests/unit/test_posture.py` | Coverage reconciliation and ordering |
 | `tests/test_scoring_fixtures.py` | Real CLI score fixtures plus error exits |
+| `tests/unit/test_report_schema.py` | Report JSON Schema, mutation, golden validation |
+| `tests/unit/test_canonical_json.py` | RFC 8785 vectors and pinned golden hash |
+| `tests/unit/test_html_renderer.py` | Autoescape, hostile-input, finding codes |
+| `tests/unit/test_pdf_renderer.py` | PDF text, page range, font/WeasyPrint pins |
+| `tests/test_report_fixtures.py` | Real CLI report proof plus error exits |
 | `tests/unit/test_truncated_stream_never_complete.py` | Named never-complete case |
 | `tests/unit/test_fixture_diff.py` | Harness diff helper |
 
@@ -144,7 +157,7 @@ UIDs. Changing `zeek/`, the lockfile, `_CONFIGURATION`, or
 
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml):
 
-1. Checkout with LFS, uv Python 3.13, Pango/Cairo apt packages, `uv sync --extra dev`
+1. Checkout with LFS, uv Python 3.13, Pango/Cairo apt packages, `uv sync --extra dev --extra reports`
 2. `SECUREMAIL_CI=1 make doctor`
 3. `make lint`
 4. Pull pinned Zeek image, `make zeek-image`, `make tshark-image`
@@ -173,5 +186,5 @@ container-to-container traffic. Details:
 
 ## Not in this build
 
-No `securemail report` / `evaluate-ml`. No `make` target for a frontend dev
-server. No docker-compose control plane.
+No `securemail evaluate-ml`. No `make` target for a frontend dev server. No
+docker-compose control plane.

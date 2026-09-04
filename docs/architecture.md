@@ -43,10 +43,11 @@ Three import-linter contracts:
 Canonical records that exist today: `AnalysisRun` (inside `EvidenceDocument`),
 `CapturePreflight`, `Flow`, `EmailSession`, `TlsHandshake`,
 `CertificateEvidence` (with leaf `CertificateValidation`), `Finding`,
-`PolicyCheck`, and `PostureAssessment`. The names `Case`, `Capture`,
-`AnomalyResult`, `ReportManifest`, and `AuditEvent` are design vocabulary from
-[`plans/TECHNICAL_DESIGN.md`](../plans/TECHNICAL_DESIGN.md); they are not live
-models except where a placeholder file already occupies the scaffold path.
+`PolicyCheck`, `PostureAssessment`, and `ReportManifest` / `CanonicalReport`.
+The names `Case`, `Capture`, `AnomalyResult`, and `AuditEvent` are design
+vocabulary from [`plans/TECHNICAL_DESIGN.md`](../plans/TECHNICAL_DESIGN.md);
+they are not live models except where a placeholder file already occupies the
+scaffold path.
 
 ## Composition root
 
@@ -60,8 +61,8 @@ models except where a placeholder file already occupies the scaffold path.
 - `load_trust_store_snapshot()`
 
 and closes them over `_analyze`, which calls `run_analysis`. `create_cli()`
-passes `_analyze` and `score_findings` into `build_app` so the Typer layer never
-imports adapters.
+passes `_analyze`, `score_findings`, and `_render_report` into `build_app` so
+the Typer layer never imports adapters.
 
 ## Live modules
 
@@ -69,10 +70,11 @@ imports adapters.
 
 | Path | Role |
 |---|---|
-| `api/cli/main.py` | Typer app; registers `analyze` and `score`; writes JSON |
+| `api/cli/main.py` | Typer app; registers `analyze`, `score`, and `report`; writes JSON |
 | `api/cli/commands/score.py` | Thin `score` command: bounded JSON in, stdout JSON out |
+| `api/cli/commands/report.py` | Thin `report` command: bounded JSON in, JSON/HTML/PDF out |
 | `api/cli/commands/analyze.py` | Unused Step 0 stub; live `analyze` lives in `main.py` |
-| `api/cli/commands/report.py`, `evaluate_ml.py` | Step 9 / 10 stubs |
+| `api/cli/commands/evaluate_ml.py` | Step 10 stub |
 | `api/main.py`, `api/dependencies.py`, `api/routers/` | Step 11 placeholders |
 
 Console script: `securemail = "securemail.api.cli.main:main"` in
@@ -84,6 +86,7 @@ Console script: `securemail = "securemail.api.cli.main:main"` in
 | Path | Role |
 |---|---|
 | `run_analysis.py` | Intake, hash, preflight, Zeek, optional TShark, normalize, policy, score, assemble `EvidenceDocument`; `score_findings` RORO use case |
+| `render_report.py` | Dump one `CanonicalReport` to JSON-compatible payload; derive JCS/HTML/PDF from that dump |
 | `normalize_flows.py` | Zeek `conn.log` / `weird.log` / `capture_loss.log` / `sm_tcp_recon.log` → `Flow` |
 | `normalize_sessions.py` | `sm_email.log` + optional TShark frames + `ssl.log` → `EmailSession` |
 | `normalize_handshakes.py` | `ssl.log` / ssl-log-ext + optional TShark frames → `TlsHandshake` |
@@ -117,7 +120,7 @@ themselves.
 | `findings/scoring.py` | Versioned integer priority and named components |
 | `findings/dedup.py` | Session findings → endpoint clusters |
 | `findings/posture.py` | Coverage matrix, prioritized findings, assessment state |
-| `reports/` | Placeholder for Step 9 |
+| `reports/schema.py` | `CanonicalReport` / `ReportManifest`; JSON Schema snapshot |
 
 ### `ports/`
 
@@ -142,16 +145,21 @@ themselves.
 | `pki/trust_store.py` | Bounded load of the pinned offline PEM trust snapshot |
 | `pki/trust-store-snapshot.pem` | Lab root + USERTrust RSA; SHA-256 is `trust_store_digest` |
 | `pki/openssl_crosscheck.py` | Test-only fixed-argv `openssl verify`; not on the production path |
-| reports, ML | Placeholders |
+| `reports/canonical_json.py` | RFC 8785 JCS + SHA-256 |
+| `reports/html_renderer.py` | Jinja2 autoescape, forensic text filter, view-model diagrams |
+| `reports/pdf_renderer.py` | WeasyPrint over the HTML string; `data:`-only URL fetcher |
+| `reports/templates/report.html.j2` | Single HTML template for HTML and PDF |
+| `reports/fonts/` | Bundled Noto Sans / Noto Sans Mono (OFL) |
+| ML | Step 10 placeholders |
 
 ## Toolchain (what the package actually pins)
 
 - CPython **3.13** (`requires-python = ">=3.13,<3.14"`), installed via `uv`
-- Default deps: pydantic v2, typer, cryptography, pyyaml, jinja2
-- Extras `reports`, `ml`, and `api` are declared for later steps; they are not
-  required to run `analyze`
+- Default deps: pydantic v2, typer, cryptography, pyyaml, jinja2, rfc8785==0.1.4
+- Extra `reports` (WeasyPrint==69.0) is required for PDF; JSON/HTML report rendering
+  uses core deps. Extras `ml` and `api` remain for later steps.
 - Dev extra: pytest, hypothesis, import-linter, ruff, mypy, pre-commit,
-  playwright, scapy
+  playwright, scapy, jsonschema, pypdf
 - Analyzers: Docker images, `--network=none` (see [analyzers.md](analyzers.md))
 
 ## Not in this build

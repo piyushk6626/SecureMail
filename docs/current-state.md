@@ -1,9 +1,9 @@
 # Current state
 
 SecureMail is a **CLI-only**, offline, deterministic analyzer of SMTP, IMAP, and
-POP3 traffic in PCAP/PCAPNG files. It scores and deduplicates findings and
-publishes coverage denominators. It does not yet render HTML/PDF, run ML, or
-expose an API.
+POP3 traffic in PCAP/PCAPNG files. It scores and deduplicates findings, publishes
+coverage denominators, and exports forensic reports in JSON, HTML, and PDF. It
+does not yet run ML or expose an API.
 
 Python orchestrates. Zeek is the primary packet engine. A bounded TShark pass
 corroborates mail command/status and TLS handshake message frames when the first
@@ -17,6 +17,7 @@ wired through [`src/securemail/bootstrap.py`](../src/securemail/bootstrap.py):
 
 - `securemail analyze` — PCAP/PCAPNG → v2 `EvidenceDocument`
 - `securemail score` — synthetic finding JSON → `PostureAssessment` on stdout
+- `securemail report` — canonical report JSON → RFC 8785 JSON, HTML, and PDF
 
 Analyze produces a frozen v2 JSON document with:
 
@@ -37,9 +38,10 @@ Analyze produces a frozen v2 JSON document with:
   summary (prioritized endpoint findings, coverage denominators, risk score)
 
 There are **71** PCAP fixture directories under `tests/fixtures/<case_id>/`
-plus `tests/fixtures/synthetic_findings/` for Step 8. The harness in
+plus `tests/fixtures/synthetic_findings/` for Step 8 and
+`tests/fixtures/reports/` for Step 9. The harness in
 [`tests/support/fixture_harness.py`](../tests/support/fixture_harness.py)
-runs the real CLI and diffs the entire output against `expected.json` (no
+runs the real CLI and diffs analyze/score output against `expected.json` (no
 ignored fields). Optional `analyze.json` supplies `--analysis-time`,
 `--expiry-warning-days`, `--expected-hostname`, and `--policy-profile`. When
 `analysis_time` is omitted, the harness pins `2026-09-04T12:00:00Z` so goldens
@@ -58,7 +60,7 @@ stay stable; the live CLI still defaults analysis time to now.
 | 6 | Chain + identity (offline trust store) | **Done** |
 | 7 | Versioned rule packs + forward secrecy | **Done** |
 | 8 | Scoring, dedup, coverage denominators | **Done** |
-| 9 | Canonical JSON → HTML/PDF | Placeholder (report adapters/templates, `report.py`) |
+| 9 | Canonical JSON → HTML/PDF | **Done** |
 | 10 | Advisory ML | Placeholder (`advisory_pipeline.py`, `evaluate_ml.py`, baselines) |
 | 11 | FastAPI + React | Placeholder (`api/main.py`, routers, `frontend/` README only) |
 
@@ -98,6 +100,9 @@ uv run securemail analyze tests/fixtures/tls13_psk_only_resumption/capture.pcapn
 
 # Step 8 — mixed severity score vectors, named components, analyst order
 uv run securemail score tests/fixtures/synthetic_findings/mixed_severity.json
+
+# Step 9 — canonical JSON → HTML/PDF from one in-memory object
+uv run securemail report tests/fixtures/reports/golden_report.json --format json,html,pdf --out out/
 ```
 
 Analyze `--out` is required. Output is JSON with sorted keys, 2-space indent, a
@@ -109,19 +114,19 @@ style to stdout; invalid/oversized input exits 1.
 ## CLI that exists vs files that do not run
 
 [`src/securemail/api/cli/main.py`](../src/securemail/api/cli/main.py) registers
-**`analyze` and `score`**. These files exist as Step N stubs and are **not**
-wired:
+**`analyze`, `score`, and `report`**. These files exist as Step N stubs and are
+**not** wired:
 
 - `api/cli/commands/analyze.py` — leftover Step 0 stub; the live command is in `main.py`
-- `api/cli/commands/report.py` — Step 9
 - `api/cli/commands/evaluate_ml.py` — Step 10
 
-`securemail report` and `securemail evaluate-ml` are not commands.
+`securemail evaluate-ml` is not a command.
 
 ## Not in this build
 
-The JSON does **not** contain a report manifest. Pass/present policy outcomes
-are serialized as `policy_checks`, not as `Finding` records. Revocation without
+The analyze JSON does **not** embed a report manifest; `securemail report`
+wraps an `EvidenceDocument` in `securemail.report/v1`. Pass/present policy
+outcomes are serialized as `policy_checks`, not as `Finding` records. Revocation without
 imported OCSP/CRL is `unknown`. `run_identity.policy_pack_version` is the
 SHA-256 of the canonical validated pack JSON.
 `run_identity.trust_store_digest` is the SHA-256 of the pinned PEM snapshot. No
@@ -130,5 +135,5 @@ chain validation does not fetch AIA/OCSP/CRL/CT/DNS). No dashboard, no Postgres,
 no queue.
 
 See [architecture.md](architecture.md) for the live module map,
-[scoring.md](scoring.md) for the v1 formula, and [fixtures.md](fixtures.md) for
-every committed case.
+[scoring.md](scoring.md) for the v1 formula, [reports.md](reports.md) for
+HTML/PDF, and [fixtures.md](fixtures.md) for every committed case.

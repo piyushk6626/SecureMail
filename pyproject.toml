@@ -15,10 +15,11 @@ dependencies = [
     "cryptography",
     "pyyaml",
     "jinja2",
+    "rfc8785==0.1.4",
 ]
 
 [project.optional-dependencies]
-reports = ["weasyprint"]
+reports = ["weasyprint==69.0"]
 ml = ["scikit-learn", "numpy", "scipy"]
 api = ["fastapi", "uvicorn", "sqlalchemy", "asyncpg", "alembic"]
 dev = [
@@ -30,6 +31,8 @@ dev = [
     "pre-commit",
     "playwright",
     "scapy",
+    "jsonschema",
+    "pypdf",
 ]
 
 [project.scripts]

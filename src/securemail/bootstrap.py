@@ -14,6 +14,7 @@ from securemail.adapters.artifacts.certificate_store import CertificateStore
 from securemail.adapters.pki.trust_store import load_trust_store_snapshot
 from securemail.adapters.reference_data.iana_tls_parameters import load_iana_tls_parameters
 from securemail.adapters.reference_data.policy_packs import PolicyPackError, load_policy_pack
+from securemail.application.render_report import RenderedReport, render_report
 from securemail.application.run_analysis import (
     DEFAULT_EXPIRY_WARNING_SECONDS,
     AnalysisError,
@@ -22,6 +23,7 @@ from securemail.application.run_analysis import (
     score_findings,
 )
 from securemail.domain.evidence.run import EvidenceDocument, PolicyProfile
+from securemail.domain.reports.schema import CanonicalReport
 
 
 def _analyze(
@@ -57,10 +59,25 @@ def _analyze(
     )
 
 
+def _render_report(report: CanonicalReport, *, formats: tuple[str, ...]) -> RenderedReport:
+    from securemail.adapters.reports.canonical_json import canonicalize, sha256_digest
+    from securemail.adapters.reports.html_renderer import render_html
+    from securemail.adapters.reports.pdf_renderer import render_pdf
+
+    return render_report(
+        report,
+        formats,
+        canonicalize=canonicalize,
+        digest=sha256_digest,
+        render_html=render_html,
+        render_pdf=render_pdf,
+    )
+
+
 def create_cli() -> typer.Typer:
     from securemail.api.cli.main import build_app
 
-    return build_app(analyze=_analyze, score=score_findings)
+    return build_app(analyze=_analyze, score=score_findings, report=_render_report)
 
 
 def main() -> None:

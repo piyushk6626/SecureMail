@@ -9,6 +9,7 @@ from typing import Protocol
 
 import typer
 
+from securemail.application.render_report import RenderedReport
 from securemail.application.run_analysis import (
     DEFAULT_EXPIRY_WARNING_SECONDS,
     AnalysisError,
@@ -17,6 +18,7 @@ from securemail.application.run_analysis import (
 )
 from securemail.domain.evidence.run import EvidenceDocument, PolicyProfile
 from securemail.domain.findings.posture import PostureAssessment
+from securemail.domain.reports.schema import CanonicalReport
 
 
 class AnalyzeFn(Protocol):
@@ -46,7 +48,11 @@ class ScoreFn(Protocol):
     def __call__(self, request: ScoreRequest) -> PostureAssessment: ...
 
 
-def build_app(analyze: AnalyzeFn, score: ScoreFn) -> typer.Typer:
+class ReportFn(Protocol):
+    def __call__(self, report: CanonicalReport, *, formats: tuple[str, ...]) -> RenderedReport: ...
+
+
+def build_app(analyze: AnalyzeFn, score: ScoreFn, report: ReportFn) -> typer.Typer:
     app = typer.Typer(no_args_is_help=True, add_completion=False)
 
     @app.callback()
@@ -54,9 +60,11 @@ def build_app(analyze: AnalyzeFn, score: ScoreFn) -> typer.Typer:
         """SecureMail: offline SMTP/IMAP/POP3 cryptographic posture analysis."""
 
     register_analyze(app, analyze)
+    from securemail.api.cli.commands.report import register_report
     from securemail.api.cli.commands.score import register_score
 
     register_score(app, score)
+    register_report(app, report)
     return app
 
 

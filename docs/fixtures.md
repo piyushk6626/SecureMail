@@ -22,6 +22,15 @@ tests/fixtures/synthetic_findings/
   provenance.json
 ```
 
+Step 9 reports use a schema-first golden (no PCAP):
+
+```text
+tests/fixtures/reports/
+  golden_report.json  # CanonicalReport; authored before the renderer
+  provenance.json     # JCS SHA-256, WeasyPrint, font/template hashes, page range
+  assemble.py         # regenerates the golden from typed models
+```
+
 `<case_id>` is `<protocol_or_area>_<condition>` as named in
 [`plans/build_plan.md`](../plans/build_plan.md). There are **71** committed
 fixture directories. Some are reused as proof in more than one step
@@ -34,6 +43,8 @@ fixture directories. Some are reused as proof in more than one step
 `run_fixture(case_id)` invokes `analyze`. `run_score_fixture(case_name)` invokes
 `score` against `tests/fixtures/synthetic_findings/<case_name>.json` and diffs
 the `cases.<case_name>` object in that directory’s `expected.json`.
+`run_report_fixture(out)` invokes `report` on
+`tests/fixtures/reports/golden_report.json`.
 
 1. Invokes `create_cli()` with `analyze <capture> --out <tmp>/actual.json`
    plus `--analysis-time` (pinned to `2026-09-04T12:00:00Z` when omitted) and
@@ -243,5 +254,6 @@ to change; do not edit `capture.pcapng`. Prefer `uv run pytest` on the named
 
 ## Not in this build
 
-No golden HTML/PDF under `tests/fixtures/reports/`. Step 8 scores and dedups
-session findings into endpoint posture; Step 9 will freeze a report object.
+PDF bytes are not goldened. The Step 9 fixture is `golden_report.json` plus
+`provenance.json` (JCS hash, WeasyPrint version, font/template hashes, page
+range). HTML and PDF are rendered from that object at test time.

@@ -236,4 +236,6 @@ UIDs — it does not ignore any field.
 
 ## Not in this build
 
-No report freeze or ML step after JSON emission. HTML/PDF are Step 9.
+Analyze does not emit a report envelope. `securemail report` reads
+`securemail.report/v1` JSON and renders RFC 8785 JSON, HTML, and PDF.
+Advisory ML remains Step 10.

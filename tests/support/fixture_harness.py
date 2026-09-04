@@ -148,3 +148,43 @@ def run_fixture(case_id: str, *, root: Path | None = None) -> Path:
         rendered = "\n".join(diffs)
         raise AssertionError(f"fixture {case_id} differed from expected.json:\n{rendered}")
     return capture
+
+
+def report_fixture_dir(root: Path | None = None) -> Path:
+    path = (root if root is not None else repo_root()) / "tests" / "fixtures" / "reports"
+    if not path.is_dir():
+        raise FileNotFoundError("report fixtures directory not found")
+    return path
+
+
+def load_golden_report(root: Path | None = None) -> dict[str, Any]:
+    path = report_fixture_dir(root) / "golden_report.json"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise AssertionError("golden_report.json must be an object")
+    return payload
+
+
+def run_report_fixture(
+    out: Path,
+    *,
+    root: Path | None = None,
+    formats: str = "json,html,pdf",
+) -> Path:
+    """Run `securemail report` on the golden report into `out`."""
+
+    from securemail.bootstrap import create_cli
+
+    base = report_fixture_dir(root)
+    report_json = base / "golden_report.json"
+    if not report_json.is_file():
+        raise FileNotFoundError(f"missing golden report: {report_json}")
+
+    result = CliRunner().invoke(
+        create_cli(),
+        ["report", str(report_json), "--format", formats, "--out", str(out)],
+        catch_exceptions=False,
+    )
+    if result.exit_code != 0:
+        raise AssertionError(f"securemail report failed: {result.output}")
+    return out

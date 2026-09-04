@@ -1,0 +1,2982 @@
+{
+  "$defs": {
+    "AdvisoryItem": {
+      "additionalProperties": false,
+      "description": "ML advisory placeholder. Step 10 fills this; Step 9 keeps it empty.",
+      "properties": {
+        "code": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "reason": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "reason"
+      ],
+      "title": "AdvisoryItem",
+      "type": "object"
+    },
+    "AdvisorySection": {
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/$defs/AdvisoryItem"
+          },
+          "maxItems": 256,
+          "title": "Items",
+          "type": "array"
+        },
+        "present": {
+          "default": false,
+          "title": "Present",
+          "type": "boolean"
+        }
+      },
+      "title": "AdvisorySection",
+      "type": "object"
+    },
+    "AnalysisRun": {
+      "additionalProperties": false,
+      "description": "Identity record for one analysis of one capture.",
+      "properties": {
+        "analysis_time": {
+          "format": "date-time",
+          "title": "Analysis Time",
+          "type": "string"
+        },
+        "analyzer_bundle_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Analyzer Bundle Digest",
+          "type": "string"
+        },
+        "capture_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Capture Sha256",
+          "type": "string"
+        },
+        "configuration_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Configuration Digest",
+          "type": "string"
+        },
+        "normalization_schema_version": {
+          "const": "v1",
+          "title": "Normalization Schema Version",
+          "type": "string"
+        },
+        "policy_pack_version": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Policy Pack Version",
+          "type": "string"
+        },
+        "policy_profile": {
+          "$ref": "#/$defs/PolicyProfile"
+        },
+        "trust_store_digest": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trust Store Digest"
+        }
+      },
+      "required": [
+        "capture_sha256",
+        "analyzer_bundle_digest",
+        "normalization_schema_version",
+        "configuration_digest",
+        "analysis_time",
+        "policy_profile",
+        "policy_pack_version"
+      ],
+      "title": "AnalysisRun",
+      "type": "object"
+    },
+    "AnalystSection": {
+      "additionalProperties": false,
+      "properties": {
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 64,
+          "title": "Notes",
+          "type": "array"
+        },
+        "present": {
+          "default": false,
+          "title": "Present",
+          "type": "boolean"
+        }
+      },
+      "title": "AnalystSection",
+      "type": "object"
+    },
+    "ArtifactHash": {
+      "additionalProperties": false,
+      "description": "Named content hash. `sha256` is required only when `availability` is present.",
+      "properties": {
+        "availability": {
+          "$ref": "#/$defs/Availability"
+        },
+        "name": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sha256"
+        }
+      },
+      "required": [
+        "name",
+        "availability"
+      ],
+      "title": "ArtifactHash",
+      "type": "object"
+    },
+    "AssessmentState": {
+      "enum": [
+        "complete",
+        "limited",
+        "none"
+      ],
+      "title": "AssessmentState",
+      "type": "string"
+    },
+    "AssetCriticality": {
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "unknown"
+      ],
+      "title": "AssetCriticality",
+      "type": "string"
+    },
+    "Availability": {
+      "description": "Whether a requested provenance field could be populated from evidence.",
+      "enum": [
+        "present",
+        "unavailable",
+        "not_applicable"
+      ],
+      "title": "Availability",
+      "type": "string"
+    },
+    "BlastRadius": {
+      "enum": [
+        "organization",
+        "multi_asset",
+        "single_endpoint",
+        "unknown"
+      ],
+      "title": "BlastRadius",
+      "type": "string"
+    },
+    "ByteRange": {
+      "additionalProperties": false,
+      "description": "Half-open `[start, end)` range in relative TCP sequence space.",
+      "properties": {
+        "direction": {
+          "$ref": "#/$defs/StreamDirection"
+        },
+        "end": {
+          "minimum": 0,
+          "title": "End",
+          "type": "integer"
+        },
+        "exact": {
+          "default": true,
+          "title": "Exact",
+          "type": "boolean"
+        },
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start",
+        "end",
+        "direction"
+      ],
+      "title": "ByteRange",
+      "type": "object"
+    },
+    "CaptureLimitations": {
+      "additionalProperties": false,
+      "description": "Visibility and reconstruction limits that must not be read as a pass.",
+      "properties": {
+        "conflicting_flow_count": {
+          "minimum": 0,
+          "title": "Conflicting Flow Count",
+          "type": "integer"
+        },
+        "incomplete_flow_count": {
+          "minimum": 0,
+          "title": "Incomplete Flow Count",
+          "type": "integer"
+        },
+        "not_observable_certificate_count": {
+          "minimum": 0,
+          "title": "Not Observable Certificate Count",
+          "type": "integer"
+        },
+        "not_observable_check_count": {
+          "minimum": 0,
+          "title": "Not Observable Check Count",
+          "type": "integer"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 32,
+          "title": "Notes",
+          "type": "array"
+        },
+        "truncated_packets_present": {
+          "title": "Truncated Packets Present",
+          "type": "boolean"
+        },
+        "unknown_check_count": {
+          "minimum": 0,
+          "title": "Unknown Check Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "truncated_packets_present",
+        "incomplete_flow_count",
+        "conflicting_flow_count",
+        "not_observable_certificate_count",
+        "unknown_check_count",
+        "not_observable_check_count"
+      ],
+      "title": "CaptureLimitations",
+      "type": "object"
+    },
+    "CapturePreflight": {
+      "additionalProperties": false,
+      "description": "capinfos facts recorded before any analyzer mutates a working copy.",
+      "properties": {
+        "capture_duration_seconds": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Capture Duration Seconds"
+        },
+        "capture_start_time": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Capture Start Time"
+        },
+        "file_time_precision": {
+          "title": "File Time Precision",
+          "type": "string"
+        },
+        "original_packet_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Original Packet Bytes"
+        },
+        "packet_count": {
+          "minimum": 0,
+          "title": "Packet Count",
+          "type": "integer"
+        },
+        "packet_size_limit": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Packet Size Limit"
+        },
+        "packet_size_limit_max_inferred": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Packet Size Limit Max Inferred"
+        },
+        "packet_size_limit_min_inferred": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Packet Size Limit Min Inferred"
+        },
+        "truncated_packets_present": {
+          "title": "Truncated Packets Present",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "packet_count",
+        "file_time_precision",
+        "truncated_packets_present"
+      ],
+      "title": "CapturePreflight",
+      "type": "object"
+    },
+    "CertificateEvidence": {
+      "additionalProperties": false,
+      "description": "One extracted X.509 certificate. Path/identity live on `validation` for leaves.",
+      "properties": {
+        "chain_index": {
+          "minimum": 0,
+          "title": "Chain Index",
+          "type": "integer"
+        },
+        "der_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Der Sha256",
+          "type": "string"
+        },
+        "effective_strength_bits": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Effective Strength Bits"
+        },
+        "evidence_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "expires_within_warning_window": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expires Within Warning Window"
+        },
+        "issuer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Issuer"
+        },
+        "not_after": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Not After"
+        },
+        "not_before": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Not Before"
+        },
+        "public_key_algorithm": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Public Key Algorithm"
+        },
+        "public_key_curve": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Public Key Curve"
+        },
+        "public_key_size": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Public Key Size"
+        },
+        "role": {
+          "$ref": "#/$defs/CertificateRole"
+        },
+        "serial_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Serial Number"
+        },
+        "signature_algorithm": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Signature Algorithm"
+        },
+        "source_frames": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Source Frames",
+          "type": "array"
+        },
+        "subject": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subject"
+        },
+        "syntax_error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Syntax Error"
+        },
+        "syntax_valid": {
+          "title": "Syntax Valid",
+          "type": "boolean"
+        },
+        "uid": {
+          "title": "Uid",
+          "type": "string"
+        },
+        "valid_at_analysis_time": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid At Analysis Time"
+        },
+        "valid_at_capture_time": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid At Capture Time"
+        },
+        "validation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CertificateValidation"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "der_sha256",
+        "uid",
+        "chain_index",
+        "role",
+        "syntax_valid",
+        "evidence_state"
+      ],
+      "title": "CertificateEvidence",
+      "type": "object"
+    },
+    "CertificateRole": {
+      "description": "Whether the certificate was offered by the TLS server or the client.",
+      "enum": [
+        "server",
+        "client"
+      ],
+      "title": "CertificateRole",
+      "type": "string"
+    },
+    "CertificateValidation": {
+      "additionalProperties": false,
+      "description": "Independent chain and identity outcomes. Attached to server leaves only.",
+      "properties": {
+        "certificate_observed": {
+          "title": "Certificate Observed",
+          "type": "boolean"
+        },
+        "identity_match": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Identity Match"
+        },
+        "identity_mismatch_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Identity Mismatch Reasons",
+          "type": "array"
+        },
+        "indeterminate_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Indeterminate Reasons",
+          "type": "array"
+        },
+        "path_invalid_reasons_at_analysis_time": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Path Invalid Reasons At Analysis Time",
+          "type": "array"
+        },
+        "path_invalid_reasons_at_capture_time": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Path Invalid Reasons At Capture Time",
+          "type": "array"
+        },
+        "path_valid_at_analysis_time": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path Valid At Analysis Time"
+        },
+        "path_valid_at_capture_time": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path Valid At Capture Time"
+        },
+        "reference_identity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reference Identity"
+        },
+        "reference_identity_source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReferenceIdentitySource"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "revocation_status": {
+          "$ref": "#/$defs/RevocationStatus"
+        },
+        "syntax_valid": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Syntax Valid"
+        },
+        "trust_profile_id": {
+          "title": "Trust Profile Id",
+          "type": "string"
+        },
+        "trust_store_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Trust Store Digest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "certificate_observed",
+        "revocation_status",
+        "trust_profile_id",
+        "trust_store_digest"
+      ],
+      "title": "CertificateValidation",
+      "type": "object"
+    },
+    "CheckCategory": {
+      "enum": [
+        "transport",
+        "mail_protocol",
+        "tls_handshake",
+        "certificate"
+      ],
+      "title": "CheckCategory",
+      "type": "string"
+    },
+    "CipherSuiteEvidence": {
+      "additionalProperties": false,
+      "description": "Selected cipher suite identified by canonical IANA name and hex code.",
+      "properties": {
+        "code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Code"
+        },
+        "evidence_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        }
+      },
+      "required": [
+        "evidence_state"
+      ],
+      "title": "CipherSuiteEvidence",
+      "type": "object"
+    },
+    "CoverageCounts": {
+      "additionalProperties": false,
+      "properties": {
+        "applicable_count": {
+          "minimum": 0,
+          "title": "Applicable Count",
+          "type": "integer"
+        },
+        "failed_count": {
+          "minimum": 0,
+          "title": "Failed Count",
+          "type": "integer"
+        },
+        "not_observable_count": {
+          "minimum": 0,
+          "title": "Not Observable Count",
+          "type": "integer"
+        },
+        "passed_count": {
+          "minimum": 0,
+          "title": "Passed Count",
+          "type": "integer"
+        },
+        "unknown_count": {
+          "minimum": 0,
+          "title": "Unknown Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "applicable_count",
+        "passed_count",
+        "failed_count",
+        "unknown_count",
+        "not_observable_count"
+      ],
+      "title": "CoverageCounts",
+      "type": "object"
+    },
+    "CoverageMatrix": {
+      "additionalProperties": false,
+      "properties": {
+        "by_category": {
+          "additionalProperties": {
+            "$ref": "#/$defs/CoverageCounts"
+          },
+          "title": "By Category",
+          "type": "object"
+        },
+        "by_protocol": {
+          "additionalProperties": {
+            "$ref": "#/$defs/CoverageCounts"
+          },
+          "title": "By Protocol",
+          "type": "object"
+        },
+        "by_protocol_and_category": {
+          "additionalProperties": {
+            "additionalProperties": {
+              "$ref": "#/$defs/CoverageCounts"
+            },
+            "type": "object"
+          },
+          "title": "By Protocol And Category",
+          "type": "object"
+        },
+        "overall": {
+          "$ref": "#/$defs/CoverageCounts"
+        }
+      },
+      "required": [
+        "overall"
+      ],
+      "title": "CoverageMatrix",
+      "type": "object"
+    },
+    "CoverageProtocol": {
+      "enum": [
+        "smtp",
+        "imap",
+        "pop3",
+        "unclassified"
+      ],
+      "title": "CoverageProtocol",
+      "type": "string"
+    },
+    "EmailSession": {
+      "additionalProperties": false,
+      "description": "Protocol-tagged session with independent port and payload fields.",
+      "properties": {
+        "corroboration": {
+          "default": "zeek",
+          "enum": [
+            "zeek",
+            "zeek+tshark"
+          ],
+          "title": "Corroboration",
+          "type": "string"
+        },
+        "events": {
+          "items": {
+            "$ref": "#/$defs/ProtocolEvent"
+          },
+          "title": "Events",
+          "type": "array"
+        },
+        "evidence_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "explicit_upgrade": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExplicitUpgrade"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "identification_confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Identification Confidence"
+        },
+        "implicit_tls": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ImplicitTls"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "payload_evidence": {
+          "$ref": "#/$defs/PayloadEvidence"
+        },
+        "port_hint": {
+          "$ref": "#/$defs/PortHint"
+        },
+        "protocol": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MailProtocol"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "uid": {
+          "title": "Uid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "uid",
+        "port_hint",
+        "payload_evidence",
+        "evidence_state"
+      ],
+      "title": "EmailSession",
+      "type": "object"
+    },
+    "EventSource": {
+      "description": "Analyzer that produced a protocol observation.",
+      "enum": [
+        "zeek",
+        "tshark",
+        "ssl"
+      ],
+      "title": "EventSource",
+      "type": "string"
+    },
+    "EvidenceDocument": {
+      "additionalProperties": false,
+      "description": "v2 canonical JSON envelope produced by `securemail analyze`.",
+      "properties": {
+        "capture_preflight": {
+          "$ref": "#/$defs/CapturePreflight"
+        },
+        "certificates": {
+          "items": {
+            "$ref": "#/$defs/CertificateEvidence"
+          },
+          "title": "Certificates",
+          "type": "array"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/Finding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "flows": {
+          "items": {
+            "$ref": "#/$defs/Flow"
+          },
+          "title": "Flows",
+          "type": "array"
+        },
+        "handshakes": {
+          "items": {
+            "$ref": "#/$defs/TlsHandshake"
+          },
+          "title": "Handshakes",
+          "type": "array"
+        },
+        "policy_checks": {
+          "items": {
+            "$ref": "#/$defs/PolicyCheck"
+          },
+          "maxItems": 16384,
+          "title": "Policy Checks",
+          "type": "array"
+        },
+        "posture": {
+          "$ref": "#/$defs/PostureAssessment"
+        },
+        "run_identity": {
+          "$ref": "#/$defs/AnalysisRun"
+        },
+        "schema_version": {
+          "const": "v2",
+          "default": "v2",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "sessions": {
+          "items": {
+            "$ref": "#/$defs/EmailSession"
+          },
+          "title": "Sessions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "run_identity",
+        "capture_preflight",
+        "posture"
+      ],
+      "title": "EvidenceDocument",
+      "type": "object"
+    },
+    "EvidenceRecordType": {
+      "enum": [
+        "flow",
+        "session",
+        "handshake",
+        "certificate"
+      ],
+      "title": "EvidenceRecordType",
+      "type": "string"
+    },
+    "EvidenceReference": {
+      "additionalProperties": false,
+      "description": "Canonical pointer at a contributing evidence field. No JSON array indexes.",
+      "properties": {
+        "evidence_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "field_path": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Field Path",
+          "type": "string"
+        },
+        "frame_number": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Frame Number"
+        },
+        "record_key": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Record Key",
+          "type": "string"
+        },
+        "record_type": {
+          "$ref": "#/$defs/EvidenceRecordType"
+        }
+      },
+      "required": [
+        "record_type",
+        "record_key",
+        "field_path",
+        "evidence_state"
+      ],
+      "title": "EvidenceReference",
+      "type": "object"
+    },
+    "EvidenceState": {
+      "description": "Mandatory visibility/confidence state for every applicable evidence field.",
+      "enum": [
+        "observed",
+        "verified",
+        "inferred",
+        "incomplete",
+        "conflicting",
+        "not_observable",
+        "indeterminate"
+      ],
+      "title": "EvidenceState",
+      "type": "string"
+    },
+    "ExplicitUpgrade": {
+      "additionalProperties": false,
+      "description": "STARTTLS/STLS assessment. `downgrade_consistent` is never proof of attack.",
+      "properties": {
+        "downgrade_consistent": {
+          "default": false,
+          "title": "Downgrade Consistent",
+          "type": "boolean"
+        },
+        "evidence_frames": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Evidence Frames",
+          "type": "array"
+        },
+        "evidence_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UpgradeState"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "evidence_state"
+      ],
+      "title": "ExplicitUpgrade",
+      "type": "object"
+    },
+    "ExposureClass": {
+      "enum": [
+        "public",
+        "partner",
+        "internal",
+        "isolated",
+        "unknown"
+      ],
+      "title": "ExposureClass",
+      "type": "string"
+    },
+    "Finding": {
+      "additionalProperties": false,
+      "description": "Deterministic policy judgment. Never mutates the underlying evidence.",
+      "properties": {
+        "affected_endpoint": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Affected Endpoint",
+          "type": "string"
+        },
+        "basis_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "code": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "evaluation_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "evidence_references": {
+          "items": {
+            "$ref": "#/$defs/EvidenceReference"
+          },
+          "maxItems": 32,
+          "title": "Evidence References",
+          "type": "array"
+        },
+        "finding_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "outcome": {
+          "$ref": "#/$defs/FindingOutcome"
+        },
+        "policy_evaluation_time": {
+          "format": "date-time",
+          "title": "Policy Evaluation Time",
+          "type": "string"
+        },
+        "policy_pack_version": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Policy Pack Version",
+          "type": "string"
+        },
+        "policy_profile": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Policy Profile",
+          "type": "string"
+        },
+        "rationale": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "remediation_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Remediation Id",
+          "type": "string"
+        },
+        "rule_effective_from": {
+          "format": "date",
+          "title": "Rule Effective From",
+          "type": "string"
+        },
+        "rule_effective_until": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rule Effective Until"
+        },
+        "severity": {
+          "$ref": "#/$defs/FindingSeverity"
+        },
+        "standards": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Standards",
+          "type": "array"
+        },
+        "title": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "finding_id",
+        "code",
+        "outcome",
+        "title",
+        "rationale",
+        "remediation_id",
+        "severity",
+        "evaluation_state",
+        "basis_state",
+        "policy_profile",
+        "policy_pack_version",
+        "rule_effective_from",
+        "policy_evaluation_time",
+        "affected_endpoint"
+      ],
+      "title": "Finding",
+      "type": "object"
+    },
+    "FindingOutcome": {
+      "description": "Serialized policy outcomes. Pass/present results are not emitted as findings.",
+      "enum": [
+        "negative",
+        "indeterminate"
+      ],
+      "title": "FindingOutcome",
+      "type": "string"
+    },
+    "FindingSeverity": {
+      "enum": [
+        "high",
+        "medium",
+        "low",
+        "informational"
+      ],
+      "title": "FindingSeverity",
+      "type": "string"
+    },
+    "Flow": {
+      "additionalProperties": false,
+      "description": "Canonical per-connection evidence derived from Zeek `conn.log` plus recon facts.",
+      "properties": {
+        "conflicting_byte_ranges": {
+          "items": {
+            "$ref": "#/$defs/ByteRange"
+          },
+          "title": "Conflicting Byte Ranges",
+          "type": "array"
+        },
+        "conn_state": {
+          "title": "Conn State",
+          "type": "string"
+        },
+        "evidence_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "gap_bytes": {
+          "minimum": 0,
+          "title": "Gap Bytes",
+          "type": "integer"
+        },
+        "gap_bytes_exact": {
+          "default": true,
+          "title": "Gap Bytes Exact",
+          "type": "boolean"
+        },
+        "history": {
+          "title": "History",
+          "type": "string"
+        },
+        "missed_bytes": {
+          "minimum": 0,
+          "title": "Missed Bytes",
+          "type": "integer"
+        },
+        "observed_conditions": {
+          "items": {
+            "$ref": "#/$defs/ObservedCondition"
+          },
+          "title": "Observed Conditions",
+          "type": "array"
+        },
+        "orig": {
+          "$ref": "#/$defs/FlowEndpoint"
+        },
+        "orig_bytes": {
+          "minimum": 0,
+          "title": "Orig Bytes",
+          "type": "integer"
+        },
+        "proto": {
+          "enum": [
+            "tcp",
+            "udp",
+            "icmp",
+            "icmp6",
+            "unknown"
+          ],
+          "title": "Proto",
+          "type": "string"
+        },
+        "reason_code": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReconstructionReasonCode"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "reconstruction_quality": {
+          "$ref": "#/$defs/ReconstructionQuality"
+        },
+        "resp": {
+          "$ref": "#/$defs/FlowEndpoint"
+        },
+        "resp_bytes": {
+          "minimum": 0,
+          "title": "Resp Bytes",
+          "type": "integer"
+        },
+        "uid": {
+          "title": "Uid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "uid",
+        "orig",
+        "resp",
+        "proto",
+        "history",
+        "conn_state",
+        "missed_bytes",
+        "orig_bytes",
+        "resp_bytes",
+        "reconstruction_quality",
+        "gap_bytes",
+        "evidence_state"
+      ],
+      "title": "Flow",
+      "type": "object"
+    },
+    "FlowEndpoint": {
+      "additionalProperties": false,
+      "properties": {
+        "host": {
+          "title": "Host",
+          "type": "string"
+        },
+        "port": {
+          "maximum": 65535,
+          "minimum": 0,
+          "title": "Port",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "host",
+        "port"
+      ],
+      "title": "FlowEndpoint",
+      "type": "object"
+    },
+    "FontResource": {
+      "additionalProperties": false,
+      "description": "Pinned bundled font used by HTML and PDF presentation.",
+      "properties": {
+        "family": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Family",
+          "type": "string"
+        },
+        "filename": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Filename",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "style": {
+          "default": "normal",
+          "enum": [
+            "normal",
+            "italic"
+          ],
+          "title": "Style",
+          "type": "string"
+        },
+        "weight": {
+          "maximum": 900,
+          "minimum": 100,
+          "title": "Weight",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "filename",
+        "sha256",
+        "family",
+        "weight"
+      ],
+      "title": "FontResource",
+      "type": "object"
+    },
+    "HandshakeMessage": {
+      "additionalProperties": false,
+      "description": "One evidence-linked handshake or record message.",
+      "properties": {
+        "direction": {
+          "$ref": "#/$defs/StreamDirection"
+        },
+        "evidence_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "frame_number": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Frame Number"
+        },
+        "history_letter": {
+          "maxLength": 1,
+          "minLength": 1,
+          "title": "History Letter",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/HandshakeMessageKind"
+        }
+      },
+      "required": [
+        "kind",
+        "direction",
+        "history_letter",
+        "evidence_state"
+      ],
+      "title": "HandshakeMessage",
+      "type": "object"
+    },
+    "HandshakeMessageKind": {
+      "description": "Handshake/record kinds reconstructed from Zeek `ssl_history` letters.",
+      "enum": [
+        "direction_flip",
+        "hello_request",
+        "client_hello",
+        "server_hello",
+        "hello_retry_request",
+        "hello_verify_request",
+        "new_session_ticket",
+        "end_of_early_data",
+        "encrypted_extensions",
+        "certificate",
+        "server_key_exchange",
+        "certificate_request",
+        "server_hello_done",
+        "certificate_verify",
+        "client_key_exchange",
+        "finished",
+        "certificate_url",
+        "certificate_status",
+        "supplemental_data",
+        "key_update",
+        "message_hash",
+        "change_cipher_spec",
+        "alert",
+        "heartbeat",
+        "unknown"
+      ],
+      "title": "HandshakeMessageKind",
+      "type": "string"
+    },
+    "HandshakeSignatureEvidence": {
+      "additionalProperties": false,
+      "description": "TLS handshake CertificateVerify signature algorithm, not the X.509 cert signature.",
+      "properties": {
+        "algorithm": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Algorithm"
+        },
+        "evidence_state": {
+          "$ref": "#/$defs/EvidenceState"
+        }
+      },
+      "required": [
+        "evidence_state"
+      ],
+      "title": "HandshakeSignatureEvidence",
+      "type": "object"
+    },
+    "HandshakeVisibility": {
+      "description": "How much of the handshake is passively visible.",
+      "enum": [
+        "full",
+        "partial",
+        "not_observable"
+      ],
+      "title": "HandshakeVisibility",
+      "type": "string"
+    },
+    "ImplicitTls": {
+      "additionalProperties": false,
+      "description": "Implicit-TLS correlation. Port alone never sets `correlated_protocol`.",
+      "properties": {
+        "correlated_protocol": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MailProtocol"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "evidence_frames": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Evidence Frames",
+          "type": "array"
+        },
+        "evidence_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "enum": [
+                "alpn",
+                "none"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source"
+        }
+      },
+      "required": [
+        "evidence_state"
+      ],
+      "title": "ImplicitTls",
+      "type": "object"
+    },
+    "KeyExchangeEvidence": {
+      "additionalProperties": false,
+      "description": "Version-aware key-exchange classification. No weakness or FS judgment.",
+      "properties": {
+        "dh_param_size": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dh Param Size"
+        },
+        "evidence_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "mechanism": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mechanism"
+        },
+        "psk_key_exchange_modes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Psk Key Exchange Modes",
+          "type": "array"
+        },
+        "selected_group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selected Group"
+        },
+        "selected_group_code": {
+          "anyOf": [
+            {
+              "maximum": 65535,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selected Group Code"
+        },
+        "source_fields": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Fields",
+          "type": "array"
+        }
+      },
+      "required": [
+        "evidence_state"
+      ],
+      "title": "KeyExchangeEvidence",
+      "type": "object"
+    },
+    "MailProtocol": {
+      "description": "Resolved application protocol. Distinct from `port_hint`.",
+      "enum": [
+        "smtp",
+        "imap",
+        "pop3"
+      ],
+      "title": "MailProtocol",
+      "type": "string"
+    },
+    "ObservedCondition": {
+      "description": "Recoverable transport facts that do not by themselves degrade quality.",
+      "enum": [
+        "out_of_order_segments",
+        "duplicate_segments"
+      ],
+      "title": "ObservedCondition",
+      "type": "string"
+    },
+    "OccurrenceRef": {
+      "additionalProperties": false,
+      "description": "One contributing session-level finding. Evidence is retained, not dropped.",
+      "properties": {
+        "finding_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "record_key": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Record Key",
+          "type": "string"
+        },
+        "record_type": {
+          "$ref": "#/$defs/EvidenceRecordType"
+        },
+        "session_uid": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Session Uid"
+        }
+      },
+      "required": [
+        "finding_id",
+        "record_type",
+        "record_key"
+      ],
+      "title": "OccurrenceRef",
+      "type": "object"
+    },
+    "PayloadEvidence": {
+      "description": "Protocol identity derived from payload / analyzer events, not ports.",
+      "enum": [
+        "smtp",
+        "imap",
+        "pop3",
+        "indeterminate",
+        "none"
+      ],
+      "title": "PayloadEvidence",
+      "type": "string"
+    },
+    "PolicyCheck": {
+      "additionalProperties": false,
+      "description": "One applicable policy evaluation. Genuine non-applicability is omitted.",
+      "properties": {
+        "affected_endpoint": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Affected Endpoint",
+          "type": "string"
+        },
+        "category": {
+          "$ref": "#/$defs/CheckCategory"
+        },
+        "check_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Check Id",
+          "type": "string"
+        },
+        "code": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "evidence_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "outcome": {
+          "$ref": "#/$defs/PolicyCheckOutcome"
+        },
+        "protocol": {
+          "$ref": "#/$defs/CoverageProtocol"
+        },
+        "record_key": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Record Key",
+          "type": "string"
+        },
+        "record_type": {
+          "$ref": "#/$defs/EvidenceRecordType"
+        },
+        "title": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "check_id",
+        "code",
+        "category",
+        "protocol",
+        "affected_endpoint",
+        "record_type",
+        "record_key",
+        "outcome",
+        "evidence_state",
+        "title"
+      ],
+      "title": "PolicyCheck",
+      "type": "object"
+    },
+    "PolicyCheckOutcome": {
+      "enum": [
+        "pass",
+        "fail",
+        "unknown",
+        "not_observable"
+      ],
+      "title": "PolicyCheckOutcome",
+      "type": "string"
+    },
+    "PolicyProfile": {
+      "description": "Built-in Step 7 policy packs. Organization packs are deferred.",
+      "enum": [
+        "ietf_current",
+        "nist_federal",
+        "historical_at_capture"
+      ],
+      "title": "PolicyProfile",
+      "type": "string"
+    },
+    "PortHint": {
+      "description": "Well-known-port inference only. Never used as protocol proof.",
+      "enum": [
+        "smtp",
+        "imap",
+        "pop3",
+        "none"
+      ],
+      "title": "PortHint",
+      "type": "string"
+    },
+    "PostureAssessment": {
+      "additionalProperties": false,
+      "properties": {
+        "assessment_state": {
+          "$ref": "#/$defs/AssessmentState"
+        },
+        "coverage": {
+          "$ref": "#/$defs/CoverageMatrix"
+        },
+        "prioritized_findings": {
+          "items": {
+            "$ref": "#/$defs/ScoredEndpointFinding"
+          },
+          "maxItems": 4096,
+          "title": "Prioritized Findings",
+          "type": "array"
+        },
+        "risk_score": {
+          "anyOf": [
+            {
+              "maximum": 100,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Risk Score"
+        },
+        "schema_version": {
+          "const": "securemail.posture/v1",
+          "default": "securemail.posture/v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scoring_schema_version": {
+          "const": "securemail.scoring/v1",
+          "default": "securemail.scoring/v1",
+          "title": "Scoring Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "assessment_state",
+        "coverage"
+      ],
+      "title": "PostureAssessment",
+      "type": "object"
+    },
+    "PostureSummary": {
+      "additionalProperties": false,
+      "description": "Headline posture copied from `evidence.posture`. Not independently scored.",
+      "properties": {
+        "assessment_state": {
+          "$ref": "#/$defs/AssessmentState"
+        },
+        "finding_count": {
+          "minimum": 0,
+          "title": "Finding Count",
+          "type": "integer"
+        },
+        "not_observable_count": {
+          "minimum": 0,
+          "title": "Not Observable Count",
+          "type": "integer"
+        },
+        "risk_score": {
+          "anyOf": [
+            {
+              "maximum": 100,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Risk Score"
+        },
+        "unknown_count": {
+          "minimum": 0,
+          "title": "Unknown Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "assessment_state",
+        "finding_count",
+        "unknown_count",
+        "not_observable_count"
+      ],
+      "title": "PostureSummary",
+      "type": "object"
+    },
+    "ProtocolEvent": {
+      "additionalProperties": false,
+      "description": "One redacted, length-bounded command/response/capability observation.",
+      "properties": {
+        "argument": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Argument"
+        },
+        "command": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Command"
+        },
+        "direction": {
+          "$ref": "#/$defs/StreamDirection"
+        },
+        "frame_number": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Frame Number"
+        },
+        "kind": {
+          "$ref": "#/$defs/SessionEventKind"
+        },
+        "reply_code": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reply Code"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EventSource"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tag": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tag"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        }
+      },
+      "required": [
+        "direction",
+        "kind"
+      ],
+      "title": "ProtocolEvent",
+      "type": "object"
+    },
+    "ReconstructionQuality": {
+      "description": "Stream-reconstruction outcome. Distinct from `EvidenceState`.",
+      "enum": [
+        "complete",
+        "incomplete",
+        "conflicting"
+      ],
+      "title": "ReconstructionQuality",
+      "type": "string"
+    },
+    "ReconstructionReasonCode": {
+      "description": "Machine-readable primary reason when quality is not complete.",
+      "enum": [
+        "missing_syn",
+        "missing_fin",
+        "midstream_start",
+        "snaplen_truncation",
+        "overlapping_retransmission_conflict",
+        "segment_gap",
+        "capture_loss"
+      ],
+      "title": "ReconstructionReasonCode",
+      "type": "string"
+    },
+    "ReferenceIdentitySource": {
+      "description": "Where the hostname/IP used for identity matching came from.",
+      "enum": [
+        "sni",
+        "configured"
+      ],
+      "title": "ReferenceIdentitySource",
+      "type": "string"
+    },
+    "RendererManifest": {
+      "additionalProperties": false,
+      "description": "How this JSON is turned into HTML/PDF. Upgrade these pins deliberately.",
+      "properties": {
+        "fonts": {
+          "items": {
+            "$ref": "#/$defs/FontResource"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "title": "Fonts",
+          "type": "array"
+        },
+        "html_renderer": {
+          "const": "securemail.html/v1",
+          "default": "securemail.html/v1",
+          "title": "Html Renderer",
+          "type": "string"
+        },
+        "pdf_renderer": {
+          "const": "weasyprint",
+          "default": "weasyprint",
+          "title": "Pdf Renderer",
+          "type": "string"
+        },
+        "pdf_renderer_version": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Pdf Renderer Version",
+          "type": "string"
+        },
+        "template_name": {
+          "const": "report.html.j2",
+          "default": "report.html.j2",
+          "title": "Template Name",
+          "type": "string"
+        },
+        "template_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Template Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "pdf_renderer_version",
+        "template_sha256",
+        "fonts"
+      ],
+      "title": "RendererManifest",
+      "type": "object"
+    },
+    "ReportManifest": {
+      "additionalProperties": false,
+      "description": "Provenance wrapper around one `EvidenceDocument`.",
+      "properties": {
+        "analysis_run_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Analysis Run Id"
+        },
+        "analyzer_bundle_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Analyzer Bundle Digest",
+          "type": "string"
+        },
+        "artifact_hashes": {
+          "items": {
+            "$ref": "#/$defs/ArtifactHash"
+          },
+          "maxItems": 32,
+          "title": "Artifact Hashes",
+          "type": "array"
+        },
+        "capture_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Capture Id"
+        },
+        "case_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Case Id"
+        },
+        "configuration_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Configuration Digest",
+          "type": "string"
+        },
+        "dependency_versions": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "maxProperties": 32,
+          "title": "Dependency Versions",
+          "type": "object"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "os_container": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Os Container"
+        },
+        "os_container_availability": {
+          "$ref": "#/$defs/Availability"
+        },
+        "policy_pack_version": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Policy Pack Version",
+          "type": "string"
+        },
+        "policy_profile": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Policy Profile",
+          "type": "string"
+        },
+        "posture_summary": {
+          "$ref": "#/$defs/PostureSummary"
+        },
+        "random_seed": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Random Seed"
+        },
+        "renderer": {
+          "$ref": "#/$defs/RendererManifest"
+        },
+        "schema_version": {
+          "const": "securemail.report/v1",
+          "default": "securemail.report/v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "signature": {
+          "$ref": "#/$defs/SignatureMetadata"
+        },
+        "source_capture_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Source Capture Sha256",
+          "type": "string"
+        },
+        "source_records": {
+          "items": {
+            "$ref": "#/$defs/SourceRecord"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "title": "Source Records",
+          "type": "array"
+        },
+        "timezone": {
+          "const": "UTC",
+          "default": "UTC",
+          "title": "Timezone",
+          "type": "string"
+        },
+        "trust_store_digest": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trust Store Digest"
+        },
+        "working_copy_availability": {
+          "$ref": "#/$defs/Availability"
+        },
+        "working_copy_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Working Copy Sha256"
+        }
+      },
+      "required": [
+        "generated_at",
+        "source_capture_sha256",
+        "working_copy_availability",
+        "source_records",
+        "renderer",
+        "signature",
+        "posture_summary",
+        "configuration_digest",
+        "analyzer_bundle_digest",
+        "policy_profile",
+        "policy_pack_version",
+        "os_container_availability"
+      ],
+      "title": "ReportManifest",
+      "type": "object"
+    },
+    "RevocationStatus": {
+      "description": "Revocation outcome. Without imported OCSP/CRL evidence this is unknown.",
+      "enum": [
+        "good",
+        "revoked",
+        "unknown",
+        "stale"
+      ],
+      "title": "RevocationStatus",
+      "type": "string"
+    },
+    "ScoreComponents": {
+      "additionalProperties": false,
+      "description": "Hand-computable addends. Sum is the published score (naturally \u2264 100).",
+      "properties": {
+        "asset_criticality": {
+          "maximum": 5,
+          "minimum": 0,
+          "title": "Asset Criticality",
+          "type": "integer"
+        },
+        "blast_radius": {
+          "maximum": 5,
+          "minimum": 0,
+          "title": "Blast Radius",
+          "type": "integer"
+        },
+        "confidence": {
+          "maximum": 20,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "integer"
+        },
+        "exposure": {
+          "maximum": 10,
+          "minimum": 0,
+          "title": "Exposure",
+          "type": "integer"
+        },
+        "recurrence": {
+          "maximum": 10,
+          "minimum": 0,
+          "title": "Recurrence",
+          "type": "integer"
+        },
+        "severity": {
+          "maximum": 50,
+          "minimum": 0,
+          "title": "Severity",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "severity",
+        "confidence",
+        "exposure",
+        "recurrence",
+        "asset_criticality",
+        "blast_radius"
+      ],
+      "title": "ScoreComponents",
+      "type": "object"
+    },
+    "ScoredEndpointFinding": {
+      "additionalProperties": false,
+      "description": "Prioritized endpoint finding with named score components.",
+      "properties": {
+        "affected_endpoint": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Affected Endpoint",
+          "type": "string"
+        },
+        "asset_criticality": {
+          "$ref": "#/$defs/AssetCriticality"
+        },
+        "basis_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "blast_radius": {
+          "$ref": "#/$defs/BlastRadius"
+        },
+        "code": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "components": {
+          "$ref": "#/$defs/ScoreComponents"
+        },
+        "contributing_finding_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 4096,
+          "minItems": 1,
+          "title": "Contributing Finding Ids",
+          "type": "array"
+        },
+        "contributing_occurrences": {
+          "items": {
+            "$ref": "#/$defs/OccurrenceRef"
+          },
+          "maxItems": 4096,
+          "minItems": 1,
+          "title": "Contributing Occurrences",
+          "type": "array"
+        },
+        "evaluation_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "evidence_references": {
+          "items": {
+            "$ref": "#/$defs/EvidenceReference"
+          },
+          "maxItems": 1024,
+          "title": "Evidence References",
+          "type": "array"
+        },
+        "exposure": {
+          "$ref": "#/$defs/ExposureClass"
+        },
+        "finding_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "outcome": {
+          "$ref": "#/$defs/FindingOutcome"
+        },
+        "policy_evaluation_time": {
+          "format": "date-time",
+          "title": "Policy Evaluation Time",
+          "type": "string"
+        },
+        "policy_pack_version": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Policy Pack Version",
+          "type": "string"
+        },
+        "policy_profile": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Policy Profile",
+          "type": "string"
+        },
+        "rationale": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "recurrence_count": {
+          "minimum": 1,
+          "title": "Recurrence Count",
+          "type": "integer"
+        },
+        "remediation_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Remediation Id",
+          "type": "string"
+        },
+        "rule_effective_from": {
+          "format": "date",
+          "title": "Rule Effective From",
+          "type": "string"
+        },
+        "rule_effective_until": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rule Effective Until"
+        },
+        "score": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Score",
+          "type": "integer"
+        },
+        "scoring_schema_version": {
+          "const": "securemail.scoring/v1",
+          "default": "securemail.scoring/v1",
+          "title": "Scoring Schema Version",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/FindingSeverity"
+        },
+        "standards": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Standards",
+          "type": "array"
+        },
+        "title": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "unique_occurrences": {
+          "minimum": 1,
+          "title": "Unique Occurrences",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "finding_id",
+        "code",
+        "outcome",
+        "title",
+        "rationale",
+        "remediation_id",
+        "severity",
+        "evaluation_state",
+        "basis_state",
+        "policy_profile",
+        "policy_pack_version",
+        "rule_effective_from",
+        "policy_evaluation_time",
+        "affected_endpoint",
+        "recurrence_count",
+        "unique_occurrences",
+        "contributing_finding_ids",
+        "contributing_occurrences",
+        "score",
+        "components",
+        "exposure",
+        "asset_criticality",
+        "blast_radius"
+      ],
+      "title": "ScoredEndpointFinding",
+      "type": "object"
+    },
+    "SessionEventKind": {
+      "description": "Bounded protocol-event kinds recorded on an `EmailSession`.",
+      "enum": [
+        "request",
+        "reply",
+        "capability",
+        "starttls",
+        "confirmation",
+        "ambiguous_banner",
+        "unexpected"
+      ],
+      "title": "SessionEventKind",
+      "type": "string"
+    },
+    "SignatureMetadata": {
+      "additionalProperties": false,
+      "description": "Detached signing/timestamping is out of Step 9; record unavailability.",
+      "properties": {
+        "algorithm": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Algorithm"
+        },
+        "availability": {
+          "const": "unavailable",
+          "default": "unavailable",
+          "title": "Availability",
+          "type": "string"
+        },
+        "timestamp": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Timestamp"
+        }
+      },
+      "title": "SignatureMetadata",
+      "type": "object"
+    },
+    "SourceRecord": {
+      "additionalProperties": false,
+      "description": "Identifier for a record the report was assembled from.",
+      "properties": {
+        "availability": {
+          "$ref": "#/$defs/Availability"
+        },
+        "identifier": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Identifier"
+        },
+        "kind": {
+          "$ref": "#/$defs/SourceRecordKind"
+        }
+      },
+      "required": [
+        "kind",
+        "availability"
+      ],
+      "title": "SourceRecord",
+      "type": "object"
+    },
+    "SourceRecordKind": {
+      "enum": [
+        "case",
+        "capture",
+        "analysis_run"
+      ],
+      "title": "SourceRecordKind",
+      "type": "string"
+    },
+    "StageError": {
+      "additionalProperties": false,
+      "description": "Inspectable stage failure. Empty when the analysis completed.",
+      "properties": {
+        "evidence_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "message": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "stage": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Stage",
+          "type": "string"
+        }
+      },
+      "required": [
+        "stage",
+        "message",
+        "evidence_state"
+      ],
+      "title": "StageError",
+      "type": "object"
+    },
+    "StreamDirection": {
+      "enum": [
+        "orig",
+        "resp"
+      ],
+      "title": "StreamDirection",
+      "type": "string"
+    },
+    "TlsHandshake": {
+      "additionalProperties": false,
+      "description": "TLS handshake record linked to a `Flow` by Zeek `uid`.",
+      "properties": {
+        "certificate_verify_signature": {
+          "$ref": "#/$defs/HandshakeSignatureEvidence"
+        },
+        "certificate_verify_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "cipher_suite": {
+          "$ref": "#/$defs/CipherSuiteEvidence"
+        },
+        "established": {
+          "title": "Established",
+          "type": "boolean"
+        },
+        "evidence_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "hello_retry_request": {
+          "title": "Hello Retry Request",
+          "type": "boolean"
+        },
+        "key_exchange": {
+          "$ref": "#/$defs/KeyExchangeEvidence"
+        },
+        "last_alert": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Alert"
+        },
+        "messages": {
+          "items": {
+            "$ref": "#/$defs/HandshakeMessage"
+          },
+          "title": "Messages",
+          "type": "array"
+        },
+        "resumed": {
+          "title": "Resumed",
+          "type": "boolean"
+        },
+        "server_certificate_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "ssl_history": {
+          "title": "Ssl History",
+          "type": "string"
+        },
+        "uid": {
+          "title": "Uid",
+          "type": "string"
+        },
+        "version": {
+          "$ref": "#/$defs/TlsVersionEvidence"
+        },
+        "visibility": {
+          "$ref": "#/$defs/HandshakeVisibility"
+        }
+      },
+      "required": [
+        "uid",
+        "ssl_history",
+        "established",
+        "resumed",
+        "hello_retry_request",
+        "visibility",
+        "version",
+        "cipher_suite",
+        "key_exchange",
+        "server_certificate_state",
+        "certificate_verify_state",
+        "certificate_verify_signature",
+        "evidence_state"
+      ],
+      "title": "TlsHandshake",
+      "type": "object"
+    },
+    "TlsVersionEvidence": {
+      "additionalProperties": false,
+      "description": "Negotiated version. `supported_versions` wins over the legacy record version.",
+      "properties": {
+        "client_supported_versions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Client Supported Versions",
+          "type": "array"
+        },
+        "evidence_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "legacy_record_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legacy Record Version"
+        },
+        "selected": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selected"
+        },
+        "server_supported_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Server Supported Version"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VersionSource"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "evidence_state"
+      ],
+      "title": "TlsVersionEvidence",
+      "type": "object"
+    },
+    "UpgradeState": {
+      "description": "Terminal STARTTLS/STLS state-machine outcome.",
+      "enum": [
+        "advertised",
+        "requested",
+        "accepted",
+        "tls_established",
+        "plaintext_fallback",
+        "violation"
+      ],
+      "title": "UpgradeState",
+      "type": "string"
+    },
+    "VersionSource": {
+      "description": "Where the selected TLS version was taken from. Never ClientHello offers.",
+      "enum": [
+        "supported_versions",
+        "legacy_record"
+      ],
+      "title": "VersionSource",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Authoritative report object. HTML and PDF are presentations of this model.",
+  "properties": {
+    "advisory": {
+      "$ref": "#/$defs/AdvisorySection"
+    },
+    "analyst_conclusions": {
+      "$ref": "#/$defs/AnalystSection"
+    },
+    "evidence": {
+      "$ref": "#/$defs/EvidenceDocument"
+    },
+    "exceptions": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 64,
+      "title": "Exceptions",
+      "type": "array"
+    },
+    "limitations": {
+      "$ref": "#/$defs/CaptureLimitations"
+    },
+    "manifest": {
+      "$ref": "#/$defs/ReportManifest"
+    },
+    "schema_version": {
+      "const": "securemail.report/v1",
+      "default": "securemail.report/v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "stage_errors": {
+      "items": {
+        "$ref": "#/$defs/StageError"
+      },
+      "maxItems": 256,
+      "title": "Stage Errors",
+      "type": "array"
+    },
+    "suppressed_findings": {
+      "items": {
+        "$ref": "#/$defs/Finding"
+      },
+      "maxItems": 256,
+      "title": "Suppressed Findings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "manifest",
+    "evidence",
+    "limitations"
+  ],
+  "title": "CanonicalReport",
+  "type": "object"
+}

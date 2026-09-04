@@ -3,14 +3,15 @@
 Offline, deterministic-first cryptographic posture analysis for SMTP, IMAP, and
 POP3 traffic captured in PCAP/PCAPNG files.
 
-This repository has completed **Steps 0–8** of `plans/build_plan.md`: package
+This repository has completed **Steps 0–9** of `plans/build_plan.md`: package
 layout, sandboxed Zeek/TShark runners, TCP reconstruction quality, payload-driven
 protocol identification, STARTTLS/STLS plus implicit-TLS assessment, TLS
 version / cipher / key-exchange evidence, per-certificate facts, offline
 chain validation with RFC 9525 identity matching, versioned rule packs,
-forward-secrecy assessment, and posture scoring with coverage denominators.
-The live commands are `securemail analyze` and `securemail score`. Steps 9–11
-remain named placeholders.
+forward-secrecy assessment, posture scoring with coverage denominators, and
+canonical JSON → HTML/PDF reports. The live commands are `securemail analyze`,
+`securemail score`, and `securemail report`. Steps 10–11 remain named
+placeholders.
 
 **As-built documentation** (what the code does today) lives in
 [`docs/README.md`](docs/README.md). Plan contracts (what to build next) remain in
@@ -20,13 +21,13 @@ remain named placeholders.
 
 See `plans/PROJECT_SCAFFOLD.md` Section 2. In short: Homebrew `uv`, CPython 3.13
 (via `uv`, not system Python), git-lfs, Docker Desktop, Homebrew OpenSSL 3, and
-Pango (needed by WeasyPrint at Step 9; `make doctor` checks it now).
+Pango (needed by WeasyPrint for `securemail report` PDF; `make doctor` checks it now).
 
 ## Bootstrap
 
 ```bash
 git lfs install
-uv sync --extra dev
+uv sync --extra dev --extra reports
 docker pull zeek/zeek@sha256:73e80e9cd23ff71fd28d158e9a9af5c7b2b0ef5d4036af61521827531347c0e3
 make tshark-image
 make zeek-image
@@ -68,12 +69,16 @@ uv run securemail analyze tests/fixtures/tls13_psk_only_resumption/capture.pcapn
 
 # Step 8 — posture score, dedup, coverage denominators
 uv run securemail score tests/fixtures/synthetic_findings/mixed_severity.json
+
+# Step 9 — canonical JSON → HTML/PDF
+uv run securemail report tests/fixtures/reports/golden_report.json --format json,html,pdf --out out/
 ```
 
 `analyze --out` is required. Analyze output is a v2 `EvidenceDocument` JSON file
 (flows, sessions, handshakes, certificates, session-level findings, policy
-checks, and posture). `score` writes the same posture object to stdout. There is
-no `report` or `evaluate-ml` command yet.
+checks, and posture). `score` writes the same posture object to stdout.
+`report` reads a `securemail.report/v1` object and writes RFC 8785 JSON, HTML,
+and PDF from one in-memory dump. There is no `evaluate-ml` command yet.
 
 ## Layout
 

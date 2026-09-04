@@ -1,1 +1,820 @@
-<!-- Filled in at Step 9. Single HTML template for HTML and PDF. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SecureMail forensic report {{ report.manifest.case_id|forensic_text }}</title>
+  <style>
+    {% for face in view.font_faces %}
+    @font-face {
+      font-family: "{{ face.family }}";
+      font-style: {{ face.style }};
+      font-weight: {{ face.weight }};
+      src: url("{{ face.uri }}") format("truetype");
+    }
+    {% endfor %}
+    :root {
+      --ink: #16181d;
+      --muted: #5c616a;
+      --paper: #f7f4ee;
+      --panel: #fffdf8;
+      --navy: #1c3f66;
+      --navy-2: #2b5f8a;
+      --rule: #c45c26;
+      --line: #d7d0c4;
+      --high: #8b1e1e;
+      --medium: #8a5a00;
+      --low: #215c38;
+      --info: #3d4a5c;
+      --pass: #215c38;
+      --fail: #8b1e1e;
+      --unknown: #6b5a2a;
+      --nob: #3d4a5c;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Noto Sans", sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.45;
+    }
+    body { padding: 0 0 24px; }
+    .page-title {
+      position: running(pageTitle);
+      font-family: "Noto Sans", sans-serif;
+      font-size: 8pt;
+      color: var(--muted);
+    }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 18px 22px 32px; }
+    a { color: var(--navy); }
+    h1, h2, h3, h4 { font-weight: 700; letter-spacing: -0.02em; }
+    h1 { font-size: 26pt; margin: 0 0 6px; color: var(--navy); }
+    h2 {
+      font-size: 14pt;
+      margin: 28px 0 10px;
+      padding-bottom: 4px;
+      border-bottom: 2px solid var(--navy);
+      break-after: avoid;
+    }
+    h3 { font-size: 11pt; margin: 16px 0 8px; color: var(--navy); break-after: avoid; }
+    p { margin: 0 0 10px; }
+    .kicker {
+      font-size: 8pt;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--rule);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .lede { font-size: 11pt; color: var(--muted); max-width: 42em; }
+    .cover {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-top: 6px solid var(--navy);
+      padding: 22px 24px 18px;
+      margin-bottom: 18px;
+    }
+    .cover-grid {
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: 18px;
+      align-items: start;
+    }
+    .integrity {
+      font-family: "Noto Sans Mono", monospace;
+      font-size: 8pt;
+      background: #eef2f6;
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+    }
+    .integrity dt { color: var(--muted); margin-top: 6px; }
+    .integrity dt:first-child { margin-top: 0; }
+    .integrity dd { margin: 0; word-break: break-all; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 12px 0 0; }
+    .meta { font-size: 9pt; color: var(--muted); }
+    .meta b { color: var(--ink); font-weight: 700; }
+    .toc { columns: 2; gap: 24px; margin: 0; padding-left: 18px; }
+    .toc li { break-inside: avoid; margin: 0 0 4px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      padding: 12px 14px;
+      margin: 0 0 12px;
+      break-inside: avoid;
+    }
+    .callout {
+      border-left: 4px solid var(--medium);
+      background: #f3ead6;
+      padding: 10px 12px;
+      margin: 0 0 14px;
+    }
+    .callout.limited { border-left-color: var(--medium); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .stat { text-align: left; }
+    .stat .n { font-size: 20pt; font-weight: 700; color: var(--navy); line-height: 1.1; }
+    .stat .l { font-size: 8pt; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9pt;
+      margin: 0 0 12px;
+    }
+    th, td {
+      text-align: left;
+      vertical-align: top;
+      padding: 6px 7px;
+      border-bottom: 1px solid var(--line);
+    }
+    th {
+      font-size: 8pt;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      background: #eef2f6;
+    }
+    caption {
+      text-align: left;
+      font-weight: 700;
+      margin: 0 0 6px;
+      color: var(--navy);
+    }
+    .mono { font-family: "Noto Sans Mono", monospace; font-size: 8.5pt; }
+    .pill {
+      display: inline-block;
+      font-size: 7.5pt;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 1px 6px;
+      border-radius: 3px;
+      border: 1px solid currentColor;
+      white-space: nowrap;
+    }
+    .sev-high { color: var(--high); }
+    .sev-medium { color: var(--medium); }
+    .sev-low { color: var(--low); }
+    .sev-informational { color: var(--info); }
+    .st-observed, .st-verified { color: var(--low); }
+    .st-inferred { color: var(--navy-2); }
+    .st-incomplete, .st-indeterminate, .st-not_observable { color: var(--unknown); }
+    .st-conflicting { color: var(--high); }
+    .region-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .region {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      min-height: 72px;
+      background: var(--panel);
+    }
+    .region h3 { margin-top: 0; }
+    .region.muted { background: #f0eee8; color: var(--muted); }
+    .bar-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 8pt; margin: 6px 0 10px; }
+    .swatch { display: inline-block; width: 10px; height: 10px; margin-right: 4px; vertical-align: -1px; }
+    .pipeline {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 0;
+      margin: 0 0 10px;
+    }
+    .pipeline .node {
+      border: 1px solid var(--navy);
+      background: var(--panel);
+      padding: 6px 8px;
+      min-width: 84px;
+      max-width: 170px;
+      flex: 1 1 84px;
+      font-size: 8pt;
+    }
+    .pipeline .node b { display: block; font-size: 7pt; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .pipeline .arrow {
+      display: flex;
+      align-items: center;
+      padding: 0 4px;
+      color: var(--navy);
+      font-weight: 700;
+    }
+    .stepper { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
+    .step {
+      font-size: 8pt;
+      padding: 4px 8px;
+      border: 1px dashed var(--line);
+      color: var(--muted);
+    }
+    .step.reached { border-style: solid; border-color: var(--navy-2); color: var(--ink); }
+    .step.current { border-style: solid; background: var(--navy); color: #fff; }
+    .step.skipped { text-decoration: line-through; opacity: 0.6; }
+    .score-row { display: grid; grid-template-columns: 110px 1fr 36px; gap: 6px; align-items: center; font-size: 8pt; margin: 2px 0; }
+    .score-track { height: 8px; background: #e4ddd2; }
+    .score-fill { height: 8px; background: var(--navy); }
+    .chain { display: flex; flex-direction: column; gap: 0; max-width: 520px; }
+    .chain .cert {
+      border: 1px solid var(--navy);
+      padding: 8px 10px;
+      background: var(--panel);
+    }
+    .chain .link { text-align: center; color: var(--navy); font-weight: 700; line-height: 1; }
+    .empty { color: var(--muted); font-style: italic; }
+    .footnote { font-size: 8pt; color: var(--muted); }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+    @page {
+      size: A4;
+      margin: 16mm 14mm 18mm 14mm;
+      @top-center {
+        content: element(pageTitle);
+        font-size: 8pt;
+        color: #5c616a;
+      }
+      @bottom-left {
+        content: "SecureMail  ·  " "{{ report.schema_version }}";
+        font-size: 8pt;
+        color: #5c616a;
+      }
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 8pt;
+        color: #5c616a;
+      }
+    }
+    @media screen and (max-width: 720px) {
+      .cover-grid, .grid-2, .grid-3, .region-grid { grid-template-columns: 1fr; }
+      .toc { columns: 1; }
+      .wrap { padding: 12px; }
+    }
+    @media (max-width: 900px) {
+      .pipeline { flex-direction: column; max-width: 280px; }
+      .pipeline .node { max-width: none; flex: 0 0 auto; }
+      .pipeline .arrow { transform: rotate(90deg); justify-content: center; padding: 2px 0; }
+    }
+    @media print {
+      body { background: #fff; }
+      .wrap { max-width: none; padding: 0; }
+      .cover, .panel, .region, table { break-inside: avoid; }
+      h2 { page-break-after: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-title">SecureMail forensic report · {{ report.manifest.source_capture_sha256|short_hash|forensic_text }}</div>
+  <div class="wrap">
+    <header class="cover" id="cover">
+      <div class="cover-grid">
+        <div>
+          <div class="kicker">Deterministic cryptographic posture</div>
+          <h1>SecureMail forensic report</h1>
+          <p class="lede">
+            JSON is authoritative. This HTML and the companion PDF are presentations of one
+            in-memory canonical report. Missing evidence is not a pass.
+          </p>
+          <div class="meta-row">
+            <div class="meta">Schema <b>{{ report.schema_version|forensic_text }}</b></div>
+            <div class="meta">Generated <b>{{ report.manifest.generated_at|forensic_text }}</b></div>
+            <div class="meta">Profile <b>{{ report.manifest.policy_profile|forensic_text }}</b></div>
+            <div class="meta">Assessment
+              <b>{{ report.evidence.posture.assessment_state|forensic_text }}</b>
+            </div>
+          </div>
+        </div>
+        <div class="panel stat" aria-label="Risk score">
+          {% if view.risk_available %}
+          <svg viewBox="0 0 200 120" width="200" height="120" role="img" aria-labelledby="risk-title risk-desc">
+            <title id="risk-title">Risk score {{ view.risk_score }} of 100</title>
+            <desc id="risk-desc">Highest prioritized finding score. Not a pass/fail grade for unknown checks.</desc>
+            <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#d7d0c4" stroke-width="12"/>
+            <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#1c3f66" stroke-width="12"
+                  stroke-dasharray="{{ (251.2 * view.risk_percent / 100)|round(1) }} 251.2"
+                  stroke-linecap="butt"/>
+            <text x="100" y="88" text-anchor="middle" font-size="28" font-weight="700" fill="#1c3f66">{{ view.risk_score }}</text>
+            <text x="100" y="108" text-anchor="middle" font-size="9" fill="#5c616a">risk score / 100</text>
+          </svg>
+          {% else %}
+          <div class="n">n/a</div>
+          <div class="l">Risk score withheld</div>
+          <p class="footnote">Unknown or not-observable coverage prevents a numeric risk score.</p>
+          {% endif %}
+        </div>
+      </div>
+      <dl class="integrity">
+        <dt>Capture SHA-256</dt>
+        <dd>{{ report.manifest.source_capture_sha256|forensic_text }}</dd>
+        <dt>Working copy</dt>
+        <dd>{{ report.manifest.working_copy_availability|forensic_text }}{% if report.manifest.working_copy_sha256 %} · {{ report.manifest.working_copy_sha256|forensic_text }}{% endif %}</dd>
+        <dt>Analyzer bundle</dt>
+        <dd>{{ report.manifest.analyzer_bundle_digest|forensic_text }}</dd>
+        <dt>Policy pack</dt>
+        <dd>{{ report.manifest.policy_pack_version|forensic_text }}</dd>
+        <dt>Template</dt>
+        <dd>{{ report.manifest.renderer.template_name|forensic_text }} · {{ report.manifest.renderer.template_sha256|forensic_text }}</dd>
+      </dl>
+    </header>
+
+    <nav id="toc" aria-label="Contents">
+      <h2>Contents</h2>
+      <ol class="toc">
+        <li><a href="#regions">Report regions</a></li>
+        <li><a href="#limitations">Capture limitations</a></li>
+        <li><a href="#coverage">Coverage denominators</a></li>
+        <li><a href="#findings">Prioritized findings</a></li>
+        <li><a href="#lineage">Evidence lineage</a></li>
+        <li><a href="#starttls">STARTTLS / STLS</a></li>
+        <li><a href="#handshakes">TLS handshakes</a></li>
+        <li><a href="#certificates">Certificate chains</a></li>
+        <li><a href="#facts">Observed facts</a></li>
+        <li><a href="#checks">Policy checks</a></li>
+        <li><a href="#advisory">Advisory / ML</a></li>
+        <li><a href="#analyst">Analyst conclusions</a></li>
+        <li><a href="#provenance">Provenance</a></li>
+      </ol>
+    </nav>
+
+    <section id="regions">
+      <h2>Report regions</h2>
+      <p class="footnote">Four regions stay separate. ML never rewrites a deterministic finding.</p>
+      <div class="region-grid">
+        <div class="region">
+          <h3>Observed facts</h3>
+          <p>{{ report.evidence.flows|length }} flows, {{ report.evidence.sessions|length }} sessions, {{ report.evidence.handshakes|length }} handshakes, {{ report.evidence.certificates|length }} certificates.</p>
+        </div>
+        <div class="region">
+          <h3>Deterministic conclusions</h3>
+          <p>{{ report.evidence.findings|length }} session findings, {{ report.evidence.posture.prioritized_findings|length }} endpoint findings, {{ report.evidence.policy_checks|length }} applicable checks.</p>
+        </div>
+        <div class="region{% if not report.advisory.present %} muted{% endif %}">
+          <h3>Advisory / ML</h3>
+          {% if report.advisory.present %}
+          <p>{{ report.advisory.items|length }} advisory items. Not used as compliance judgments.</p>
+          {% else %}
+          <p>Not present in this report (Step 10 is separate).</p>
+          {% endif %}
+        </div>
+        <div class="region{% if not report.analyst_conclusions.present %} muted{% endif %}">
+          <h3>Analyst conclusions</h3>
+          {% if report.analyst_conclusions.present %}
+          <p>{{ report.analyst_conclusions.notes|length }} analyst notes.</p>
+          {% else %}
+          <p>No analyst notes attached to this export.</p>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    <section id="limitations">
+      <h2>Capture limitations</h2>
+      <div class="callout limited">
+        <p>
+          Assessment state <b>{{ report.evidence.posture.assessment_state|forensic_text }}</b>.
+          Unknown and not-observable checks are coverage, not a clean bill of health.
+        </p>
+      </div>
+      <div class="grid-3">
+        <div class="panel stat"><div class="n">{{ report.limitations.incomplete_flow_count }}</div><div class="l">Incomplete flows</div></div>
+        <div class="panel stat"><div class="n">{{ report.limitations.conflicting_flow_count }}</div><div class="l">Conflicting flows</div></div>
+        <div class="panel stat"><div class="n">{{ report.limitations.not_observable_certificate_count }}</div><div class="l">Not-observable certs</div></div>
+      </div>
+      <ul>
+        <li>Truncated packets present: <b>{{ report.limitations.truncated_packets_present }}</b></li>
+        <li>Unknown checks: <b>{{ report.limitations.unknown_check_count }}</b></li>
+        <li>Not-observable checks: <b>{{ report.limitations.not_observable_check_count }}</b></li>
+      </ul>
+      {% if report.limitations.notes %}
+      <ul>
+        {% for note in report.limitations.notes %}
+        <li>{{ note|forensic_text }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% if report.stage_errors %}
+      <h3>Stage errors</h3>
+      <table>
+        <caption>Analysis stage errors</caption>
+        <thead><tr><th>Stage</th><th>State</th><th>Message</th></tr></thead>
+        <tbody>
+        {% for err in report.stage_errors %}
+          <tr>
+            <td class="mono">{{ err.stage|forensic_text }}</td>
+            <td><span class="pill st-{{ err.evidence_state }}">{{ err.evidence_state|state_label }} {{ err.evidence_state|state_title }}</span></td>
+            <td>{{ err.message|forensic_text }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+      {% if report.exceptions %}
+      <h3>Exceptions</h3>
+      <ul>{% for item in report.exceptions %}<li>{{ item|forensic_text }}</li>{% endfor %}</ul>
+      {% endif %}
+      {% if report.suppressed_findings %}
+      <h3>Suppressed findings</h3>
+      <ul>{% for item in report.suppressed_findings %}<li class="mono">{{ item.code|forensic_text }}</li>{% endfor %}</ul>
+      {% endif %}
+    </section>
+
+    <section id="coverage">
+      <h2>Coverage denominators</h2>
+      <p class="footnote">Pass / fail / unknown / not-observable always sum to applicable. Unknown is never folded into pass.</p>
+      <div class="bar-legend" aria-hidden="true">
+        <span><span class="swatch" style="background:#215c38"></span>pass</span>
+        <span><span class="swatch" style="background:#8b1e1e"></span>fail</span>
+        <span><span class="swatch" style="background:#6b5a2a"></span>unknown</span>
+        <span><span class="swatch" style="background:#3d4a5c"></span>not observable</span>
+      </div>
+      {% set bar = view.coverage_overall %}
+      <svg viewBox="0 0 {{ bar.width }} {{ bar.height + 4 }}" width="100%" height="20" role="img" aria-label="Overall coverage stacked bar">
+        <rect x="0" y="2" width="{{ bar.width }}" height="{{ bar.height }}" fill="#e4ddd2"/>
+        {% for seg in bar.segments %}
+        <rect x="{{ seg.x }}" y="2" width="{{ seg.width }}" height="{{ bar.height }}" fill="{{ seg.color }}"/>
+        {% endfor %}
+      </svg>
+      <table>
+        <caption>Overall coverage</caption>
+        <thead>
+          <tr><th>Applicable</th><th>Pass</th><th>Fail</th><th>Unknown</th><th>Not observable</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ report.evidence.posture.coverage.overall.applicable_count }}</td>
+            <td>{{ report.evidence.posture.coverage.overall.passed_count }}</td>
+            <td>{{ report.evidence.posture.coverage.overall.failed_count }}</td>
+            <td>{{ report.evidence.posture.coverage.overall.unknown_count }}</td>
+            <td>{{ report.evidence.posture.coverage.overall.not_observable_count }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>By protocol</h3>
+      <table>
+        <caption>Coverage by mail protocol</caption>
+        <thead><tr><th>Protocol</th><th>Bar</th><th>Applicable</th><th>Pass</th><th>Fail</th><th>Unknown</th><th>NOB</th></tr></thead>
+        <tbody>
+        {% for row in view.coverage_protocols %}
+          <tr>
+            <td>{{ row.name|forensic_text }}</td>
+            <td>
+              <svg viewBox="0 0 {{ row.bar.width }} {{ row.bar.height }}" width="160" height="12" aria-hidden="true">
+                <rect x="0" y="0" width="{{ row.bar.width }}" height="{{ row.bar.height }}" fill="#e4ddd2"/>
+                {% for seg in row.bar.segments %}
+                <rect x="{{ seg.x }}" y="0" width="{{ seg.width }}" height="{{ row.bar.height }}" fill="{{ seg.color }}"/>
+                {% endfor %}
+              </svg>
+            </td>
+            <td>{{ row.counts.applicable_count }}</td>
+            <td>{{ row.counts.passed_count }}</td>
+            <td>{{ row.counts.failed_count }}</td>
+            <td>{{ row.counts.unknown_count }}</td>
+            <td>{{ row.counts.not_observable_count }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <h3>By category</h3>
+      <table>
+        <caption>Coverage by check category</caption>
+        <thead><tr><th>Category</th><th>Applicable</th><th>Pass</th><th>Fail</th><th>Unknown</th><th>Not observable</th></tr></thead>
+        <tbody>
+        {% for row in view.coverage_categories %}
+          <tr>
+            <td>{{ row.name|forensic_text }}</td>
+            <td>{{ row.counts.applicable_count }}</td>
+            <td>{{ row.counts.passed_count }}</td>
+            <td>{{ row.counts.failed_count }}</td>
+            <td>{{ row.counts.unknown_count }}</td>
+            <td>{{ row.counts.not_observable_count }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section id="findings">
+      <h2>Prioritized findings</h2>
+      {% if not report.evidence.posture.prioritized_findings %}
+      <p class="empty">No endpoint findings. Coverage still applies.</p>
+      {% endif %}
+      {% for item in view.score_bars %}
+      <article class="panel" id="finding-{{ item.finding.code|forensic_text }}">
+        <h3>
+          <span class="mono">{{ item.finding.code|forensic_text }}</span>
+          · {{ item.finding.title|forensic_text }}
+        </h3>
+        <p>
+          <span class="pill sev-{{ item.finding.severity }}">{{ item.finding.severity|forensic_text }}</span>
+          <span class="pill st-{{ item.finding.basis_state }}">{{ item.finding.basis_state|state_label }} {{ item.finding.basis_state|state_title }}</span>
+          Score {{ item.finding.score }} · {{ item.finding.affected_endpoint|forensic_text }}
+        </p>
+        <p>{{ item.finding.rationale|forensic_text }}</p>
+        {% for bar in item.bars %}
+        <div class="score-row">
+          <span>{{ bar.name }}</span>
+          <div class="score-track" aria-hidden="true"><div class="score-fill" style="width: {{ bar.percent }}%"></div></div>
+          <span>{{ bar.value }}/{{ bar.cap }}</span>
+        </div>
+        {% endfor %}
+        <p class="footnote">
+          Recurrence {{ item.finding.recurrence_count }}
+          · occurrences {{ item.finding.unique_occurrences }}
+          · remediation {{ item.finding.remediation_id|forensic_text }}
+        </p>
+        {% if item.finding.evidence_references %}
+        <table>
+          <caption>Evidence references</caption>
+          <thead><tr><th>Type</th><th>Key</th><th>Field</th><th>State</th><th>Frame</th></tr></thead>
+          <tbody>
+          {% for ref in item.finding.evidence_references %}
+            <tr>
+              <td>{{ ref.record_type|forensic_text }}</td>
+              <td class="mono">{{ ref.record_key|forensic_text }}</td>
+              <td class="mono">{{ ref.field_path|forensic_text }}</td>
+              <td><span class="pill st-{{ ref.evidence_state }}">{{ ref.evidence_state|state_label }} {{ ref.evidence_state|state_title }}</span></td>
+              <td>{% if ref.frame_number %}{{ ref.frame_number }}{% else %}—{% endif %}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </section>
+
+    <section id="lineage">
+      <h2>Evidence lineage</h2>
+      <p class="footnote">Capture to finding. Empty hops stay labeled rather than implied.</p>
+      {% for row in view.lineage %}
+      <div class="pipeline" role="img" aria-label="Lineage for {{ row.code|forensic_text }}">
+        <div class="node"><b>Capture</b>{{ row.capture|forensic_text }}</div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="node"><b>Flow</b>{% if row.flow %}{{ row.flow|forensic_text }} · {{ row.flow_quality|forensic_text }}{% else %}not linked{% endif %}</div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="node"><b>Session</b>{% if row.session_protocol %}{{ row.session_protocol|forensic_text }} · {{ row.session_state|forensic_text }}{% else %}not linked{% endif %}</div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="node"><b>TLS</b>{% if row.tls_version %}{{ row.tls_version|forensic_text }}{% else %}n/a{% endif %} · cert {{ row.cert_state|forensic_text if row.cert_state else "n/a" }}</div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="node"><b>Finding</b><span class="mono">{{ row.code|forensic_text }}</span></div>
+      </div>
+      {% endfor %}
+      <table>
+        <caption>Lineage table</caption>
+        <thead><tr><th>Finding</th><th>Endpoint</th><th>Flow</th><th>Quality</th><th>Protocol</th><th>TLS</th><th>Certs</th></tr></thead>
+        <tbody>
+        {% for row in view.lineage %}
+          <tr>
+            <td class="mono">{{ row.code|forensic_text }}</td>
+            <td>{{ row.endpoint|forensic_text }}</td>
+            <td class="mono">{% if row.flow %}{{ row.flow|forensic_text }}{% else %}—{% endif %}</td>
+            <td>{% if row.flow_quality %}{{ row.flow_quality|forensic_text }}{% else %}—{% endif %}</td>
+            <td>{% if row.session_protocol %}{{ row.session_protocol|forensic_text }}{% else %}—{% endif %}</td>
+            <td>{% if row.tls_version %}{{ row.tls_version|forensic_text }}{% else %}—{% endif %}</td>
+            <td>{{ row.cert_count }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section id="starttls">
+      <h2>STARTTLS / STLS</h2>
+      {% if not view.starttls %}
+      <p class="empty">No explicit-upgrade sessions in this report.</p>
+      {% endif %}
+      {% for item in view.starttls %}
+      <div class="panel">
+        <h3 class="mono">{{ item.uid|forensic_text }} · {{ item.protocol|forensic_text }}</h3>
+        <p>
+          Terminal state <b>{{ item.state|forensic_text }}</b>
+          · <span class="pill st-{{ item.evidence_state }}">{{ item.evidence_state|state_label }} {{ item.evidence_state|state_title }}</span>
+          · downgrade_consistent={{ item.downgrade_consistent }}
+        </p>
+        <div class="stepper" role="list">
+          {% for step in item.steps %}
+          <div class="step {{ step.status }}" role="listitem">{{ step.name }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </section>
+
+    <section id="handshakes">
+      <h2>TLS handshakes</h2>
+      {% for hs in view.handshakes %}
+      <div class="panel">
+        <h3 class="mono">{{ hs.uid|forensic_text }}</h3>
+        <p>
+          {{ hs.version|forensic_text }} · visibility {{ hs.visibility|forensic_text }}
+          · established={{ hs.established }}
+          · server certificate
+          <span class="pill st-{{ hs.server_certificate_state }}">{{ hs.server_certificate_state|state_label }} {{ hs.server_certificate_state|state_title }}</span>
+        </p>
+        <svg viewBox="0 0 {{ hs.width }} 64" width="100%" height="64" role="img" aria-label="Handshake message timeline">
+          <line x1="16" y1="32" x2="{{ hs.width - 16 }}" y2="32" stroke="#1c3f66" stroke-width="2"/>
+          {% for msg in hs.messages %}
+          <circle cx="{{ msg.x }}" cy="32" r="6" fill="{% if msg.direction == 'orig' %}#1c3f66{% else %}#c45c26{% endif %}"/>
+          <text x="{{ msg.x }}" y="14" text-anchor="middle" font-size="7">{{ msg.kind|forensic_text }}</text>
+          <text x="{{ msg.x }}" y="54" text-anchor="middle" font-size="7">{{ msg.state|state_label }}</text>
+          {% endfor %}
+        </svg>
+      </div>
+      {% endfor %}
+      <table>
+        <caption>Handshake facts</caption>
+        <thead><tr><th>UID</th><th>Version</th><th>Cipher</th><th>KEX</th><th>Visibility</th><th>Cert</th></tr></thead>
+        <tbody>
+        {% for hs in report.evidence.handshakes %}
+          <tr>
+            <td class="mono">{{ hs.uid|forensic_text }}</td>
+            <td>{{ hs.version.selected|forensic_text }}</td>
+            <td class="mono">{{ hs.cipher_suite.name|forensic_text }}</td>
+            <td>{{ hs.key_exchange.mechanism|forensic_text }}</td>
+            <td>{{ hs.visibility|forensic_text }}</td>
+            <td><span class="pill st-{{ hs.server_certificate_state }}">{{ hs.server_certificate_state|state_label }} {{ hs.server_certificate_state|state_title }}</span></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section id="certificates">
+      <h2>Certificate chains</h2>
+      {% if not view.chains %}
+      <p class="empty">No extracted certificates. TLS 1.3 leaves after ServerHello remain not_observable without authorized secrets.</p>
+      {% endif %}
+      {% for chain in view.chains %}
+      <div class="panel">
+        <h3 class="mono">{{ chain.uid|forensic_text }}</h3>
+        <div class="chain">
+          {% for cert in chain.certs %}
+          <div class="cert">
+            <div class="kicker">chain_index {{ cert.chain_index }} · {{ cert.position|forensic_text }} · {{ cert.role|forensic_text }}</div>
+            <div>{{ cert.subject|forensic_text }}</div>
+            <div class="footnote">Issuer {{ cert.issuer|forensic_text }} · {{ cert.public_key|forensic_text }}</div>
+            <span class="pill st-{{ cert.evidence_state }}">{{ cert.evidence_state|state_label }} {{ cert.evidence_state|state_title }}</span>
+          </div>
+          {% if not loop.last %}<div class="link" aria-hidden="true">↓</div>{% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </section>
+
+    <section id="facts">
+      <h2>Observed facts</h2>
+      <h3>Flows</h3>
+      <table>
+        <caption>TCP reconstruction</caption>
+        <thead><tr><th>UID</th><th>Endpoints</th><th>Quality</th><th>Reason</th><th>State</th></tr></thead>
+        <tbody>
+        {% for flow in report.evidence.flows %}
+          <tr>
+            <td class="mono">{{ flow.uid|forensic_text }}</td>
+            <td>{{ flow.orig.host|forensic_text }}:{{ flow.orig.port }} → {{ flow.resp.host|forensic_text }}:{{ flow.resp.port }}</td>
+            <td>{{ flow.reconstruction_quality|forensic_text }}</td>
+            <td>{% if flow.reason_code %}{{ flow.reason_code|forensic_text }}{% else %}—{% endif %}</td>
+            <td><span class="pill st-{{ flow.evidence_state }}">{{ flow.evidence_state|state_label }} {{ flow.evidence_state|state_title }}</span></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <h3>Sessions</h3>
+      <table>
+        <caption>Mail sessions</caption>
+        <thead><tr><th>UID</th><th>Protocol</th><th>Port hint</th><th>Payload</th><th>State</th><th>Events</th></tr></thead>
+        <tbody>
+        {% for session in report.evidence.sessions %}
+          <tr>
+            <td class="mono">{{ session.uid|forensic_text }}</td>
+            <td>{{ session.protocol|forensic_text }}</td>
+            <td>{{ session.port_hint|forensic_text }}</td>
+            <td>{{ session.payload_evidence|forensic_text }}</td>
+            <td><span class="pill st-{{ session.evidence_state }}">{{ session.evidence_state|state_label }} {{ session.evidence_state|state_title }}</span></td>
+            <td>{{ session.events|length }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% for session in report.evidence.sessions %}
+        {% if session.events %}
+        <h4 class="mono">{{ session.uid|forensic_text }} events</h4>
+        <table>
+          <caption>Decoded protocol events (hostile-input escaped)</caption>
+          <thead><tr><th>Kind</th><th>Dir</th><th>Command</th><th>Text</th><th>Frame</th></tr></thead>
+          <tbody>
+          {% for event in session.events %}
+            <tr>
+              <td>{{ event.kind|forensic_text }}</td>
+              <td>{{ event.direction|forensic_text }}</td>
+              <td class="mono">{{ event.command|forensic_text }}</td>
+              <td class="mono">{{ event.text|forensic_text }}</td>
+              <td>{% if event.frame_number %}{{ event.frame_number }}{% else %}—{% endif %}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+      {% endfor %}
+    </section>
+
+    <section id="checks">
+      <h2>Policy checks</h2>
+      <table>
+        <caption>Applicable evaluations (pass is not omitted from the denominator)</caption>
+        <thead><tr><th>Code</th><th>Outcome</th><th>State</th><th>Protocol</th><th>Category</th><th>Endpoint</th></tr></thead>
+        <tbody>
+        {% for check in report.evidence.policy_checks %}
+          <tr>
+            <td class="mono">{{ check.code|forensic_text }}</td>
+            <td>{{ check.outcome|forensic_text }}</td>
+            <td><span class="pill st-{{ check.evidence_state }}">{{ check.evidence_state|state_label }} {{ check.evidence_state|state_title }}</span></td>
+            <td>{{ check.protocol|forensic_text }}</td>
+            <td>{{ check.category|forensic_text }}</td>
+            <td>{{ check.affected_endpoint|forensic_text }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section id="advisory">
+      <h2>Advisory / ML</h2>
+      {% if report.advisory.present %}
+      <ul>
+        {% for item in report.advisory.items %}
+        <li><span class="mono">{{ item.code|forensic_text }}</span> — {{ item.reason|forensic_text }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="empty">No advisory section. Deterministic findings above are complete without ML.</p>
+      {% endif %}
+    </section>
+
+    <section id="analyst">
+      <h2>Analyst conclusions</h2>
+      {% if report.analyst_conclusions.present %}
+      <ul>
+        {% for note in report.analyst_conclusions.notes %}
+        <li>{{ note|forensic_text }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="empty">No analyst notes in this export.</p>
+      {% endif %}
+    </section>
+
+    <section id="provenance">
+      <h2>Provenance</h2>
+      <table>
+        <caption>Source records</caption>
+        <thead><tr><th>Kind</th><th>Identifier</th><th>Availability</th></tr></thead>
+        <tbody>
+        {% for rec in report.manifest.source_records %}
+          <tr>
+            <td>{{ rec.kind|forensic_text }}</td>
+            <td class="mono">{% if rec.identifier %}{{ rec.identifier|forensic_text }}{% else %}—{% endif %}</td>
+            <td>{{ rec.availability|forensic_text }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <table>
+        <caption>Artifact hashes</caption>
+        <thead><tr><th>Name</th><th>SHA-256</th><th>Availability</th></tr></thead>
+        <tbody>
+        {% for item in report.manifest.artifact_hashes %}
+          <tr>
+            <td>{{ item.name|forensic_text }}</td>
+            <td class="mono">{% if item.sha256 %}{{ item.sha256|forensic_text }}{% else %}—{% endif %}</td>
+            <td>{{ item.availability|forensic_text }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <table>
+        <caption>Bundled fonts</caption>
+        <thead><tr><th>File</th><th>Family</th><th>Weight</th><th>SHA-256</th></tr></thead>
+        <tbody>
+        {% for font in report.manifest.renderer.fonts %}
+          <tr>
+            <td class="mono">{{ font.filename|forensic_text }}</td>
+            <td>{{ font.family|forensic_text }}</td>
+            <td>{{ font.weight }}</td>
+            <td class="mono">{{ font.sha256|forensic_text }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <p class="footnote">
+        HTML renderer {{ report.manifest.renderer.html_renderer|forensic_text }} ·
+        PDF {{ report.manifest.renderer.pdf_renderer|forensic_text }}
+        {{ report.manifest.renderer.pdf_renderer_version|forensic_text }} ·
+        signature {{ report.manifest.signature.availability|forensic_text }} ·
+        OS/container {{ report.manifest.os_container_availability|forensic_text }}.
+        Canonical report digest is written beside JSON as <span class="mono">report.json.sha256</span>.
+      </p>
+    </section>
+  </div>
+</body>
+</html>

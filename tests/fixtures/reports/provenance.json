@@ -1,0 +1,29 @@
+{
+  "canonical_json_sha256": "f7b34443191d2e6e6da9c54fae29fe7635de6fcf9a5bf9f4805d6d75a199883e",
+  "created_at": "2026-09-04T12:00:00Z",
+  "finding_codes": [
+    "CERT_EXPIRED_AT_CAPTURE",
+    "CERT_TLS13_NOT_OBSERVABLE",
+    "MAIL_STARTTLS_PLAINTEXT_FALLBACK",
+    "TCP_RECONSTRUCTION_CONFLICTING",
+    "TLS_CIPHER_CBC",
+    "TLS_FORWARD_SECRECY_INDETERMINATE",
+    "TLS_NEGOTIATED_TLS10"
+  ],
+  "fonts": {
+    "NotoSans-Bold.ttf": "23f831d62059cc0d0cb4e71dbc9aadd1717d23c457028d81001c925e8a78cd5c",
+    "NotoSans-Regular.ttf": "1f0826e3f6488a3c14fe54d0ebf860bfad1bc1cc952fd4755ff519f145c9c17e",
+    "NotoSansMono-Regular.ttf": "213857674181ec82bf4f825a1ddb4b2a30136ca07a30e954c229b816108fc23d"
+  },
+  "generator": "tests/fixtures/reports/assemble.py",
+  "notes": [
+    "Golden report is the schema-first fixture for Step 9. HTML/PDF are rendered from it.",
+    "PDF bytes are not goldened; tests extract text and assert a page-count range."
+  ],
+  "pdf_page_count_max": 14,
+  "pdf_page_count_min": 8,
+  "report_schema_version": "securemail.report/v1",
+  "source": "hand-assembled",
+  "template_sha256": "89c8d6fe04df9723a4b53db3111380a633d82336acd035b98fd73a00c4d59be7",
+  "weasyprint_version": "69.0"
+}
