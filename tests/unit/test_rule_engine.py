@@ -34,6 +34,7 @@ from securemail.domain.policies.rule_engine import (
     canonical_pack_digest,
     evaluate_inline_test,
     evaluate_policy,
+    evaluate_policy_batch,
     resolve_evaluation_clock,
 )
 
@@ -234,3 +235,67 @@ def test_unusable_assertion_is_indeterminate_not_negative() -> None:
         ),
     )
     assert result is RuleEvalResult.INDETERMINATE
+
+
+def test_policy_batch_records_passes_and_excludes_non_applicable() -> None:
+    pack, digest = load_policy_pack(PolicyProfile.IETF_CURRENT)
+    evaluation = evaluate_policy_batch(
+        pack=pack,
+        pack_digest=digest,
+        capture_sha256="a" * 64,
+        evaluation_time=datetime(2026, 9, 4, tzinfo=UTC),
+        flows=[_flow(25)],
+        sessions=[_smtp_session()],
+        handshakes=[],
+        certificates=[],
+    )
+    codes = {item.code for item in evaluation.checks}
+    assert "MAIL_SUBMISSION_CLEARTEXT" not in {item.code for item in evaluation.findings}
+    assert "MAIL_SUBMISSION_CLEARTEXT" not in codes
+    assert "UPGRADE_ACCEPTED_WITHOUT_TLS_TRANSITION" in codes
+
+
+def test_unusable_where_is_unknown_check_not_a_finding() -> None:
+    pack, digest = load_policy_pack(PolicyProfile.IETF_CURRENT)
+    evaluation = evaluate_policy_batch(
+        pack=pack,
+        pack_digest=digest,
+        capture_sha256="a" * 64,
+        evaluation_time=datetime(2026, 9, 4, tzinfo=UTC),
+        flows=[_flow(25)],
+        sessions=[_smtp_session()],
+        handshakes=[],
+        certificates=[],
+    )
+    upgrade = [
+        item for item in evaluation.checks if item.code == "UPGRADE_ACCEPTED_WITHOUT_TLS_TRANSITION"
+    ]
+    assert upgrade
+    assert all(item.outcome.value == "unknown" for item in upgrade)
+    assert "UPGRADE_ACCEPTED_WITHOUT_TLS_TRANSITION" not in {
+        item.code for item in evaluation.findings
+    }
+
+
+def test_unusable_assertion_emits_indeterminate_finding_and_coverage() -> None:
+    pack, digest = load_policy_pack(PolicyProfile.IETF_CURRENT)
+    handshake = _handshake()
+    handshake = handshake.model_copy(
+        update={"version": handshake.version.model_copy(update={"selected": None})}
+    )
+    evaluation = evaluate_policy_batch(
+        pack=pack,
+        pack_digest=digest,
+        capture_sha256="a" * 64,
+        evaluation_time=datetime(2026, 9, 4, tzinfo=UTC),
+        flows=[_flow(4433)],
+        sessions=[],
+        handshakes=[handshake],
+        certificates=[],
+    )
+    tls10_checks = [item for item in evaluation.checks if item.code == "TLS_NEGOTIATED_TLS10"]
+    tls10_findings = [item for item in evaluation.findings if item.code == "TLS_NEGOTIATED_TLS10"]
+    assert tls10_checks
+    assert all(item.outcome.value in {"unknown", "not_observable"} for item in tls10_checks)
+    assert tls10_findings
+    assert all(item.outcome is FindingOutcome.INDETERMINATE for item in tls10_findings)

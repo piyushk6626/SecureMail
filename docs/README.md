@@ -1,15 +1,16 @@
 # SecureMail as-built documentation
 
 This directory describes **what the code does today**, not the full product
-vision. The live surface is a CLI that reads a PCAP/PCAPNG and writes a v1
-`EvidenceDocument` JSON file.
+vision. The live surface is a CLI that reads a PCAP/PCAPNG and writes a v2
+`EvidenceDocument` JSON file, plus `securemail score` over synthetic finding
+sets.
 
-Current implementation: **Steps 0–7** of
+Current implementation: **Steps 0–8** of
 [`plans/build_plan.md`](../plans/build_plan.md) (foundations, TCP reconstruction,
 SMTP/IMAP/POP3 identification, STARTTLS/STLS and implicit TLS, TLS handshake
 version/cipher/key exchange, certificate facts, chain validation and identity,
-versioned rule packs and forward secrecy).
-Steps 8–11 are named placeholders only.
+versioned rule packs and forward secrecy, posture scoring and coverage).
+Steps 9–11 are named placeholders only.
 
 ## How these docs relate to the rest of the repo
 
@@ -34,22 +35,24 @@ source under `src/`, `zeek/`, and `tests/fixtures/` wins.
 | [current-state.md](current-state.md) | Done vs not done, proof commands, fixture count |
 | [architecture.md](architecture.md) | Layers, import-linter, composition root, live modules |
 | [pipeline.md](pipeline.md) | `securemail analyze` end to end, digests, idempotency |
-| [evidence-model.md](evidence-model.md) | v1 JSON envelope, `EvidenceState`, `Flow`, `EmailSession`, `TlsHandshake`, `Finding` |
+| [evidence-model.md](evidence-model.md) | v2 JSON envelope, `EvidenceState`, `Flow`, `EmailSession`, `TlsHandshake`, `Finding` |
+| [scoring.md](scoring.md) | Versioned score, dedup, coverage denominators, `securemail score` |
 | [analyzers.md](analyzers.md) | Sandbox, lockfile, Zeek scripts, TShark allowlist, redaction |
 | [tcp-reconstruction.md](tcp-reconstruction.md) | Quality classifier, reason codes, `sm_tcp_recon.log` |
 | [protocol-identification.md](protocol-identification.md) | `port_hint` vs payload, DPD, corroboration, conflict |
 | [starttls.md](starttls.md) | STARTTLS/STLS machines, `downgrade_consistent`, implicit TLS |
 | [cli-and-development.md](cli-and-development.md) | CLI, Make targets, doctor, lint, CI |
-| [fixtures.md](fixtures.md) | Catalog of the 71 committed cases |
+| [fixtures.md](fixtures.md) | Catalog of the 71 PCAP cases plus synthetic finding sets |
 | [decisions/step2-imap-pop3-depth.md](decisions/step2-imap-pop3-depth.md) | ADR: Zeek vs TShark vs Spicy for IMAP/POP3 |
 
 ## Quick start
 
 ```bash
 uv run securemail analyze tests/fixtures/empty/capture.pcapng --out out/empty.json
+uv run securemail score tests/fixtures/synthetic_findings/mixed_severity.json
 ```
 
-The only registered command is `analyze`. See
+Registered commands are `analyze` and `score`. See
 [cli-and-development.md](cli-and-development.md) for toolchain and
 [current-state.md](current-state.md) for the proof command of each completed
 step.

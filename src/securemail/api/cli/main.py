@@ -13,8 +13,10 @@ from securemail.application.run_analysis import (
     DEFAULT_EXPIRY_WARNING_SECONDS,
     AnalysisError,
     InvalidCaptureError,
+    ScoreRequest,
 )
 from securemail.domain.evidence.run import EvidenceDocument, PolicyProfile
+from securemail.domain.findings.posture import PostureAssessment
 
 
 class AnalyzeFn(Protocol):
@@ -40,7 +42,11 @@ def parse_analysis_time(value: str) -> datetime:
     return parsed.astimezone(UTC)
 
 
-def build_app(analyze: AnalyzeFn) -> typer.Typer:
+class ScoreFn(Protocol):
+    def __call__(self, request: ScoreRequest) -> PostureAssessment: ...
+
+
+def build_app(analyze: AnalyzeFn, score: ScoreFn) -> typer.Typer:
     app = typer.Typer(no_args_is_help=True, add_completion=False)
 
     @app.callback()
@@ -48,6 +54,9 @@ def build_app(analyze: AnalyzeFn) -> typer.Typer:
         """SecureMail: offline SMTP/IMAP/POP3 cryptographic posture analysis."""
 
     register_analyze(app, analyze)
+    from securemail.api.cli.commands.score import register_score
+
+    register_score(app, score)
     return app
 
 

@@ -31,6 +31,7 @@ from securemail.domain.evidence.handshake import (
     VersionSource,
 )
 from securemail.domain.evidence.run import (
+    EVIDENCE_DOCUMENT_SCHEMA_VERSION,
     NORMALIZATION_SCHEMA_VERSION,
     AnalysisRun,
     CapturePreflight,
@@ -51,6 +52,7 @@ from securemail.domain.evidence.session import (
     UpgradeState,
 )
 from securemail.domain.findings.finding import Finding
+from securemail.domain.findings.posture import PolicyCheck, PostureAssessment
 
 EvidenceDocument.model_rebuild(
     _types_namespace={
@@ -59,10 +61,13 @@ EvidenceDocument.model_rebuild(
         "TlsHandshake": TlsHandshake,
         "CertificateEvidence": CertificateEvidence,
         "Finding": Finding,
+        "PolicyCheck": PolicyCheck,
+        "PostureAssessment": PostureAssessment,
     }
 )
 
 __all__ = [
+    "EVIDENCE_DOCUMENT_SCHEMA_VERSION",
     "NORMALIZATION_SCHEMA_VERSION",
     "AnalysisRun",
     "ByteRange",
@@ -90,8 +95,10 @@ __all__ = [
     "MailProtocol",
     "ObservedCondition",
     "PayloadEvidence",
+    "PolicyCheck",
     "PolicyProfile",
     "PortHint",
+    "PostureAssessment",
     "ProtocolEvent",
     "ReconstructionFacts",
     "ReconstructionQuality",

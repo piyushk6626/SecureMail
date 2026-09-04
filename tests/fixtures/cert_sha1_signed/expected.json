@@ -324,16 +324,513 @@
       "visibility": "full"
     }
   ],
+  "policy_checks": [
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "certificate",
+      "check_id": "076a426c256aa4c74583e315a0cbe64bd73945cf9b990d77ac3c0e6913c98876",
+      "code": "CERT_EXPIRED_AT_CAPTURE",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a2c9b979bfd1017b74223dac8b2a43f11d1e6210d2349024803de4fe7df26ea0",
+      "record_type": "certificate",
+      "title": "Certificate not valid at capture time"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "certificate",
+      "check_id": "7eb7d35ca59ea9e4dd77196723861be57e652d719d5fa90540aa4e14164a674f",
+      "code": "CERT_IDENTITY_MISMATCH",
+      "evidence_state": "indeterminate",
+      "outcome": "unknown",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a2c9b979bfd1017b74223dac8b2a43f11d1e6210d2349024803de4fe7df26ea0",
+      "record_type": "certificate",
+      "title": "Certificate identity mismatch"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "certificate",
+      "check_id": "73145af5d36d2ba61c66b50ec3a9b43eb2289714af9fdeaf7a8daed8df987e4a",
+      "code": "CERT_PATH_INVALID_AT_CAPTURE",
+      "evidence_state": "observed",
+      "outcome": "fail",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a2c9b979bfd1017b74223dac8b2a43f11d1e6210d2349024803de4fe7df26ea0",
+      "record_type": "certificate",
+      "title": "Certificate path invalid at capture time"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "certificate",
+      "check_id": "0a8b9e884dfd487a9b412e43f8d6ce9a41f1170fe335bb2af1e70e2a4ba3db44",
+      "code": "CERT_PUBLIC_KEY_STRENGTH_LT112",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a2c9b979bfd1017b74223dac8b2a43f11d1e6210d2349024803de4fe7df26ea0",
+      "record_type": "certificate",
+      "title": "Public key comparable strength below 112 bits"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "certificate",
+      "check_id": "8a6e30c03f8819d584003abd6b4501100b35a12b69a3479a022c16b4334dd4e3",
+      "code": "CERT_RSA_KEY_LT2048",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a2c9b979bfd1017b74223dac8b2a43f11d1e6210d2349024803de4fe7df26ea0",
+      "record_type": "certificate",
+      "title": "RSA authentication key shorter than 2048 bits"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "certificate",
+      "check_id": "42db0535e3ec38fcd6a516813ad0033f62d48caf1893801e96f5724f36e936bc",
+      "code": "CERT_SIGNATURE_MD5",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a2c9b979bfd1017b74223dac8b2a43f11d1e6210d2349024803de4fe7df26ea0",
+      "record_type": "certificate",
+      "title": "MD5 certificate signature"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "certificate",
+      "check_id": "a72aee20d9a09020fedeefbe39c9855e8a0b770b78c278b597440d7b785dfd1f",
+      "code": "CERT_SIGNATURE_SHA1",
+      "evidence_state": "observed",
+      "outcome": "fail",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a2c9b979bfd1017b74223dac8b2a43f11d1e6210d2349024803de4fe7df26ea0",
+      "record_type": "certificate",
+      "title": "SHA-1 certificate signature"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "6428cec6c4d73a2dae9f6bfd58d18445baba329d6fafab337d2e5fba636e5283",
+      "code": "TLS12_DHE_NEGOTIATED",
+      "evidence_state": "inferred",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "TLS 1.2 finite-field DHE"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "6af2ac543abf373dc3f4efa3fc3e0de514382ee0c3f0949524d68aa9ed4756fb",
+      "code": "TLS12_STATIC_DH_NEGOTIATED",
+      "evidence_state": "inferred",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "TLS 1.2 static finite-field DH"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "2ff395c50251e200bfe3d26aa5937988fd4153e0d54588c2f1405eefa9bfbff4",
+      "code": "TLS12_STATIC_ECDH_NEGOTIATED",
+      "evidence_state": "inferred",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "TLS 1.2 static ECDH"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "47db2f616268b0244c92c1e25c35ab237d09c03c0df0486a4fdef9835705b6d8",
+      "code": "TLS12_STATIC_RSA_NEGOTIATED",
+      "evidence_state": "inferred",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "TLS 1.2 static RSA key exchange"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "53b59c7aa368ca39a2cc6708cf0fcc219531a30333f1ff1aa1c8cbd10c60c278",
+      "code": "TLS_CIPHER_3DES",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "3DES cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "1b34e896c083a7680b39e9b02e32e8f1257369487e959c46ab05e13c7d3e166f",
+      "code": "TLS_CIPHER_CBC",
+      "evidence_state": "observed",
+      "outcome": "fail",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "TLS CBC cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "acb1b9b029ef9242f16f616e62b752e0555706c52f969dc46048087b24fd7197",
+      "code": "TLS_CIPHER_EXPORT",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "Export-grade cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "72fab9ff4eb66d14eeb304d6faa361e10c80f83eca28fa63af791162a88fe544",
+      "code": "TLS_CIPHER_NULL",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "NULL cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "4ce8871449c2566a78912b82cb82cdd7eb88e9b5d2a8db35361aa94b84c7b342",
+      "code": "TLS_CIPHER_RC4",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "RC4 cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "c6db3484836d9ac16870672007bb412afccb33ddf19cfb4176127ca4fc0b6cbc",
+      "code": "TLS_NEGOTIATED_SSL3",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "SSLv3 negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "ac76246a3d0b53177aef01fab57b0b2a5a70f06822c9fd20b6c384e0cd23fc66",
+      "code": "TLS_NEGOTIATED_TLS10",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "TLS 1.0 negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "08edf62e8fc21ea959917a644fff1e0dc1254ff8353bdb9bc18e517ba9dd7835",
+      "code": "TLS_NEGOTIATED_TLS11",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "TLS 1.1 negotiated"
+    }
+  ],
+  "posture": {
+    "assessment_state": "limited",
+    "coverage": {
+      "by_category": {
+        "certificate": {
+          "applicable_count": 7,
+          "failed_count": 2,
+          "not_observable_count": 0,
+          "passed_count": 4,
+          "unknown_count": 1
+        },
+        "tls_handshake": {
+          "applicable_count": 12,
+          "failed_count": 1,
+          "not_observable_count": 0,
+          "passed_count": 11,
+          "unknown_count": 0
+        }
+      },
+      "by_protocol": {
+        "unclassified": {
+          "applicable_count": 19,
+          "failed_count": 3,
+          "not_observable_count": 0,
+          "passed_count": 15,
+          "unknown_count": 1
+        }
+      },
+      "by_protocol_and_category": {
+        "unclassified": {
+          "certificate": {
+            "applicable_count": 7,
+            "failed_count": 2,
+            "not_observable_count": 0,
+            "passed_count": 4,
+            "unknown_count": 1
+          },
+          "tls_handshake": {
+            "applicable_count": 12,
+            "failed_count": 1,
+            "not_observable_count": 0,
+            "passed_count": 11,
+            "unknown_count": 0
+          }
+        }
+      },
+      "overall": {
+        "applicable_count": 19,
+        "failed_count": 3,
+        "not_observable_count": 0,
+        "passed_count": 15,
+        "unknown_count": 1
+      }
+    },
+    "prioritized_findings": [
+      {
+        "affected_endpoint": "172.18.0.2:4433",
+        "asset_criticality": "unknown",
+        "basis_state": "observed",
+        "blast_radius": "unknown",
+        "code": "CERT_PATH_INVALID_AT_CAPTURE",
+        "components": {
+          "asset_criticality": 2,
+          "blast_radius": 1,
+          "confidence": 16,
+          "exposure": 4,
+          "recurrence": 0,
+          "severity": 50
+        },
+        "contributing_finding_ids": [
+          "953cf53ad03b6f1786f5ead97f8ba969587f521ba37fba46a4af074b364c890f"
+        ],
+        "contributing_occurrences": [
+          {
+            "finding_id": "953cf53ad03b6f1786f5ead97f8ba969587f521ba37fba46a4af074b364c890f",
+            "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a2c9b979bfd1017b74223dac8b2a43f11d1e6210d2349024803de4fe7df26ea0",
+            "record_type": "certificate",
+            "session_uid": "CJKFoj4bpHEhTeaRoj"
+          }
+        ],
+        "evaluation_state": "verified",
+        "evidence_references": [
+          {
+            "evidence_state": "observed",
+            "field_path": "certificate.chain_index",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a2c9b979bfd1017b74223dac8b2a43f11d1e6210d2349024803de4fe7df26ea0",
+            "record_type": "certificate"
+          },
+          {
+            "evidence_state": "observed",
+            "field_path": "certificate.role",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a2c9b979bfd1017b74223dac8b2a43f11d1e6210d2349024803de4fe7df26ea0",
+            "record_type": "certificate"
+          },
+          {
+            "evidence_state": "observed",
+            "field_path": "certificate.validation.path_valid_at_capture_time",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a2c9b979bfd1017b74223dac8b2a43f11d1e6210d2349024803de4fe7df26ea0",
+            "record_type": "certificate"
+          }
+        ],
+        "exposure": "unknown",
+        "finding_id": "c36b3d0587fa6f1dd472fd56809a19de450384c56854f67e9b60ea3512114372",
+        "outcome": "negative",
+        "policy_evaluation_time": "2026-09-04T12:00:00Z",
+        "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+        "policy_profile": "ietf_current",
+        "rationale": "Offline path validation against the imported trust store failed at capture time.",
+        "recurrence_count": 1,
+        "remediation_id": "pki.repair_chain",
+        "rule_effective_from": "2008-05-01",
+        "rule_effective_until": null,
+        "score": 73,
+        "scoring_schema_version": "securemail.scoring/v1",
+        "severity": "high",
+        "standards": [
+          "RFC 5280 §6"
+        ],
+        "title": "Certificate path invalid at capture time",
+        "unique_occurrences": 1
+      },
+      {
+        "affected_endpoint": "172.18.0.2:4433",
+        "asset_criticality": "unknown",
+        "basis_state": "observed",
+        "blast_radius": "unknown",
+        "code": "CERT_SIGNATURE_SHA1",
+        "components": {
+          "asset_criticality": 2,
+          "blast_radius": 1,
+          "confidence": 16,
+          "exposure": 4,
+          "recurrence": 0,
+          "severity": 30
+        },
+        "contributing_finding_ids": [
+          "53880e7e9e0b37ced6648f8533b93bdeb0726d0491180734d8d543a0f0c0e21c"
+        ],
+        "contributing_occurrences": [
+          {
+            "finding_id": "53880e7e9e0b37ced6648f8533b93bdeb0726d0491180734d8d543a0f0c0e21c",
+            "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a2c9b979bfd1017b74223dac8b2a43f11d1e6210d2349024803de4fe7df26ea0",
+            "record_type": "certificate",
+            "session_uid": "CJKFoj4bpHEhTeaRoj"
+          }
+        ],
+        "evaluation_state": "verified",
+        "evidence_references": [
+          {
+            "evidence_state": "observed",
+            "field_path": "certificate.chain_index",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a2c9b979bfd1017b74223dac8b2a43f11d1e6210d2349024803de4fe7df26ea0",
+            "record_type": "certificate"
+          },
+          {
+            "evidence_state": "observed",
+            "field_path": "certificate.role",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a2c9b979bfd1017b74223dac8b2a43f11d1e6210d2349024803de4fe7df26ea0",
+            "record_type": "certificate"
+          },
+          {
+            "evidence_state": "observed",
+            "field_path": "certificate.signature_algorithm",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a2c9b979bfd1017b74223dac8b2a43f11d1e6210d2349024803de4fe7df26ea0",
+            "record_type": "certificate"
+          }
+        ],
+        "exposure": "unknown",
+        "finding_id": "e592303114ede69306fd0b22f2b0f3675d8d6365248ca09e9cea45d4edfeb444",
+        "outcome": "negative",
+        "policy_evaluation_time": "2026-09-04T12:00:00Z",
+        "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+        "policy_profile": "ietf_current",
+        "rationale": "SHA-1 certificate signatures are discouraged. Distinct from handshake CertificateVerify SHA-1.",
+        "recurrence_count": 1,
+        "remediation_id": "pki.disable_sha1_cert_signatures",
+        "rule_effective_from": "2022-11-01",
+        "rule_effective_until": null,
+        "score": 53,
+        "scoring_schema_version": "securemail.scoring/v1",
+        "severity": "medium",
+        "standards": [
+          "RFC 9325 §4.5"
+        ],
+        "title": "SHA-1 certificate signature",
+        "unique_occurrences": 1
+      },
+      {
+        "affected_endpoint": "172.18.0.2:4433",
+        "asset_criticality": "unknown",
+        "basis_state": "observed",
+        "blast_radius": "unknown",
+        "code": "TLS_CIPHER_CBC",
+        "components": {
+          "asset_criticality": 2,
+          "blast_radius": 1,
+          "confidence": 16,
+          "exposure": 4,
+          "recurrence": 0,
+          "severity": 30
+        },
+        "contributing_finding_ids": [
+          "f2cd95358b03754fed89ce8e13dcf2b26a5e139302d5f44c019231f0078741bf"
+        ],
+        "contributing_occurrences": [
+          {
+            "finding_id": "f2cd95358b03754fed89ce8e13dcf2b26a5e139302d5f44c019231f0078741bf",
+            "record_key": "CJKFoj4bpHEhTeaRoj",
+            "record_type": "handshake",
+            "session_uid": "CJKFoj4bpHEhTeaRoj"
+          }
+        ],
+        "evaluation_state": "verified",
+        "evidence_references": [
+          {
+            "evidence_state": "observed",
+            "field_path": "handshake.cipher_suite.evidence_state",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj",
+            "record_type": "handshake"
+          },
+          {
+            "evidence_state": "observed",
+            "field_path": "handshake.cipher_suite.name",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj",
+            "record_type": "handshake"
+          },
+          {
+            "evidence_state": "observed",
+            "field_path": "handshake.version.selected",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj",
+            "record_type": "handshake"
+          }
+        ],
+        "exposure": "unknown",
+        "finding_id": "8c3b1973a886a9b8cc017cb4055cf4fdfd2702f7c48a7f8ee5a11244f71aee46",
+        "outcome": "negative",
+        "policy_evaluation_time": "2026-09-04T12:00:00Z",
+        "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+        "policy_profile": "ietf_current",
+        "rationale": "CBC cipher suites in TLS 1.2 and earlier SHOULD NOT be negotiated.",
+        "recurrence_count": 1,
+        "remediation_id": "tls.prefer_aead",
+        "rule_effective_from": "2022-11-01",
+        "rule_effective_until": null,
+        "score": 53,
+        "scoring_schema_version": "securemail.scoring/v1",
+        "severity": "medium",
+        "standards": [
+          "RFC 9325 §4.2"
+        ],
+        "title": "TLS CBC cipher suite negotiated",
+        "unique_occurrences": 1
+      }
+    ],
+    "risk_score": 73,
+    "schema_version": "securemail.posture/v1",
+    "scoring_schema_version": "securemail.scoring/v1"
+  },
   "run_identity": {
     "analysis_time": "2026-09-04T12:00:00Z",
     "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
     "capture_sha256": "24de35dbf65036251578deabfd33f358904558ab261db01f7a77b39d536c3cba",
-    "configuration_digest": "dac7231c9fc00ae0d79e9ee382ee67277613f1276c08e3e3e86cad33850250cd",
+    "configuration_digest": "2cd49c4b40e93e47f7c30ee35ba5f83220aacc652d10bb8a4c1d3a485415d3e1",
     "normalization_schema_version": "v1",
     "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
     "policy_profile": "ietf_current",
     "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
   },
-  "schema_version": "v1",
+  "schema_version": "v2",
   "sessions": []
 }

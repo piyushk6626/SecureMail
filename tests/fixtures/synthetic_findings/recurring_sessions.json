@@ -1,0 +1,101 @@
+{
+  "asset_context": [
+    {
+      "asset_criticality": "unknown",
+      "blast_radius": "unknown",
+      "endpoint": "192.0.2.25:465",
+      "exposure": "public"
+    }
+  ],
+  "findings": [
+    {
+      "affected_endpoint": "192.0.2.25:465",
+      "basis_state": "observed",
+      "code": "TLS_CIPHER_CBC",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "session.protocol",
+          "frame_number": null,
+          "record_key": "C1",
+          "record_type": "session"
+        }
+      ],
+      "finding_id": "0000000000000000000000000000000000000000000000000000000000000001",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-01-01T12:00:00Z",
+      "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "policy_profile": "ietf_current",
+      "rationale": "Synthetic Step 8 finding.",
+      "remediation_id": "rem.synthetic",
+      "rule_effective_from": "2018-01-01",
+      "rule_effective_until": null,
+      "severity": "medium",
+      "standards": [
+        "RFC 0"
+      ],
+      "title": "Tls Cipher Cbc"
+    },
+    {
+      "affected_endpoint": "192.0.2.25:465",
+      "basis_state": "observed",
+      "code": "TLS_CIPHER_CBC",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "session.protocol",
+          "frame_number": null,
+          "record_key": "C2",
+          "record_type": "session"
+        }
+      ],
+      "finding_id": "0000000000000000000000000000000000000000000000000000000000000002",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-02-01T12:00:00Z",
+      "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "policy_profile": "ietf_current",
+      "rationale": "Synthetic Step 8 finding.",
+      "remediation_id": "rem.synthetic",
+      "rule_effective_from": "2018-01-01",
+      "rule_effective_until": null,
+      "severity": "medium",
+      "standards": [
+        "RFC 0"
+      ],
+      "title": "Tls Cipher Cbc"
+    },
+    {
+      "affected_endpoint": "192.0.2.25:465",
+      "basis_state": "observed",
+      "code": "TLS_CIPHER_CBC",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "session.protocol",
+          "frame_number": null,
+          "record_key": "C3",
+          "record_type": "session"
+        }
+      ],
+      "finding_id": "0000000000000000000000000000000000000000000000000000000000000003",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-03-01T12:00:00Z",
+      "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "policy_profile": "ietf_current",
+      "rationale": "Synthetic Step 8 finding.",
+      "remediation_id": "rem.synthetic",
+      "rule_effective_from": "2018-01-01",
+      "rule_effective_until": null,
+      "severity": "medium",
+      "standards": [
+        "RFC 0"
+      ],
+      "title": "Tls Cipher Cbc"
+    }
+  ],
+  "policy_checks": [],
+  "schema_version": "securemail.score_request/v1"
+}

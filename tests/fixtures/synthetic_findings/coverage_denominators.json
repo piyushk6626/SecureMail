@@ -1,0 +1,115 @@
+{
+  "asset_context": [],
+  "findings": [],
+  "policy_checks": [
+    {
+      "affected_endpoint": "192.0.2.10:25",
+      "category": "tls_handshake",
+      "check_id": "0000000000000000000000000000000000000000000000000000000000000001",
+      "code": "TLS_NEGOTIATED_SSL3",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "smtp",
+      "record_key": "C1",
+      "record_type": "handshake",
+      "title": "Tls Negotiated Ssl3"
+    },
+    {
+      "affected_endpoint": "192.0.2.10:25",
+      "category": "tls_handshake",
+      "check_id": "0000000000000000000000000000000000000000000000000000000000000002",
+      "code": "TLS_NEGOTIATED_TLS10",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "smtp",
+      "record_key": "C1",
+      "record_type": "handshake",
+      "title": "Tls Negotiated Tls10"
+    },
+    {
+      "affected_endpoint": "192.0.2.10:25",
+      "category": "tls_handshake",
+      "check_id": "0000000000000000000000000000000000000000000000000000000000000003",
+      "code": "TLS_CIPHER_NULL",
+      "evidence_state": "observed",
+      "outcome": "fail",
+      "protocol": "smtp",
+      "record_key": "C1",
+      "record_type": "handshake",
+      "title": "Tls Cipher Null"
+    },
+    {
+      "affected_endpoint": "192.0.2.10:25",
+      "category": "tls_handshake",
+      "check_id": "0000000000000000000000000000000000000000000000000000000000000004",
+      "code": "TLS_FORWARD_SECRECY_INDETERMINATE",
+      "evidence_state": "indeterminate",
+      "outcome": "unknown",
+      "protocol": "smtp",
+      "record_key": "C1",
+      "record_type": "handshake",
+      "title": "Tls Forward Secrecy Indeterminate"
+    },
+    {
+      "affected_endpoint": "192.0.2.10:25",
+      "category": "tls_handshake",
+      "check_id": "0000000000000000000000000000000000000000000000000000000000000005",
+      "code": "TLS_HANDSHAKE_SIGNATURE_SHA1",
+      "evidence_state": "incomplete",
+      "outcome": "unknown",
+      "protocol": "smtp",
+      "record_key": "C1",
+      "record_type": "handshake",
+      "title": "Tls Handshake Signature Sha1"
+    },
+    {
+      "affected_endpoint": "192.0.2.11:993",
+      "category": "certificate",
+      "check_id": "0000000000000000000000000000000000000000000000000000000000000006",
+      "code": "CERT_EXPIRED_AT_CAPTURE",
+      "evidence_state": "not_observable",
+      "outcome": "not_observable",
+      "protocol": "imap",
+      "record_key": "C2",
+      "record_type": "certificate",
+      "title": "Cert Expired At Capture"
+    },
+    {
+      "affected_endpoint": "192.0.2.11:993",
+      "category": "certificate",
+      "check_id": "0000000000000000000000000000000000000000000000000000000000000007",
+      "code": "CERT_IDENTITY_MISMATCH",
+      "evidence_state": "not_observable",
+      "outcome": "not_observable",
+      "protocol": "imap",
+      "record_key": "C2",
+      "record_type": "certificate",
+      "title": "Cert Identity Mismatch"
+    },
+    {
+      "affected_endpoint": "192.0.2.11:993",
+      "category": "certificate",
+      "check_id": "0000000000000000000000000000000000000000000000000000000000000008",
+      "code": "CERT_RSA_KEY_LT2048",
+      "evidence_state": "conflicting",
+      "outcome": "unknown",
+      "protocol": "imap",
+      "record_key": "C2",
+      "record_type": "certificate",
+      "title": "Cert Rsa Key Lt2048"
+    },
+    {
+      "affected_endpoint": "192.0.2.11:993",
+      "category": "mail_protocol",
+      "check_id": "0000000000000000000000000000000000000000000000000000000000000009",
+      "code": "MAIL_ACCESS_CLEARTEXT",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "imap",
+      "record_key": "C2",
+      "record_type": "session",
+      "title": "Mail Access Cleartext"
+    }
+  ],
+  "schema_version": "securemail.score_request/v1"
+}

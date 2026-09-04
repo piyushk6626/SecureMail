@@ -1,6 +1,6 @@
 # Fixtures
 
-Every deterministic case is a directory:
+Every deterministic PCAP case is a directory:
 
 ```text
 tests/fixtures/<case_id>/
@@ -8,6 +8,18 @@ tests/fixtures/<case_id>/
   expected.json     # authored before code; harness requires exact match
   provenance.json   # source, generator, tool versions, sha256, created_at
   analyze.json      # optional CLI flags (analysis time, hostname, policy profile)
+```
+
+Step 8 scoring uses JSON-only synthetic sets (no capture):
+
+```text
+tests/fixtures/synthetic_findings/
+  mixed_severity.json
+  many_low_severity_one_endpoint.json
+  recurring_sessions.json
+  coverage_denominators.json
+  expected.json       # one object per input stem under "cases"
+  provenance.json
 ```
 
 `<case_id>` is `<protocol_or_area>_<condition>` as named in
@@ -19,7 +31,9 @@ fixture directories. Some are reused as proof in more than one step
 ## Harness
 
 [`tests/support/fixture_harness.py`](../tests/support/fixture_harness.py)
-`run_fixture(case_id)`:
+`run_fixture(case_id)` invokes `analyze`. `run_score_fixture(case_name)` invokes
+`score` against `tests/fixtures/synthetic_findings/<case_name>.json` and diffs
+the `cases.<case_name>` object in that directory’s `expected.json`.
 
 1. Invokes `create_cli()` with `analyze <capture> --out <tmp>/actual.json`
    plus `--analysis-time` (pinned to `2026-09-04T12:00:00Z` when omitted) and
@@ -71,6 +85,7 @@ new fixture. Lab captures on macOS must use a dumpcap sidecar — see
 | `lab_chain_captures.py` | Step 6 lab CA chain, self-signed, missing intermediate, SAN match/mismatch |
 | `lab_policy_boundary_captures.py` | Step 7 lab TLS 1.0/1.1, NULL/export, SHA-1 CertificateVerify, RSA-1536 |
 | `scapy_policy_boundary_captures.py` | Step 7 Scapy TLS 1.2 static DH ServerHello |
+| `step8_synthetic_findings.py` | Step 8 scoring/dedup/coverage JSON sets |
 
 SMTP on TCP/25 reuses the immutable Step 1 capture
 `tcp_smtp_clean_baseline`. Advertised-but-never-requested STARTTLS reuses the
@@ -199,9 +214,18 @@ Reused: RC4 (`tls12_legacy_weak_suite`), static RSA/ECDH, ECDHE, TLS 1.3 PSK-onl
 truncated ClientHello. Profile switch uses `tls12_static_rsa` under `ietf_current`
 and `nist_federal` without duplicating the PCAP.
 
+### Step 8 — scoring
+
+| Case | Source | Asserts |
+|---|---|---|
+| `synthetic_findings/mixed_severity.json` | synthetic | Hand-computed component vectors and analyst order |
+| `synthetic_findings/many_low_severity_one_endpoint.json` | synthetic | N session findings collapse to one endpoint finding |
+| `synthetic_findings/recurring_sessions.json` | synthetic | Recurrence points from unique sessions |
+| `synthetic_findings/coverage_denominators.json` | synthetic | Non-zero `unknown_count` / `not_observable_count`, not folded into passed |
+
 ## Directory count
 
-Unique fixture directories: **71**.
+Unique PCAP fixture directories: **71**. Plus `synthetic_findings/` (no capture).
 
 `empty` (1) + TCP including baseline (8) + remaining Step 2 (`smtp_submission_port`,
 `imap_standard_port`, `pop3_standard_port`, three nonstandard, ambiguous, two
@@ -219,5 +243,5 @@ to change; do not edit `capture.pcapng`. Prefer `uv run pytest` on the named
 
 ## Not in this build
 
-No golden HTML/PDF under `tests/fixtures/reports/`. Step 7 emits findings;
-Step 8 will score and dedup them.
+No golden HTML/PDF under `tests/fixtures/reports/`. Step 8 scores and dedups
+session findings into endpoint posture; Step 9 will freeze a report object.

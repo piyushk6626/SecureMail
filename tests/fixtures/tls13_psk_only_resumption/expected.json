@@ -245,16 +245,299 @@
       "visibility": "partial"
     }
   ],
+  "policy_checks": [
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "5351464c97f48484f4a445d4f4a729616b143f7e4ed49246603ecf9230931316",
+      "code": "TLS_CIPHER_3DES",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "3DES cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "784d024442fe01a18f2bf2216354dcc33e50a871d6e4337da5af704903a41bde",
+      "code": "TLS_CIPHER_EXPORT",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "Export-grade cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "b6252d95ceaa042f7a8490c9b746d97b1479e9808c7484b187c95fc1f4a46aca",
+      "code": "TLS_CIPHER_NULL",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "NULL cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "bbdab99838d86f3ed5b9ffcacf7eade7e7565b19e73d2dd0186ed2156074f1fc",
+      "code": "TLS_CIPHER_RC4",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "RC4 cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "73c14d089f627cd512e7aeaad7da377623ad560b708cb468956860bd40c9b3ac",
+      "code": "TLS_NEGOTIATED_SSL3",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "SSLv3 negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "27cbd7d835b0ec3a39b2d930c0bd53f5bda93454342c9074ba4f64984a64f74c",
+      "code": "TLS_NEGOTIATED_TLS10",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "TLS 1.0 negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "017d14b91ab2ae4bfdc5e7556c041f5f169344c6f658e32d98ed0358a2ec7457",
+      "code": "TLS_NEGOTIATED_TLS11",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "TLS 1.1 negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "fd0a06d30e5099e0a7d2ab24a2b6f46dca7333195fbbd36d544005ea5d8103a7",
+      "code": "TLS_CIPHER_3DES",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CRdT6w4PA64qWKmBk3",
+      "record_type": "handshake",
+      "title": "3DES cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "26a4137dc90cf63f4d82e802b7f373e5f42522290a709b78053dbe69b3706348",
+      "code": "TLS_CIPHER_EXPORT",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CRdT6w4PA64qWKmBk3",
+      "record_type": "handshake",
+      "title": "Export-grade cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "0072cc252afcbf0304578bf1d9e9c69a23e28a51ab9839f409b31742f2999e89",
+      "code": "TLS_CIPHER_NULL",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CRdT6w4PA64qWKmBk3",
+      "record_type": "handshake",
+      "title": "NULL cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "96aa6b3c67af51758d8ac52ed71f1d6a5a2b3fb5406665ca1a594693104d29ed",
+      "code": "TLS_CIPHER_RC4",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CRdT6w4PA64qWKmBk3",
+      "record_type": "handshake",
+      "title": "RC4 cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "f0335ef646f1364a97163d529d448d55f293207372b4523e0768b88773c68f8e",
+      "code": "TLS_FORWARD_SECRECY_INDETERMINATE",
+      "evidence_state": "indeterminate",
+      "outcome": "unknown",
+      "protocol": "unclassified",
+      "record_key": "CRdT6w4PA64qWKmBk3",
+      "record_type": "handshake",
+      "title": "Forward secrecy indeterminate"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "5bc0b206cdd80d65de60638ce20db180052738700048dbe5c34ec4c58e9c84b7",
+      "code": "TLS_NEGOTIATED_SSL3",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CRdT6w4PA64qWKmBk3",
+      "record_type": "handshake",
+      "title": "SSLv3 negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "e11dda3f143cddff531c342e4dbf0fdbb847382b4a10a511c823fc6d74d7e5e4",
+      "code": "TLS_NEGOTIATED_TLS10",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CRdT6w4PA64qWKmBk3",
+      "record_type": "handshake",
+      "title": "TLS 1.0 negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "category": "tls_handshake",
+      "check_id": "9c2b5adbe2ae8e4575a2726e04acd5e49003eadd8e394bc24885b429c779d818",
+      "code": "TLS_NEGOTIATED_TLS11",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "unclassified",
+      "record_key": "CRdT6w4PA64qWKmBk3",
+      "record_type": "handshake",
+      "title": "TLS 1.1 negotiated"
+    }
+  ],
+  "posture": {
+    "assessment_state": "limited",
+    "coverage": {
+      "by_category": {
+        "tls_handshake": {
+          "applicable_count": 15,
+          "failed_count": 0,
+          "not_observable_count": 0,
+          "passed_count": 14,
+          "unknown_count": 1
+        }
+      },
+      "by_protocol": {
+        "unclassified": {
+          "applicable_count": 15,
+          "failed_count": 0,
+          "not_observable_count": 0,
+          "passed_count": 14,
+          "unknown_count": 1
+        }
+      },
+      "by_protocol_and_category": {
+        "unclassified": {
+          "tls_handshake": {
+            "applicable_count": 15,
+            "failed_count": 0,
+            "not_observable_count": 0,
+            "passed_count": 14,
+            "unknown_count": 1
+          }
+        }
+      },
+      "overall": {
+        "applicable_count": 15,
+        "failed_count": 0,
+        "not_observable_count": 0,
+        "passed_count": 14,
+        "unknown_count": 1
+      }
+    },
+    "prioritized_findings": [
+      {
+        "affected_endpoint": "172.18.0.2:4433",
+        "asset_criticality": "unknown",
+        "basis_state": "indeterminate",
+        "blast_radius": "unknown",
+        "code": "TLS_FORWARD_SECRECY_INDETERMINATE",
+        "components": {
+          "asset_criticality": 2,
+          "blast_radius": 1,
+          "confidence": 2,
+          "exposure": 4,
+          "recurrence": 0,
+          "severity": 0
+        },
+        "contributing_finding_ids": [
+          "419172f89c81b6fb3093b92a89164e525677a9323d198be613c91badf4125ada"
+        ],
+        "contributing_occurrences": [
+          {
+            "finding_id": "419172f89c81b6fb3093b92a89164e525677a9323d198be613c91badf4125ada",
+            "record_key": "CRdT6w4PA64qWKmBk3",
+            "record_type": "handshake",
+            "session_uid": "CRdT6w4PA64qWKmBk3"
+          }
+        ],
+        "evaluation_state": "indeterminate",
+        "evidence_references": [
+          {
+            "evidence_state": "indeterminate",
+            "field_path": "derived.forward_secrecy.outcome",
+            "frame_number": null,
+            "record_key": "CRdT6w4PA64qWKmBk3",
+            "record_type": "handshake"
+          }
+        ],
+        "exposure": "unknown",
+        "finding_id": "66318f89f5aa3ac6008632f8abe508a8a70f2d1a3335d6c61796da7c7ac72031",
+        "outcome": "indeterminate",
+        "policy_evaluation_time": "2026-09-04T12:00:00Z",
+        "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+        "policy_profile": "ietf_current",
+        "rationale": "PSK-only resumption or missing handshake evidence cannot prove forward secrecy from one PCAP.",
+        "recurrence_count": 1,
+        "remediation_id": "tls.observe_full_handshake",
+        "rule_effective_from": "2018-08-01",
+        "rule_effective_until": null,
+        "score": 9,
+        "scoring_schema_version": "securemail.scoring/v1",
+        "severity": "informational",
+        "standards": [
+          "RFC 8446 §2.2"
+        ],
+        "title": "Forward secrecy indeterminate",
+        "unique_occurrences": 1
+      }
+    ],
+    "risk_score": 9,
+    "schema_version": "securemail.posture/v1",
+    "scoring_schema_version": "securemail.scoring/v1"
+  },
   "run_identity": {
     "analysis_time": "2026-09-04T12:00:00Z",
     "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
     "capture_sha256": "b175e8804aed7529c98e03e4a8b9517f357f1d4824aa16b0a801e239200a754b",
-    "configuration_digest": "dac7231c9fc00ae0d79e9ee382ee67277613f1276c08e3e3e86cad33850250cd",
+    "configuration_digest": "2cd49c4b40e93e47f7c30ee35ba5f83220aacc652d10bb8a4c1d3a485415d3e1",
     "normalization_schema_version": "v1",
     "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
     "policy_profile": "ietf_current",
     "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
   },
-  "schema_version": "v1",
+  "schema_version": "v2",
   "sessions": []
 }

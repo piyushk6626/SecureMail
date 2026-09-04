@@ -1,9 +1,11 @@
-# Evidence model (schema v1)
+# Evidence model (schema v2)
 
 The CLI writes one `EvidenceDocument`. Models live under
 [`src/securemail/domain/evidence/`](../src/securemail/domain/evidence/). They are
 frozen Pydantic v2 models (`extra="forbid"`). `NORMALIZATION_SCHEMA_VERSION` is
-the literal `"v1"`.
+the literal `"v1"` (packet/flow/session/handshake/certificate facts).
+`EVIDENCE_DOCUMENT_SCHEMA_VERSION` / `schema_version` is `"v2"` (adds policy
+checks and posture).
 
 Serialization: `model_dump(mode="json")` then `json.dumps` with sorted keys, so
 on-disk field order is alphabetical, not declaration order.
@@ -12,7 +14,7 @@ on-disk field order is alphabetical, not declaration order.
 
 ```text
 EvidenceDocument
-  schema_version: "v1"
+  schema_version: "v2"
   run_identity: AnalysisRun
   capture_preflight: CapturePreflight
   flows: Flow[]
@@ -20,11 +22,15 @@ EvidenceDocument
   handshakes: TlsHandshake[]
   certificates: CertificateEvidence[]
   findings: Finding[]
+  policy_checks: PolicyCheck[]
+  posture: PostureAssessment
 ```
 
 Standalone TLS (no mail session) is retained in `handshakes`. Certificates are
 a separate top-level array linked by Zeek `uid` and `chain_index`. `findings`
-are policy judgments; they never mutate the evidence arrays.
+are session-level policy judgments; they never mutate the evidence arrays.
+`policy_checks` retain applicable pass/fail/unknown/not-observable evaluations.
+`posture` holds endpoint-deduped prioritized findings and coverage denominators.
 
 ### `AnalysisRun`
 
@@ -279,7 +285,7 @@ results stay in unit and YAML inline tests.
 | `finding_id` | SHA-256 of capture hash, profile, pack digest, rule id, outcome, target, record key |
 | `code` | Stable rule id (`TLS_NEGOTIATED_TLS10`, `TLS_FORWARD_SECRECY_ABSENT`, …) |
 | `outcome` | `negative` or `indeterminate` |
-| `severity` | `high` / `medium` / `informational` from the pack |
+| `severity` | `high` / `medium` / `low` / `informational` from the pack |
 | `policy_profile` / `policy_pack_version` | Pack that produced the finding |
 | `rule_effective_from` / `rule_effective_until` | Inclusive start; exclusive end when set |
 | `policy_evaluation_time` | Analysis time, or capture start for `historical_at_capture` |
@@ -295,9 +301,14 @@ and consumed by YAML: TLS 1.2 ECDHE/DHE present; static RSA/DH/ECDH absent;
 TLS 1.3 (EC)DHE present; PSK-only or missing handshake indeterminate. Present
 outcomes are not emitted as findings.
 
+## Posture
+
+See [scoring.md](scoring.md) for the v1 formula, dedup key, ordering, and
+coverage vocabulary. `FindingSeverity` includes `low` for scoring fixtures;
+built-in YAML packs still emit `high` / `medium` / `informational`.
+
 ## Not in this build
 
-No posture score or report manifest. `verified` is unused by evidence classifiers
-except as a finding `evaluation_state` for negative rules. Handshake and
-certificate records still store facts; YAML decides whether a fact is a finding.
-Scoring and dedup are Step 8.
+No report manifest. `verified` is unused by evidence classifiers except as a
+finding `evaluation_state` for negative rules. Handshake and certificate records
+still store facts; YAML decides whether a fact is a finding. HTML/PDF are Step 9.

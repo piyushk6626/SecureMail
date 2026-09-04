@@ -6,6 +6,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from securemail.domain.evidence import (
+    EVIDENCE_DOCUMENT_SCHEMA_VERSION,
     NORMALIZATION_SCHEMA_VERSION,
     AnalysisRun,
     CapturePreflight,
@@ -16,6 +17,7 @@ from securemail.domain.evidence import (
     ReferenceIdentitySource,
     RevocationStatus,
 )
+from securemail.domain.findings.posture import empty_posture_assessment
 
 
 def test_evidence_state_has_seven_values() -> None:
@@ -35,10 +37,10 @@ def test_evidence_state_round_trips(state: EvidenceState) -> None:
     assert EvidenceState(state.value) is state
 
 
-def test_v1_document_requires_run_identity_fields() -> None:
+def test_v2_document_requires_run_identity_fields() -> None:
     analysis_time = datetime(2026, 9, 4, 12, tzinfo=UTC)
     document = EvidenceDocument(
-        schema_version="v1",
+        schema_version="v2",
         run_identity=AnalysisRun(
             capture_sha256="a" * 64,
             analyzer_bundle_digest="b" * 64,
@@ -55,6 +57,7 @@ def test_v1_document_requires_run_identity_fields() -> None:
             truncated_packets_present=False,
         ),
         flows=[],
+        posture=empty_posture_assessment(),
     )
     payload = document.model_dump(mode="json")
     identity = payload["run_identity"]
@@ -65,10 +68,13 @@ def test_v1_document_requires_run_identity_fields() -> None:
     assert identity["policy_profile"] == "ietf_current"
     assert identity["analysis_time"] == "2026-09-04T12:00:00Z"
     assert identity["trust_store_digest"] is None
+    assert payload["schema_version"] == EVIDENCE_DOCUMENT_SCHEMA_VERSION
     assert payload["sessions"] == []
     assert payload["handshakes"] == []
     assert payload["certificates"] == []
     assert payload["findings"] == []
+    assert payload["policy_checks"] == []
+    assert payload["posture"]["assessment_state"] == "none"
     assert payload["capture_preflight"]["capture_start_time"] is None
 
 

@@ -3,13 +3,14 @@
 Offline, deterministic-first cryptographic posture analysis for SMTP, IMAP, and
 POP3 traffic captured in PCAP/PCAPNG files.
 
-This repository has completed **Steps 0–7** of `plans/build_plan.md`: package
+This repository has completed **Steps 0–8** of `plans/build_plan.md`: package
 layout, sandboxed Zeek/TShark runners, TCP reconstruction quality, payload-driven
 protocol identification, STARTTLS/STLS plus implicit-TLS assessment, TLS
 version / cipher / key-exchange evidence, per-certificate facts, offline
-chain validation with RFC 9525 identity matching, versioned rule packs, and
-forward-secrecy assessment. The live command is
-`securemail analyze`. Steps 8–11 remain named placeholders.
+chain validation with RFC 9525 identity matching, versioned rule packs,
+forward-secrecy assessment, and posture scoring with coverage denominators.
+The live commands are `securemail analyze` and `securemail score`. Steps 9–11
+remain named placeholders.
 
 **As-built documentation** (what the code does today) lives in
 [`docs/README.md`](docs/README.md). Plan contracts (what to build next) remain in
@@ -64,11 +65,15 @@ uv run securemail analyze tests/fixtures/cert_chain_san_mismatch/capture.pcapng 
 
 # Step 7 — TLS 1.3 PSK-only resumption; forward secrecy is indeterminate
 uv run securemail analyze tests/fixtures/tls13_psk_only_resumption/capture.pcapng --policy-profile ietf_current --out out/policy.json
+
+# Step 8 — posture score, dedup, coverage denominators
+uv run securemail score tests/fixtures/synthetic_findings/mixed_severity.json
 ```
 
-`--out` is required. Output is a v1 `EvidenceDocument` JSON file (flows,
-sessions, top-level `handshakes`, `certificates`, and `findings`). There is no `score`, `report`, or
-`evaluate-ml` command yet.
+`analyze --out` is required. Analyze output is a v2 `EvidenceDocument` JSON file
+(flows, sessions, handshakes, certificates, session-level findings, policy
+checks, and posture). `score` writes the same posture object to stdout. There is
+no `report` or `evaluate-ml` command yet.
 
 ## Layout
 

@@ -1,0 +1,202 @@
+{
+  "asset_context": [
+    {
+      "asset_criticality": "critical",
+      "blast_radius": "organization",
+      "endpoint": "192.0.2.10:25",
+      "exposure": "public"
+    },
+    {
+      "asset_criticality": "low",
+      "blast_radius": "single_endpoint",
+      "endpoint": "192.0.2.11:993",
+      "exposure": "isolated"
+    },
+    {
+      "asset_criticality": "high",
+      "blast_radius": "multi_asset",
+      "endpoint": "192.0.2.12:587",
+      "exposure": "partner"
+    },
+    {
+      "asset_criticality": "medium",
+      "blast_radius": "single_endpoint",
+      "endpoint": "192.0.2.13:143",
+      "exposure": "internal"
+    }
+  ],
+  "findings": [
+    {
+      "affected_endpoint": "192.0.2.10:25",
+      "basis_state": "verified",
+      "code": "TLS_NEGOTIATED_TLS10",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "verified",
+          "field_path": "session.protocol",
+          "frame_number": null,
+          "record_key": "C1",
+          "record_type": "session"
+        }
+      ],
+      "finding_id": "0000000000000000000000000000000000000000000000000000000000000001",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "policy_profile": "ietf_current",
+      "rationale": "Synthetic Step 8 finding.",
+      "remediation_id": "rem.synthetic",
+      "rule_effective_from": "2018-01-01",
+      "rule_effective_until": null,
+      "severity": "high",
+      "standards": [
+        "RFC 0"
+      ],
+      "title": "Tls Negotiated Tls10"
+    },
+    {
+      "affected_endpoint": "192.0.2.11:993",
+      "basis_state": "inferred",
+      "code": "TLS_CIPHER_CBC",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "inferred",
+          "field_path": "session.protocol",
+          "frame_number": null,
+          "record_key": "C2",
+          "record_type": "session"
+        }
+      ],
+      "finding_id": "0000000000000000000000000000000000000000000000000000000000000002",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "policy_profile": "ietf_current",
+      "rationale": "Synthetic Step 8 finding.",
+      "remediation_id": "rem.synthetic",
+      "rule_effective_from": "2018-01-01",
+      "rule_effective_until": null,
+      "severity": "high",
+      "standards": [
+        "RFC 0"
+      ],
+      "title": "Tls Cipher Cbc"
+    },
+    {
+      "affected_endpoint": "192.0.2.12:587",
+      "basis_state": "observed",
+      "code": "CERT_EXPIRED_AT_CAPTURE",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "session.protocol",
+          "frame_number": null,
+          "record_key": "C3",
+          "record_type": "session"
+        }
+      ],
+      "finding_id": "0000000000000000000000000000000000000000000000000000000000000003",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "policy_profile": "ietf_current",
+      "rationale": "Synthetic Step 8 finding.",
+      "remediation_id": "rem.synthetic",
+      "rule_effective_from": "2018-01-01",
+      "rule_effective_until": null,
+      "severity": "medium",
+      "standards": [
+        "RFC 0"
+      ],
+      "title": "Cert Expired At Capture"
+    },
+    {
+      "affected_endpoint": "192.0.2.13:143",
+      "basis_state": "inferred",
+      "code": "MAIL_ACCESS_CLEARTEXT",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "inferred",
+          "field_path": "session.protocol",
+          "frame_number": null,
+          "record_key": "C4",
+          "record_type": "session"
+        }
+      ],
+      "finding_id": "0000000000000000000000000000000000000000000000000000000000000004",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "policy_profile": "ietf_current",
+      "rationale": "Synthetic Step 8 finding.",
+      "remediation_id": "rem.synthetic",
+      "rule_effective_from": "2018-01-01",
+      "rule_effective_until": null,
+      "severity": "low",
+      "standards": [
+        "RFC 0"
+      ],
+      "title": "Mail Access Cleartext"
+    },
+    {
+      "affected_endpoint": "192.0.2.14:4433",
+      "basis_state": "indeterminate",
+      "code": "TLS_FORWARD_SECRECY_INDETERMINATE",
+      "evaluation_state": "indeterminate",
+      "evidence_references": [
+        {
+          "evidence_state": "indeterminate",
+          "field_path": "session.protocol",
+          "frame_number": null,
+          "record_key": "C5",
+          "record_type": "session"
+        }
+      ],
+      "finding_id": "0000000000000000000000000000000000000000000000000000000000000005",
+      "outcome": "indeterminate",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "policy_profile": "ietf_current",
+      "rationale": "Synthetic Step 8 finding.",
+      "remediation_id": "rem.synthetic",
+      "rule_effective_from": "2018-01-01",
+      "rule_effective_until": null,
+      "severity": "informational",
+      "standards": [
+        "RFC 0"
+      ],
+      "title": "Tls Forward Secrecy Indeterminate"
+    }
+  ],
+  "policy_checks": [
+    {
+      "affected_endpoint": "192.0.2.10:25",
+      "category": "tls_handshake",
+      "check_id": "000000000000000000000000000000000000000000000000000000000000000b",
+      "code": "TLS_NEGOTIATED_TLS10",
+      "evidence_state": "verified",
+      "outcome": "fail",
+      "protocol": "smtp",
+      "record_key": "C1",
+      "record_type": "handshake",
+      "title": "Tls Negotiated Tls10"
+    },
+    {
+      "affected_endpoint": "192.0.2.10:25",
+      "category": "tls_handshake",
+      "check_id": "000000000000000000000000000000000000000000000000000000000000000c",
+      "code": "TLS_NEGOTIATED_SSL3",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "smtp",
+      "record_key": "C1",
+      "record_type": "handshake",
+      "title": "Tls Negotiated Ssl3"
+    }
+  ],
+  "schema_version": "securemail.score_request/v1"
+}

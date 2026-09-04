@@ -132,6 +132,7 @@ def _rebuild_evidence_document() -> None:
     from securemail.domain.evidence.handshake import TlsHandshake
     from securemail.domain.evidence.run import EvidenceDocument
     from securemail.domain.findings.finding import Finding
+    from securemail.domain.findings.posture import PolicyCheck, PostureAssessment
 
     EvidenceDocument.model_rebuild(
         _types_namespace={
@@ -140,6 +141,8 @@ def _rebuild_evidence_document() -> None:
             "TlsHandshake": TlsHandshake,
             "CertificateEvidence": CertificateEvidence,
             "Finding": Finding,
+            "PolicyCheck": PolicyCheck,
+            "PostureAssessment": PostureAssessment,
         }
     )
 

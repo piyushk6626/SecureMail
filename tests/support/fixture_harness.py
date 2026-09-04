@@ -85,6 +85,37 @@ def diff_json(expected: JSONValue, actual: JSONValue, prefix: str = "$") -> list
     return []
 
 
+def run_score_fixture(case_name: str, *, root: Path | None = None) -> Path:
+    """Run `securemail score` on a synthetic finding set and assert expected.json."""
+
+    from securemail.bootstrap import create_cli
+
+    base = (root if root is not None else repo_root()) / "tests" / "fixtures" / "synthetic_findings"
+    input_path = base / f"{case_name}.json"
+    expected_path = base / "expected.json"
+    if not input_path.is_file():
+        raise FileNotFoundError(f"missing score input: {input_path}")
+    if not expected_path.is_file():
+        raise FileNotFoundError(f"missing expected.json: {expected_path}")
+    expected_root = json.loads(expected_path.read_text(encoding="utf-8"))
+    expected = expected_root["cases"][case_name]
+
+    runner = CliRunner()
+    result = runner.invoke(
+        create_cli(),
+        ["score", str(input_path)],
+        catch_exceptions=False,
+    )
+    if result.exit_code != 0:
+        raise AssertionError(f"securemail score failed for {case_name}: {result.output}")
+    actual = json.loads(result.stdout)
+    diffs = diff_json(expected, actual)
+    if diffs:
+        rendered = "\n".join(diffs)
+        raise AssertionError(f"score fixture {case_name} differed from expected.json:\n{rendered}")
+    return input_path
+
+
 def run_fixture(case_id: str, *, root: Path | None = None) -> Path:
     """Run `securemail analyze` on a fixture and assert expected.json matches."""
 

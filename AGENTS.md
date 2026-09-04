@@ -45,14 +45,15 @@ or TLS record decoding. Zeek is the primary processing engine.
 
 ## 2. Current project state
 
-This repository has completed **Steps 0–7** of `build_plan.md`: package layout,
-sandboxed Zeek/TShark runners, the v1 evidence schema, TCP reconstruction
-quality, payload-driven SMTP/IMAP/POP3 identification, STARTTLS/STLS plus
-implicit-TLS assessment, TLS version / cipher / key-exchange evidence,
-per-certificate extraction, offline chain validation with RFC 9525 identity
-matching, versioned IETF/NIST/historical rule packs, and forward-secrecy
-assessment. The live CLI command is `securemail analyze`. The next step to
-implement is **Step 8** (scoring, dedup, and coverage denominators).
+This repository has completed **Steps 0–8** of `build_plan.md`: package layout,
+sandboxed Zeek/TShark runners, the v1 normalization / v2 evidence envelope,
+TCP reconstruction quality, payload-driven SMTP/IMAP/POP3 identification,
+STARTTLS/STLS plus implicit-TLS assessment, TLS version / cipher / key-exchange
+evidence, per-certificate extraction, offline chain validation with RFC 9525
+identity matching, versioned IETF/NIST/historical rule packs, forward-secrecy
+assessment, and posture scoring with coverage denominators. The live CLI
+commands are `securemail analyze` and `securemail score`. The next step to
+implement is **Step 9** (canonical JSON → HTML/PDF).
 
 The tree in `PROJECT_SCAFFOLD.md` Section 3 is the layout Step 0 created;
 later steps **fill named files**, they do not invent new top-level layout.
@@ -144,7 +145,7 @@ write-up.
 | 5 | Certificate facts (not policy findings) | `… cert_expired_rsa1024 …` |
 | 6 | Chain + identity (independent fields; offline trust store) | `… cert_chain_san_mismatch …` |
 | 7 | Versioned rule packs + forward secrecy | `… tls13_psk_only_resumption --policy-profile ietf_current` |
-| 8 | Scoring, dedup, coverage denominators | `securemail score …` |
+| 8 | Scoring, dedup, coverage denominators | `securemail score tests/fixtures/synthetic_findings/mixed_severity.json` |
 | 9 | Canonical JSON → HTML/PDF | `securemail report …` |
 | 10 | Advisory ML after baseline gate | `securemail evaluate-ml …` |
 | 11 | FastAPI + React over the same JSON | Playwright + CLI/API diff |
@@ -307,10 +308,12 @@ autoescape stays on — never disable per-template.
 - Policy is YAML data (`ietf_current`, `nist_federal`, `historical_at_capture`,
   later `organization_*`). SMTP relay (25) ≠ submission (465/587) ≠ IMAP/POP3
   access. “Not FIPS-approved” ≠ “cryptographically weak”.
-- Scoring is a versioned pure function. Dedup collapses session findings to
-  endpoint findings **without dropping** contributing session references.
-  `unknown_count` / `not_observable_count` must appear in posture; never fold
-  them into “checks passed”.
+- Scoring is `securemail.scoring/v1`: integer addends for severity, confidence
+  (`basis_state`), exposure, recurrence `min(10, 2×(n−1))`, criticality, and
+  blast radius. Dedup collapses session findings to endpoint findings **without
+  dropping** contributing session references. `unknown_count` /
+  `not_observable_count` must appear in posture; never fold them into “checks
+  passed”. Unknown inventory labels are explicit addends, not zeros.
 - JSON is authoritative. HTML and PDF render the **same in-memory object**.
   Canonicalize with RFC 8785 before hashing.
 

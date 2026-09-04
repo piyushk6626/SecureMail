@@ -7,7 +7,7 @@ import json
 from collections.abc import Mapping, Sequence
 from datetime import UTC, date, datetime
 from enum import StrEnum
-from typing import Any, Literal
+from typing import Any, Literal, NamedTuple
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -22,6 +22,12 @@ from securemail.domain.findings.finding import (
     Finding,
     FindingOutcome,
     FindingSeverity,
+)
+from securemail.domain.findings.posture import (
+    CheckCategory,
+    CoverageProtocol,
+    PolicyCheck,
+    PolicyCheckOutcome,
 )
 from securemail.domain.policies.tls.forward_secrecy import assess_forward_secrecy
 
@@ -48,6 +54,19 @@ _TARGET_RANK = {
     "handshake": 2,
     "certificate": 3,
 }
+_CHECK_CATEGORY = {
+    "flow": CheckCategory.TRANSPORT,
+    "session": CheckCategory.MAIL_PROTOCOL,
+    "handshake": CheckCategory.TLS_HANDSHAKE,
+    "certificate": CheckCategory.CERTIFICATE,
+}
+_UNKNOWN_COVERAGE_STATES = frozenset(
+    {
+        EvidenceState.INCOMPLETE,
+        EvidenceState.CONFLICTING,
+        EvidenceState.INDETERMINATE,
+    }
+)
 _MAX_RULES = 128
 _MAX_ROLES = 16
 _MAX_PREDICATES = 16
@@ -310,6 +329,21 @@ def resolve_evaluation_clock(
     return _as_utc(capture_start_time)
 
 
+class PolicyEvaluation(BaseModel):
+    """Findings plus applicable coverage observations for one pack evaluation."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    findings: list[Finding]
+    checks: list[PolicyCheck]
+
+
+class _RuleCoverage(NamedTuple):
+    result: RuleEvalResult
+    check_outcome: PolicyCheckOutcome | None
+    coverage_state: EvidenceState | None
+
+
 def evaluate_inline_test(rule: PolicyRule, test: InlineRuleTest) -> RuleEvalResult:
     """Evaluate one YAML inline case against a synthetic context."""
 
@@ -333,6 +367,31 @@ def evaluate_policy(
 ) -> list[Finding]:
     """Apply a typed rule pack to canonical evidence. Never mutates inputs."""
 
+    return evaluate_policy_batch(
+        pack=pack,
+        pack_digest=pack_digest,
+        capture_sha256=capture_sha256,
+        evaluation_time=evaluation_time,
+        flows=flows,
+        sessions=sessions,
+        handshakes=handshakes,
+        certificates=certificates,
+    ).findings
+
+
+def evaluate_policy_batch(
+    *,
+    pack: PolicyPack,
+    pack_digest: str,
+    capture_sha256: str,
+    evaluation_time: datetime,
+    flows: Sequence[Flow],
+    sessions: Sequence[EmailSession],
+    handshakes: Sequence[TlsHandshake],
+    certificates: Sequence[CertificateEvidence],
+) -> PolicyEvaluation:
+    """Evaluate a pack and retain applicable pass/fail/unknown/not-observable checks."""
+
     instant = _as_utc(evaluation_time)
     flow_by_uid = {flow.uid: flow for flow in flows}
     session_by_uid = {session.uid: session for session in sessions}
@@ -344,6 +403,7 @@ def evaluate_policy(
         certs_by_uid.setdefault(certificate.uid, []).append(certificate)
 
     findings: list[Finding] = []
+    checks: list[PolicyCheck] = []
     for rule in pack.rules:
         if not _rule_active(rule, instant):
             continue
@@ -364,15 +424,32 @@ def evaluate_policy(
                 handshake_by_uid=handshake_by_uid,
                 certs_by_uid=certs_by_uid,
             )
-            result = _evaluate_rule_on_context(rule, context, instant)
-            if result is RuleEvalResult.PASS or result is RuleEvalResult.NOT_APPLICABLE:
+            coverage = _evaluate_rule_with_coverage(rule, context, instant)
+            if coverage.check_outcome is not None and coverage.coverage_state is not None:
+                checks.append(
+                    _to_check(
+                        rule=rule,
+                        pack=pack,
+                        pack_digest=pack_digest,
+                        capture_sha256=capture_sha256,
+                        context=context,
+                        record=record,
+                        target=rule.target,
+                        check_outcome=coverage.check_outcome,
+                        coverage_state=coverage.coverage_state,
+                    )
+                )
+            if (
+                coverage.result is RuleEvalResult.PASS
+                or coverage.result is RuleEvalResult.NOT_APPLICABLE
+            ):
                 continue
             outcome = (
                 FindingOutcome.INDETERMINATE
-                if result is RuleEvalResult.INDETERMINATE
+                if coverage.result is RuleEvalResult.INDETERMINATE
                 else rule.fail_outcome
             )
-            if result is RuleEvalResult.NEGATIVE:
+            if coverage.result is RuleEvalResult.NEGATIVE:
                 outcome = rule.fail_outcome
             findings.append(
                 _to_finding(
@@ -398,7 +475,16 @@ def evaluate_policy(
             item.outcome.value,
         )
     )
-    return findings
+    checks.sort(
+        key=lambda item: (
+            item.affected_endpoint,
+            item.category.value,
+            item.record_key,
+            item.code,
+            item.outcome.value,
+        )
+    )
+    return PolicyEvaluation(findings=findings, checks=checks)
 
 
 def _as_utc(value: datetime) -> datetime:
@@ -541,41 +627,101 @@ def _evaluate_rule_on_context(
     context: Mapping[str, object],
     instant: datetime,
 ) -> RuleEvalResult:
+    return _evaluate_rule_with_coverage(rule, context, instant).result
+
+
+def _evaluate_rule_with_coverage(
+    rule: PolicyRule,
+    context: Mapping[str, object],
+    instant: datetime,
+) -> _RuleCoverage:
     if not _rule_active(rule, instant):
-        return RuleEvalResult.NOT_APPLICABLE
+        return _RuleCoverage(RuleEvalResult.NOT_APPLICABLE, None, None)
     if rule.roles:
         role = _get_path(context, "derived.service_role")
         if not isinstance(role, str) or role not in rule.roles:
-            return RuleEvalResult.NOT_APPLICABLE
-    where_state = _eval_predicates(rule.where, context)
-    if where_state is PredicateTriState.FAIL or where_state is PredicateTriState.UNUSABLE:
-        return RuleEvalResult.NOT_APPLICABLE
-    assertion_state = _eval_predicates(rule.assertion, context)
+            return _RuleCoverage(RuleEvalResult.NOT_APPLICABLE, None, None)
+    where_state, where_unusable = _eval_predicates_with_unusable(rule.where, context)
+    if where_state is PredicateTriState.FAIL:
+        return _RuleCoverage(RuleEvalResult.NOT_APPLICABLE, None, None)
+    if where_state is PredicateTriState.UNUSABLE:
+        outcome, state = _coverage_from_unusable(where_unusable)
+        return _RuleCoverage(RuleEvalResult.NOT_APPLICABLE, outcome, state)
+    assertion_state, assertion_unusable = _eval_predicates_with_unusable(rule.assertion, context)
+    assertion_states = _predicate_states(rule.assertion, context)
     if assertion_state is PredicateTriState.PASS:
-        return RuleEvalResult.PASS
+        return _RuleCoverage(
+            RuleEvalResult.PASS,
+            PolicyCheckOutcome.PASS,
+            _weakest_or_observed(assertion_states),
+        )
     if assertion_state is PredicateTriState.UNUSABLE:
-        return RuleEvalResult.INDETERMINATE
+        outcome, state = _coverage_from_unusable(assertion_unusable)
+        return _RuleCoverage(RuleEvalResult.INDETERMINATE, outcome, state)
     if rule.fail_outcome is FindingOutcome.INDETERMINATE:
-        return RuleEvalResult.INDETERMINATE
-    return RuleEvalResult.NEGATIVE
+        return _RuleCoverage(
+            RuleEvalResult.INDETERMINATE,
+            PolicyCheckOutcome.UNKNOWN,
+            _weakest_or_observed(assertion_states),
+        )
+    return _RuleCoverage(
+        RuleEvalResult.NEGATIVE,
+        PolicyCheckOutcome.FAIL,
+        _weakest_or_observed(assertion_states),
+    )
+
+
+def _coverage_from_unusable(
+    states: Sequence[EvidenceState],
+) -> tuple[PolicyCheckOutcome, EvidenceState]:
+    if not states:
+        return PolicyCheckOutcome.UNKNOWN, EvidenceState.INDETERMINATE
+    weakest = min(states, key=lambda item: _STATE_RANK[item])
+    if weakest in _UNKNOWN_COVERAGE_STATES:
+        return PolicyCheckOutcome.UNKNOWN, weakest
+    if weakest is EvidenceState.NOT_OBSERVABLE:
+        return PolicyCheckOutcome.NOT_OBSERVABLE, weakest
+    return PolicyCheckOutcome.UNKNOWN, weakest
+
+
+def _weakest_or_observed(states: Sequence[EvidenceState]) -> EvidenceState:
+    if not states:
+        return EvidenceState.OBSERVED
+    return min(states, key=lambda item: _STATE_RANK[item])
 
 
 def _eval_predicates(
     predicates: Sequence[Predicate],
     context: Mapping[str, object],
 ) -> PredicateTriState:
+    return _eval_predicates_with_unusable(predicates, context)[0]
+
+
+def _eval_predicates_with_unusable(
+    predicates: Sequence[Predicate],
+    context: Mapping[str, object],
+) -> tuple[PredicateTriState, list[EvidenceState]]:
     if not predicates:
-        return PredicateTriState.PASS
+        return PredicateTriState.PASS, []
     saw_unusable = False
+    unusable_states: list[EvidenceState] = []
     for predicate in predicates:
         state = _eval_predicate(predicate, context)
         if state is PredicateTriState.FAIL:
-            return PredicateTriState.FAIL
+            return PredicateTriState.FAIL, []
         if state is PredicateTriState.UNUSABLE:
             saw_unusable = True
+            unusable_states.append(_evidence_state_for_predicate(predicate, context))
     if saw_unusable:
-        return PredicateTriState.UNUSABLE
-    return PredicateTriState.PASS
+        return PredicateTriState.UNUSABLE, unusable_states
+    return PredicateTriState.PASS, []
+
+
+def _predicate_states(
+    predicates: Sequence[Predicate],
+    context: Mapping[str, object],
+) -> list[EvidenceState]:
+    return [_evidence_state_for_predicate(item, context) for item in predicates]
 
 
 def _eval_predicate(predicate: Predicate, context: Mapping[str, object]) -> PredicateTriState:
@@ -707,12 +853,7 @@ def _to_finding(
         if outcome is FindingOutcome.INDETERMINATE
         else EvidenceState.VERIFIED
     )
-    flow = context.get("flow")
-    endpoint = "unknown"
-    if isinstance(flow, Mapping):
-        resp = flow.get("resp")
-        if isinstance(resp, Mapping) and resp.get("host") is not None:
-            endpoint = f"{resp.get('host')}:{resp.get('port')}"
+    endpoint = _endpoint_from_context(context)
     severity = (
         rule.severity.indeterminate
         if outcome is FindingOutcome.INDETERMINATE
@@ -765,27 +906,47 @@ def _references(
     record_key: str,
     target: PolicyTarget,
 ) -> list[EvidenceReference]:
-    paths = [predicate.path for predicate in (*rule.where, *rule.assertion)]
+    pairs: list[tuple[str, EvidenceState]] = []
+    for predicate in (*rule.where, *rule.assertion):
+        pairs.append((predicate.path, _evidence_state_for_predicate(predicate, context)))
     if rule.roles:
-        paths.append("derived.service_role")
-    unique: list[str] = []
-    for path in paths:
+        pairs.append(("derived.service_role", EvidenceState.INFERRED))
+    unique: dict[str, EvidenceState] = {}
+    order: list[str] = []
+    for path, state in pairs:
         if path not in unique:
-            unique.append(path)
+            unique[path] = state
+            order.append(path)
+            continue
+        if _STATE_RANK[state] < _STATE_RANK[unique[path]]:
+            unique[path] = state
     record_type = EvidenceRecordType(target.value)
-    refs: list[EvidenceReference] = []
-    for path in unique:
-        state = _state_for_path(context, path)
-        refs.append(
-            EvidenceReference(
-                record_type=record_type,
-                record_key=record_key,
-                field_path=path,
-                evidence_state=state,
-            )
+    refs = [
+        EvidenceReference(
+            record_type=record_type,
+            record_key=record_key,
+            field_path=path,
+            evidence_state=unique[path],
         )
+        for path in order
+    ]
     refs.sort(key=lambda item: (item.record_type.value, item.record_key, item.field_path))
     return refs
+
+
+def _evidence_state_for_predicate(
+    predicate: Predicate, context: Mapping[str, object]
+) -> EvidenceState:
+    source = predicate.state_path or predicate.path
+    state = _state_for_path(context, source)
+    actual = _get_path(context, predicate.path)
+    if actual is None and state in {
+        EvidenceState.OBSERVED,
+        EvidenceState.VERIFIED,
+        EvidenceState.INFERRED,
+    }:
+        return EvidenceState.INDETERMINATE
+    return state
 
 
 def _state_for_path(context: Mapping[str, object], path: str) -> EvidenceState:
@@ -810,7 +971,71 @@ def _state_for_path(context: Mapping[str, object], path: str) -> EvidenceState:
             return EvidenceState(root_state)
         except ValueError:
             return EvidenceState.INDETERMINATE
+    if path.startswith("derived."):
+        return EvidenceState.INFERRED
     return EvidenceState.OBSERVED
+
+
+def _protocol_from_context(context: Mapping[str, object]) -> CoverageProtocol:
+    session = context.get("session")
+    if isinstance(session, Mapping):
+        protocol = session.get("protocol")
+        if protocol in {
+            CoverageProtocol.SMTP.value,
+            CoverageProtocol.IMAP.value,
+            CoverageProtocol.POP3.value,
+        }:
+            return CoverageProtocol(protocol)
+    return CoverageProtocol.UNCLASSIFIED
+
+
+def _to_check(
+    *,
+    rule: PolicyRule,
+    pack: PolicyPack,
+    pack_digest: str,
+    capture_sha256: str,
+    context: Mapping[str, object],
+    record: PolicyRecord,
+    target: PolicyTarget,
+    check_outcome: PolicyCheckOutcome,
+    coverage_state: EvidenceState,
+) -> PolicyCheck:
+    record_key = _record_key(record, target)
+    check_id = hashlib.sha256(
+        "|".join(
+            [
+                capture_sha256,
+                pack.profile.value,
+                pack_digest,
+                rule.id,
+                check_outcome.value,
+                target.value,
+                record_key,
+            ]
+        ).encode("utf-8")
+    ).hexdigest()
+    return PolicyCheck(
+        check_id=check_id,
+        code=rule.id,
+        category=_CHECK_CATEGORY[target.value],
+        protocol=_protocol_from_context(context),
+        affected_endpoint=_endpoint_from_context(context),
+        record_type=EvidenceRecordType(target.value),
+        record_key=record_key,
+        outcome=check_outcome,
+        evidence_state=coverage_state,
+        title=rule.title,
+    )
+
+
+def _endpoint_from_context(context: Mapping[str, object]) -> str:
+    flow = context.get("flow")
+    if isinstance(flow, Mapping):
+        resp = flow.get("resp")
+        if isinstance(resp, Mapping) and resp.get("host") is not None:
+            return f"{resp.get('host')}:{resp.get('port')}"
+    return "unknown"
 
 
 def _weakest_state(references: Sequence[EvidenceReference]) -> EvidenceState:

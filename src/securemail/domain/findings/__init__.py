@@ -1,17 +1,75 @@
-"""Finding models. Scoring, dedup, and posture remain Step 8."""
+"""Finding models, scoring, dedup, and posture aggregation."""
 
-from securemail.domain.findings.finding import (
+from securemail.domain.findings.finding import (  # noqa: I001
     EvidenceRecordType,
     EvidenceReference,
     Finding,
     FindingOutcome,
     FindingSeverity,
 )
+from securemail.domain.findings.scoring import (
+    SCORING_SCHEMA_VERSION,
+    AssetContext,
+    AssetCriticality,
+    BlastRadius,
+    ExposureClass,
+    ScoreComponents,
+    ScoreInput,
+    ScoreVector,
+    compute_score,
+)
+from securemail.domain.findings.dedup import (
+    EndpointFindingCluster,
+    OccurrenceRef,
+    dedup_findings,
+)
+from securemail.domain.findings.posture import (
+    POSTURE_SCHEMA_VERSION,
+    AssessmentState,
+    CheckCategory,
+    CoverageCounts,
+    CoverageMatrix,
+    CoverageProtocol,
+    PolicyCheck,
+    PolicyCheckOutcome,
+    PostureAssessment,
+    ScoredEndpointFinding,
+    aggregate_coverage,
+    build_posture,
+    empty_posture_assessment,
+    prioritize_findings,
+)
 
 __all__ = [
+    "POSTURE_SCHEMA_VERSION",
+    "SCORING_SCHEMA_VERSION",
+    "AssessmentState",
+    "AssetContext",
+    "AssetCriticality",
+    "BlastRadius",
+    "CheckCategory",
+    "CoverageCounts",
+    "CoverageMatrix",
+    "CoverageProtocol",
+    "EndpointFindingCluster",
     "EvidenceRecordType",
     "EvidenceReference",
+    "ExposureClass",
     "Finding",
     "FindingOutcome",
     "FindingSeverity",
+    "OccurrenceRef",
+    "PolicyCheck",
+    "PolicyCheckOutcome",
+    "PostureAssessment",
+    "ScoreComponents",
+    "ScoreInput",
+    "ScoreVector",
+    "ScoredEndpointFinding",
+    "aggregate_coverage",
+    "build_posture",
+    "compute_score",
+    "dedup_findings",
+    "empty_posture_assessment",
+    "prioritize_findings",
 ]

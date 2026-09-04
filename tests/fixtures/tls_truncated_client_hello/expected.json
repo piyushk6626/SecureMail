@@ -120,16 +120,143 @@
       "visibility": "partial"
     }
   ],
+  "policy_checks": [
+    {
+      "affected_endpoint": "192.0.2.25:4433",
+      "category": "tls_handshake",
+      "check_id": "3efabda11da20ab7e3d0400a5e9ee9746cee350019fc62072093671214cdb828",
+      "code": "TLS12_DHE_PARAMETERS_LT2048",
+      "evidence_state": "incomplete",
+      "outcome": "unknown",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "TLS DHE parameters shorter than 2048 bits"
+    },
+    {
+      "affected_endpoint": "192.0.2.25:4433",
+      "category": "tls_handshake",
+      "check_id": "c8e622e76f48c0b4cae9acd60a689120c27ba8ee9280b7d94b28fcc3794a9dc2",
+      "code": "TLS_FORWARD_SECRECY_INDETERMINATE",
+      "evidence_state": "indeterminate",
+      "outcome": "unknown",
+      "protocol": "unclassified",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "Forward secrecy indeterminate"
+    }
+  ],
+  "posture": {
+    "assessment_state": "limited",
+    "coverage": {
+      "by_category": {
+        "tls_handshake": {
+          "applicable_count": 2,
+          "failed_count": 0,
+          "not_observable_count": 0,
+          "passed_count": 0,
+          "unknown_count": 2
+        }
+      },
+      "by_protocol": {
+        "unclassified": {
+          "applicable_count": 2,
+          "failed_count": 0,
+          "not_observable_count": 0,
+          "passed_count": 0,
+          "unknown_count": 2
+        }
+      },
+      "by_protocol_and_category": {
+        "unclassified": {
+          "tls_handshake": {
+            "applicable_count": 2,
+            "failed_count": 0,
+            "not_observable_count": 0,
+            "passed_count": 0,
+            "unknown_count": 2
+          }
+        }
+      },
+      "overall": {
+        "applicable_count": 2,
+        "failed_count": 0,
+        "not_observable_count": 0,
+        "passed_count": 0,
+        "unknown_count": 2
+      }
+    },
+    "prioritized_findings": [
+      {
+        "affected_endpoint": "192.0.2.25:4433",
+        "asset_criticality": "unknown",
+        "basis_state": "indeterminate",
+        "blast_radius": "unknown",
+        "code": "TLS_FORWARD_SECRECY_INDETERMINATE",
+        "components": {
+          "asset_criticality": 2,
+          "blast_radius": 1,
+          "confidence": 2,
+          "exposure": 4,
+          "recurrence": 0,
+          "severity": 0
+        },
+        "contributing_finding_ids": [
+          "62907d3a13abc80fec4f65bbf588df19f7aaedcb764ca9e434bba6d21e3ce6ec"
+        ],
+        "contributing_occurrences": [
+          {
+            "finding_id": "62907d3a13abc80fec4f65bbf588df19f7aaedcb764ca9e434bba6d21e3ce6ec",
+            "record_key": "CJKFoj4bpHEhTeaRoj",
+            "record_type": "handshake",
+            "session_uid": "CJKFoj4bpHEhTeaRoj"
+          }
+        ],
+        "evaluation_state": "indeterminate",
+        "evidence_references": [
+          {
+            "evidence_state": "indeterminate",
+            "field_path": "derived.forward_secrecy.outcome",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj",
+            "record_type": "handshake"
+          }
+        ],
+        "exposure": "unknown",
+        "finding_id": "67f39336224b4f3e526c67969b264096ac4e1feed1ebfa6166071700cf8fa8ce",
+        "outcome": "indeterminate",
+        "policy_evaluation_time": "2026-09-04T12:00:00Z",
+        "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+        "policy_profile": "ietf_current",
+        "rationale": "PSK-only resumption or missing handshake evidence cannot prove forward secrecy from one PCAP.",
+        "recurrence_count": 1,
+        "remediation_id": "tls.observe_full_handshake",
+        "rule_effective_from": "2018-08-01",
+        "rule_effective_until": null,
+        "score": 9,
+        "scoring_schema_version": "securemail.scoring/v1",
+        "severity": "informational",
+        "standards": [
+          "RFC 8446 §2.2"
+        ],
+        "title": "Forward secrecy indeterminate",
+        "unique_occurrences": 1
+      }
+    ],
+    "risk_score": 9,
+    "schema_version": "securemail.posture/v1",
+    "scoring_schema_version": "securemail.scoring/v1"
+  },
   "run_identity": {
     "analysis_time": "2026-09-04T12:00:00Z",
     "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
     "capture_sha256": "feacae9cd8c6b5bc1f146239ff4dd1369af75435c2c03b9f7a69f5d9dab40cd2",
-    "configuration_digest": "dac7231c9fc00ae0d79e9ee382ee67277613f1276c08e3e3e86cad33850250cd",
+    "configuration_digest": "2cd49c4b40e93e47f7c30ee35ba5f83220aacc652d10bb8a4c1d3a485415d3e1",
     "normalization_schema_version": "v1",
     "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
     "policy_profile": "ietf_current",
     "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
   },
-  "schema_version": "v1",
+  "schema_version": "v2",
   "sessions": []
 }

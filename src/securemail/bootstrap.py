@@ -19,6 +19,7 @@ from securemail.application.run_analysis import (
     AnalysisError,
     AnalyzeRequest,
     run_analysis,
+    score_findings,
 )
 from securemail.domain.evidence.run import EvidenceDocument, PolicyProfile
 
@@ -59,7 +60,7 @@ def _analyze(
 def create_cli() -> typer.Typer:
     from securemail.api.cli.main import build_app
 
-    return build_app(analyze=_analyze)
+    return build_app(analyze=_analyze, score=score_findings)
 
 
 def main() -> None:

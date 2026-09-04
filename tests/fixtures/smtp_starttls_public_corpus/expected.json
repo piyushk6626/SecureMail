@@ -116,17 +116,174 @@
       "visibility": "partial"
     }
   ],
+  "policy_checks": [
+    {
+      "affected_endpoint": "2a01:488:42:1000:50ed:8588:8a:c570:587",
+      "category": "mail_protocol",
+      "check_id": "7fa37ba977dd389318aa715c137a0fdf6faea6dd8e1f808f6e548b855ca7757b",
+      "code": "MAIL_SUBMISSION_CLEARTEXT",
+      "evidence_state": "inferred",
+      "outcome": "pass",
+      "protocol": "smtp",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "session",
+      "title": "Message submission without TLS"
+    },
+    {
+      "affected_endpoint": "2a01:488:42:1000:50ed:8588:8a:c570:587",
+      "category": "tls_handshake",
+      "check_id": "b2930dbf7018e7998cffb7f6cc1dc49b2a68ec01899779cc7fc95e961ca1779f",
+      "code": "TLS_CIPHER_3DES",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "smtp",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "3DES cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "2a01:488:42:1000:50ed:8588:8a:c570:587",
+      "category": "tls_handshake",
+      "check_id": "1f5cc38891d949d7fa6b0ede20bdeda2e9ce36a691da4a9779b6551bcfb64dfd",
+      "code": "TLS_CIPHER_EXPORT",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "smtp",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "Export-grade cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "2a01:488:42:1000:50ed:8588:8a:c570:587",
+      "category": "tls_handshake",
+      "check_id": "961c4fb469100ec6906f91bfb4799b2d00d8ea81ea8c4e3086ac09d351bdc2da",
+      "code": "TLS_CIPHER_NULL",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "smtp",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "NULL cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "2a01:488:42:1000:50ed:8588:8a:c570:587",
+      "category": "tls_handshake",
+      "check_id": "739796d00ed84bca38dc618e49b3728592f5894e9c7d872fcdf542558b2fbf96",
+      "code": "TLS_CIPHER_RC4",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "smtp",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "RC4 cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "2a01:488:42:1000:50ed:8588:8a:c570:587",
+      "category": "tls_handshake",
+      "check_id": "bdb866edcbba0499113d61a0a41151d2c2078fc12b4e14ae17b10daa64a7da5a",
+      "code": "TLS_NEGOTIATED_SSL3",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "smtp",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "SSLv3 negotiated"
+    },
+    {
+      "affected_endpoint": "2a01:488:42:1000:50ed:8588:8a:c570:587",
+      "category": "tls_handshake",
+      "check_id": "71db707cd256a68b954aa71252ed9078468e3549fb9c96556016ff444b433810",
+      "code": "TLS_NEGOTIATED_TLS10",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "smtp",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "TLS 1.0 negotiated"
+    },
+    {
+      "affected_endpoint": "2a01:488:42:1000:50ed:8588:8a:c570:587",
+      "category": "tls_handshake",
+      "check_id": "4f77744aebf875bf2ab3be5914718fec2196ebddcbc4fd069e2501eb8259355c",
+      "code": "TLS_NEGOTIATED_TLS11",
+      "evidence_state": "observed",
+      "outcome": "pass",
+      "protocol": "smtp",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "handshake",
+      "title": "TLS 1.1 negotiated"
+    }
+  ],
+  "posture": {
+    "assessment_state": "complete",
+    "coverage": {
+      "by_category": {
+        "mail_protocol": {
+          "applicable_count": 1,
+          "failed_count": 0,
+          "not_observable_count": 0,
+          "passed_count": 1,
+          "unknown_count": 0
+        },
+        "tls_handshake": {
+          "applicable_count": 7,
+          "failed_count": 0,
+          "not_observable_count": 0,
+          "passed_count": 7,
+          "unknown_count": 0
+        }
+      },
+      "by_protocol": {
+        "smtp": {
+          "applicable_count": 8,
+          "failed_count": 0,
+          "not_observable_count": 0,
+          "passed_count": 8,
+          "unknown_count": 0
+        }
+      },
+      "by_protocol_and_category": {
+        "smtp": {
+          "mail_protocol": {
+            "applicable_count": 1,
+            "failed_count": 0,
+            "not_observable_count": 0,
+            "passed_count": 1,
+            "unknown_count": 0
+          },
+          "tls_handshake": {
+            "applicable_count": 7,
+            "failed_count": 0,
+            "not_observable_count": 0,
+            "passed_count": 7,
+            "unknown_count": 0
+          }
+        }
+      },
+      "overall": {
+        "applicable_count": 8,
+        "failed_count": 0,
+        "not_observable_count": 0,
+        "passed_count": 8,
+        "unknown_count": 0
+      }
+    },
+    "prioritized_findings": [],
+    "risk_score": 0,
+    "schema_version": "securemail.posture/v1",
+    "scoring_schema_version": "securemail.scoring/v1"
+  },
   "run_identity": {
     "analysis_time": "2026-09-04T12:00:00Z",
     "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
     "capture_sha256": "9fcf805ec3948a07de6c8f70311dca6ab5b0fc9de9f964f8894fc14b26ad71b7",
-    "configuration_digest": "dac7231c9fc00ae0d79e9ee382ee67277613f1276c08e3e3e86cad33850250cd",
+    "configuration_digest": "2cd49c4b40e93e47f7c30ee35ba5f83220aacc652d10bb8a4c1d3a485415d3e1",
     "normalization_schema_version": "v1",
     "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
     "policy_profile": "ietf_current",
     "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
   },
-  "schema_version": "v1",
+  "schema_version": "v2",
   "sessions": [
     {
       "corroboration": "zeek+tshark",

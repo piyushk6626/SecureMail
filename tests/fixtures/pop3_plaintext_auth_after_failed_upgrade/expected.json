@@ -14,19 +14,19 @@
   "findings": [
     {
       "affected_endpoint": "192.0.2.25:110",
-      "basis_state": "observed",
+      "basis_state": "inferred",
       "code": "MAIL_ACCESS_CLEARTEXT",
       "evaluation_state": "verified",
       "evidence_references": [
         {
-          "evidence_state": "observed",
+          "evidence_state": "inferred",
           "field_path": "derived.service_role",
           "frame_number": null,
           "record_key": "CJKFoj4bpHEhTeaRoj",
           "record_type": "session"
         },
         {
-          "evidence_state": "observed",
+          "evidence_state": "inferred",
           "field_path": "derived.transport_tls_established",
           "frame_number": null,
           "record_key": "CJKFoj4bpHEhTeaRoj",
@@ -51,19 +51,19 @@
     },
     {
       "affected_endpoint": "192.0.2.25:110",
-      "basis_state": "observed",
+      "basis_state": "inferred",
       "code": "POP3_PASS_WITHOUT_TLS",
       "evaluation_state": "verified",
       "evidence_references": [
         {
-          "evidence_state": "observed",
+          "evidence_state": "inferred",
           "field_path": "derived.observed_commands",
           "frame_number": null,
           "record_key": "CJKFoj4bpHEhTeaRoj",
           "record_type": "session"
         },
         {
-          "evidence_state": "observed",
+          "evidence_state": "inferred",
           "field_path": "derived.transport_tls_established",
           "frame_number": null,
           "record_key": "CJKFoj4bpHEhTeaRoj",
@@ -94,12 +94,12 @@
     },
     {
       "affected_endpoint": "192.0.2.25:110",
-      "basis_state": "observed",
+      "basis_state": "inferred",
       "code": "UPGRADE_PLAINTEXT_FALLBACK",
       "evaluation_state": "verified",
       "evidence_references": [
         {
-          "evidence_state": "observed",
+          "evidence_state": "inferred",
           "field_path": "derived.service_role",
           "frame_number": null,
           "record_key": "CJKFoj4bpHEhTeaRoj",
@@ -156,17 +156,295 @@
     }
   ],
   "handshakes": [],
+  "policy_checks": [
+    {
+      "affected_endpoint": "192.0.2.25:110",
+      "category": "mail_protocol",
+      "check_id": "11150a544e48b14363c413bf1d3406c5c184964b2994fdba9ef99f58c163b564",
+      "code": "MAIL_ACCESS_CLEARTEXT",
+      "evidence_state": "inferred",
+      "outcome": "fail",
+      "protocol": "pop3",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "session",
+      "title": "Mail access without TLS"
+    },
+    {
+      "affected_endpoint": "192.0.2.25:110",
+      "category": "mail_protocol",
+      "check_id": "7ecc80a3bd22ff688a9cecbc35a234461e1d9b9068d84ba3dfaa96edc60f32b7",
+      "code": "POP3_PASS_WITHOUT_TLS",
+      "evidence_state": "inferred",
+      "outcome": "fail",
+      "protocol": "pop3",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "session",
+      "title": "POP3 PASS without TLS"
+    },
+    {
+      "affected_endpoint": "192.0.2.25:110",
+      "category": "mail_protocol",
+      "check_id": "a3319f8cb1dd92eea8aba23f20cf19fdd7ac03f8c3c7dd9cd69f148bf5420506",
+      "code": "UPGRADE_PLAINTEXT_FALLBACK",
+      "evidence_state": "observed",
+      "outcome": "fail",
+      "protocol": "pop3",
+      "record_key": "CJKFoj4bpHEhTeaRoj",
+      "record_type": "session",
+      "title": "Cleartext fallback after failed upgrade"
+    }
+  ],
+  "posture": {
+    "assessment_state": "complete",
+    "coverage": {
+      "by_category": {
+        "mail_protocol": {
+          "applicable_count": 3,
+          "failed_count": 3,
+          "not_observable_count": 0,
+          "passed_count": 0,
+          "unknown_count": 0
+        }
+      },
+      "by_protocol": {
+        "pop3": {
+          "applicable_count": 3,
+          "failed_count": 3,
+          "not_observable_count": 0,
+          "passed_count": 0,
+          "unknown_count": 0
+        }
+      },
+      "by_protocol_and_category": {
+        "pop3": {
+          "mail_protocol": {
+            "applicable_count": 3,
+            "failed_count": 3,
+            "not_observable_count": 0,
+            "passed_count": 0,
+            "unknown_count": 0
+          }
+        }
+      },
+      "overall": {
+        "applicable_count": 3,
+        "failed_count": 3,
+        "not_observable_count": 0,
+        "passed_count": 0,
+        "unknown_count": 0
+      }
+    },
+    "prioritized_findings": [
+      {
+        "affected_endpoint": "192.0.2.25:110",
+        "asset_criticality": "unknown",
+        "basis_state": "inferred",
+        "blast_radius": "unknown",
+        "code": "POP3_PASS_WITHOUT_TLS",
+        "components": {
+          "asset_criticality": 2,
+          "blast_radius": 1,
+          "confidence": 12,
+          "exposure": 4,
+          "recurrence": 0,
+          "severity": 50
+        },
+        "contributing_finding_ids": [
+          "32cffdd880a2bfc487eda2bfa439287db39f91b428d50020249ae8a14e85160b"
+        ],
+        "contributing_occurrences": [
+          {
+            "finding_id": "32cffdd880a2bfc487eda2bfa439287db39f91b428d50020249ae8a14e85160b",
+            "record_key": "CJKFoj4bpHEhTeaRoj",
+            "record_type": "session",
+            "session_uid": "CJKFoj4bpHEhTeaRoj"
+          }
+        ],
+        "evaluation_state": "verified",
+        "evidence_references": [
+          {
+            "evidence_state": "inferred",
+            "field_path": "derived.observed_commands",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj",
+            "record_type": "session"
+          },
+          {
+            "evidence_state": "inferred",
+            "field_path": "derived.transport_tls_established",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj",
+            "record_type": "session"
+          },
+          {
+            "evidence_state": "observed",
+            "field_path": "session.protocol",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj",
+            "record_type": "session"
+          }
+        ],
+        "exposure": "unknown",
+        "finding_id": "9b02e38d447cec27c0079f283e0bf7cd5ccb1f3bd4d240cc870010d8ea4162ac",
+        "outcome": "negative",
+        "policy_evaluation_time": "2026-09-04T12:00:00Z",
+        "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+        "policy_profile": "ietf_current",
+        "rationale": "POP3 PASS transmits a password in the clear unless STLS or implicit TLS is established.",
+        "recurrence_count": 1,
+        "remediation_id": "pop3.disable_cleartext_pass",
+        "rule_effective_from": "1999-06-01",
+        "rule_effective_until": null,
+        "score": 69,
+        "scoring_schema_version": "securemail.scoring/v1",
+        "severity": "high",
+        "standards": [
+          "RFC 2595 §2"
+        ],
+        "title": "POP3 PASS without TLS",
+        "unique_occurrences": 1
+      },
+      {
+        "affected_endpoint": "192.0.2.25:110",
+        "asset_criticality": "unknown",
+        "basis_state": "inferred",
+        "blast_radius": "unknown",
+        "code": "MAIL_ACCESS_CLEARTEXT",
+        "components": {
+          "asset_criticality": 2,
+          "blast_radius": 1,
+          "confidence": 12,
+          "exposure": 4,
+          "recurrence": 0,
+          "severity": 30
+        },
+        "contributing_finding_ids": [
+          "ed53aa2351b32d322cf9fb0acb34ce786d070386af1d5481867e7e9fcbdc6bdf"
+        ],
+        "contributing_occurrences": [
+          {
+            "finding_id": "ed53aa2351b32d322cf9fb0acb34ce786d070386af1d5481867e7e9fcbdc6bdf",
+            "record_key": "CJKFoj4bpHEhTeaRoj",
+            "record_type": "session",
+            "session_uid": "CJKFoj4bpHEhTeaRoj"
+          }
+        ],
+        "evaluation_state": "verified",
+        "evidence_references": [
+          {
+            "evidence_state": "inferred",
+            "field_path": "derived.service_role",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj",
+            "record_type": "session"
+          },
+          {
+            "evidence_state": "inferred",
+            "field_path": "derived.transport_tls_established",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj",
+            "record_type": "session"
+          }
+        ],
+        "exposure": "unknown",
+        "finding_id": "88d5efe27c2cdb898d25c18d42925ceb8d00684b7e70106f353c0b7eea278033",
+        "outcome": "negative",
+        "policy_evaluation_time": "2026-09-04T12:00:00Z",
+        "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+        "policy_profile": "ietf_current",
+        "rationale": "Cleartext IMAP/POP3 access is deprecated.",
+        "recurrence_count": 1,
+        "remediation_id": "mail.require_access_tls",
+        "rule_effective_from": "2018-01-01",
+        "rule_effective_until": null,
+        "score": 49,
+        "scoring_schema_version": "securemail.scoring/v1",
+        "severity": "medium",
+        "standards": [
+          "RFC 8314 §3",
+          "RFC 8997"
+        ],
+        "title": "Mail access without TLS",
+        "unique_occurrences": 1
+      },
+      {
+        "affected_endpoint": "192.0.2.25:110",
+        "asset_criticality": "unknown",
+        "basis_state": "inferred",
+        "blast_radius": "unknown",
+        "code": "UPGRADE_PLAINTEXT_FALLBACK",
+        "components": {
+          "asset_criticality": 2,
+          "blast_radius": 1,
+          "confidence": 12,
+          "exposure": 4,
+          "recurrence": 0,
+          "severity": 30
+        },
+        "contributing_finding_ids": [
+          "a4a3973fc86181fb34627bed54f044de1b09d8856d9392093cdddaa589f8239b"
+        ],
+        "contributing_occurrences": [
+          {
+            "finding_id": "a4a3973fc86181fb34627bed54f044de1b09d8856d9392093cdddaa589f8239b",
+            "record_key": "CJKFoj4bpHEhTeaRoj",
+            "record_type": "session",
+            "session_uid": "CJKFoj4bpHEhTeaRoj"
+          }
+        ],
+        "evaluation_state": "verified",
+        "evidence_references": [
+          {
+            "evidence_state": "inferred",
+            "field_path": "derived.service_role",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj",
+            "record_type": "session"
+          },
+          {
+            "evidence_state": "observed",
+            "field_path": "session.explicit_upgrade.state",
+            "frame_number": null,
+            "record_key": "CJKFoj4bpHEhTeaRoj",
+            "record_type": "session"
+          }
+        ],
+        "exposure": "unknown",
+        "finding_id": "1cf65f66ee5bfebd8a4c9ba8507c05515289e337b681ad3bd16dcb83ef067314",
+        "outcome": "negative",
+        "policy_evaluation_time": "2026-09-04T12:00:00Z",
+        "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+        "policy_profile": "ietf_current",
+        "rationale": "Submission and access sessions that continue in cleartext after a failed STARTTLS/STLS attempt are deprecated. Not applied to opportunistic SMTP relay.",
+        "recurrence_count": 1,
+        "remediation_id": "mail.abort_on_failed_upgrade",
+        "rule_effective_from": "2018-01-01",
+        "rule_effective_until": null,
+        "score": 49,
+        "scoring_schema_version": "securemail.scoring/v1",
+        "severity": "medium",
+        "standards": [
+          "RFC 8314 §3"
+        ],
+        "title": "Cleartext fallback after failed upgrade",
+        "unique_occurrences": 1
+      }
+    ],
+    "risk_score": 69,
+    "schema_version": "securemail.posture/v1",
+    "scoring_schema_version": "securemail.scoring/v1"
+  },
   "run_identity": {
     "analysis_time": "2026-09-04T12:00:00Z",
     "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
     "capture_sha256": "8ee7377f83ff08f9a88084a67d5c05cc5174b50d8ad72a81e0bbd5d81425f37d",
-    "configuration_digest": "dac7231c9fc00ae0d79e9ee382ee67277613f1276c08e3e3e86cad33850250cd",
+    "configuration_digest": "2cd49c4b40e93e47f7c30ee35ba5f83220aacc652d10bb8a4c1d3a485415d3e1",
     "normalization_schema_version": "v1",
     "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
     "policy_profile": "ietf_current",
     "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
   },
-  "schema_version": "v1",
+  "schema_version": "v2",
   "sessions": [
     {
       "corroboration": "zeek+tshark",

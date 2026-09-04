@@ -1,0 +1,152 @@
+{
+  "asset_context": [],
+  "findings": [
+    {
+      "affected_endpoint": "192.0.2.25:143",
+      "basis_state": "observed",
+      "code": "MAIL_ACCESS_CLEARTEXT",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "session.protocol",
+          "frame_number": null,
+          "record_key": "C1",
+          "record_type": "session"
+        }
+      ],
+      "finding_id": "0000000000000000000000000000000000000000000000000000000000000001",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "policy_profile": "ietf_current",
+      "rationale": "Synthetic Step 8 finding.",
+      "remediation_id": "rem.synthetic",
+      "rule_effective_from": "2018-01-01",
+      "rule_effective_until": null,
+      "severity": "low",
+      "standards": [
+        "RFC 0"
+      ],
+      "title": "Mail Access Cleartext"
+    },
+    {
+      "affected_endpoint": "192.0.2.25:143",
+      "basis_state": "observed",
+      "code": "MAIL_ACCESS_CLEARTEXT",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "session.protocol",
+          "frame_number": null,
+          "record_key": "C2",
+          "record_type": "session"
+        }
+      ],
+      "finding_id": "0000000000000000000000000000000000000000000000000000000000000002",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "policy_profile": "ietf_current",
+      "rationale": "Synthetic Step 8 finding.",
+      "remediation_id": "rem.synthetic",
+      "rule_effective_from": "2018-01-01",
+      "rule_effective_until": null,
+      "severity": "low",
+      "standards": [
+        "RFC 0"
+      ],
+      "title": "Mail Access Cleartext"
+    },
+    {
+      "affected_endpoint": "192.0.2.25:143",
+      "basis_state": "observed",
+      "code": "MAIL_ACCESS_CLEARTEXT",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "session.protocol",
+          "frame_number": null,
+          "record_key": "C3",
+          "record_type": "session"
+        }
+      ],
+      "finding_id": "0000000000000000000000000000000000000000000000000000000000000003",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "policy_profile": "ietf_current",
+      "rationale": "Synthetic Step 8 finding.",
+      "remediation_id": "rem.synthetic",
+      "rule_effective_from": "2018-01-01",
+      "rule_effective_until": null,
+      "severity": "low",
+      "standards": [
+        "RFC 0"
+      ],
+      "title": "Mail Access Cleartext"
+    },
+    {
+      "affected_endpoint": "192.0.2.25:143",
+      "basis_state": "observed",
+      "code": "MAIL_ACCESS_CLEARTEXT",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "session.protocol",
+          "frame_number": null,
+          "record_key": "C4",
+          "record_type": "session"
+        }
+      ],
+      "finding_id": "0000000000000000000000000000000000000000000000000000000000000004",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "policy_profile": "ietf_current",
+      "rationale": "Synthetic Step 8 finding.",
+      "remediation_id": "rem.synthetic",
+      "rule_effective_from": "2018-01-01",
+      "rule_effective_until": null,
+      "severity": "low",
+      "standards": [
+        "RFC 0"
+      ],
+      "title": "Mail Access Cleartext"
+    },
+    {
+      "affected_endpoint": "192.0.2.25:143",
+      "basis_state": "observed",
+      "code": "IMAP_LOGIN_WITHOUT_TLS",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "session.protocol",
+          "frame_number": null,
+          "record_key": "C5",
+          "record_type": "session"
+        }
+      ],
+      "finding_id": "0000000000000000000000000000000000000000000000000000000000000005",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "policy_profile": "ietf_current",
+      "rationale": "Synthetic Step 8 finding.",
+      "remediation_id": "rem.synthetic",
+      "rule_effective_from": "2018-01-01",
+      "rule_effective_until": null,
+      "severity": "low",
+      "standards": [
+        "RFC 0"
+      ],
+      "title": "Imap Login Without Tls"
+    }
+  ],
+  "policy_checks": [],
+  "schema_version": "securemail.score_request/v1"
+}

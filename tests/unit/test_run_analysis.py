@@ -93,7 +93,7 @@ def test_run_analysis_hashes_before_returning_document(tmp_path: Path) -> None:
     )
     assert order == ["preflight", "zeek"]
     assert fake_zeek.seen == capture
-    assert document.schema_version == "v1"
+    assert document.schema_version == "v2"
     assert document.run_identity.normalization_schema_version == "v1"
     assert document.run_identity.analyzer_bundle_digest == "b" * 64
     assert document.run_identity.capture_sha256 == __import__("hashlib").sha256(payload).hexdigest()
@@ -104,6 +104,9 @@ def test_run_analysis_hashes_before_returning_document(tmp_path: Path) -> None:
     assert document.run_identity.trust_store_digest is None
     assert document.capture_preflight.packet_count == 1
     assert document.findings == []
+    assert document.policy_checks == []
+    assert document.posture.assessment_state.value == "none"
+    assert document.posture.risk_score is None
     assert len(document.flows) == 1
     assert document.flows[0].uid == "Ctest"
     assert document.sessions == []

@@ -14,8 +14,10 @@ if TYPE_CHECKING:
     from securemail.domain.evidence.handshake import TlsHandshake
     from securemail.domain.evidence.session import EmailSession
     from securemail.domain.findings.finding import Finding
+    from securemail.domain.findings.posture import PolicyCheck, PostureAssessment
 
 NORMALIZATION_SCHEMA_VERSION: Literal["v1"] = "v1"
+EVIDENCE_DOCUMENT_SCHEMA_VERSION: Literal["v2"] = "v2"
 
 
 class EvidenceState(StrEnum):
@@ -82,11 +84,11 @@ class CapturePreflight(BaseModel):
 
 
 class EvidenceDocument(BaseModel):
-    """v1 canonical JSON envelope produced by `securemail analyze`."""
+    """v2 canonical JSON envelope produced by `securemail analyze`."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal["v1"] = "v1"
+    schema_version: Literal["v2"] = "v2"
     run_identity: AnalysisRun
     capture_preflight: CapturePreflight
     flows: list[Flow] = Field(default_factory=list)
@@ -94,3 +96,5 @@ class EvidenceDocument(BaseModel):
     handshakes: list[TlsHandshake] = Field(default_factory=list)
     certificates: list[CertificateEvidence] = Field(default_factory=list)
     findings: list[Finding] = Field(default_factory=list)
+    policy_checks: list[PolicyCheck] = Field(default_factory=list, max_length=16384)
+    posture: PostureAssessment

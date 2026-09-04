@@ -8,6 +8,7 @@ Entry point: `securemail = "securemail.api.cli.main:main"`
 
 ```bash
 uv run securemail analyze <capture.pcap|capture.pcapng> --out <path.json>
+uv run securemail score <findings.json>
 ```
 
 - `--out` is required.
@@ -26,12 +27,17 @@ uv run securemail analyze <capture.pcap|capture.pcapng> --out <path.json>
   `OSError`: message on stderr, exit 1. Historical evaluation without capture
   start time is an `AnalysisError`.
 
-No other subcommands are registered. `api/cli/commands/analyze.py` is an unused
-Step 0 stub; the live command is `register_analyze` in
-[`api/cli/main.py`](../src/securemail/api/cli/main.py).
+`securemail score` reads `securemail.score_request/v1` JSON (max 8 MiB), validates
+it, and writes a `PostureAssessment` to stdout with the same JSON style as
+analyze. Invalid JSON, schema, or oversize input exits 1. A missing path exits 2.
+
+`api/cli/commands/analyze.py` is an unused Step 0 stub; the live analyze command
+is `register_analyze` in [`api/cli/main.py`](../src/securemail/api/cli/main.py).
+The live score command is [`api/cli/commands/score.py`](../src/securemail/api/cli/commands/score.py).
 
 ```bash
 uv run securemail analyze tests/fixtures/empty/capture.pcapng --out out/empty.json
+uv run securemail score tests/fixtures/synthetic_findings/mixed_severity.json
 ```
 
 ## Make targets
@@ -123,6 +129,10 @@ Docker Desktop-specific notes are skipped.
 | `tests/unit/test_bundle_lock.py` | Lock hashing |
 | `tests/unit/test_capinfos_parse.py` | capinfos text |
 | `tests/unit/test_evidence_state.py` | Enum completeness |
+| `tests/unit/test_scoring.py` | Exact v1 score tables and caps |
+| `tests/unit/test_dedup.py` | Endpoint collapse, mixed packs, shuffle stability |
+| `tests/unit/test_posture.py` | Coverage reconciliation and ordering |
+| `tests/test_scoring_fixtures.py` | Real CLI score fixtures plus error exits |
 | `tests/unit/test_truncated_stream_never_complete.py` | Named never-complete case |
 | `tests/unit/test_fixture_diff.py` | Harness diff helper |
 
@@ -163,5 +173,5 @@ container-to-container traffic. Details:
 
 ## Not in this build
 
-No `securemail score` / `report` / `evaluate-ml`. No `make` target for a
-frontend dev server. No docker-compose control plane.
+No `securemail report` / `evaluate-ml`. No `make` target for a frontend dev
+server. No docker-compose control plane.

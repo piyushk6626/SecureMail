@@ -20,6 +20,7 @@ class FindingOutcome(StrEnum):
 class FindingSeverity(StrEnum):
     HIGH = "high"
     MEDIUM = "medium"
+    LOW = "low"
     INFORMATIONAL = "informational"
 
 
@@ -83,6 +84,7 @@ def _rebuild_evidence_document() -> None:
     from securemail.domain.evidence.handshake import TlsHandshake
     from securemail.domain.evidence.run import EvidenceDocument
     from securemail.domain.evidence.session import EmailSession
+    from securemail.domain.findings.posture import PolicyCheck, PostureAssessment
 
     EvidenceDocument.model_rebuild(
         _types_namespace={
@@ -91,6 +93,8 @@ def _rebuild_evidence_document() -> None:
             "TlsHandshake": TlsHandshake,
             "CertificateEvidence": CertificateEvidence,
             "Finding": Finding,
+            "PolicyCheck": PolicyCheck,
+            "PostureAssessment": PostureAssessment,
         }
     )
 

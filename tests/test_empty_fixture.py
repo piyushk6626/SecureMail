@@ -54,4 +54,9 @@ def test_empty_analyze_is_byte_identical(tmp_path: Path) -> None:
     assert identity.normalization_schema_version == "v1"
     assert identity.policy_profile.value == "ietf_current"
     assert identity.policy_pack_version
+    assert document.schema_version == "v2"
     assert document.findings == []
+    assert document.policy_checks == []
+    assert document.posture.prioritized_findings == []
+    assert document.posture.assessment_state.value == "none"
+    assert document.posture.risk_score is None

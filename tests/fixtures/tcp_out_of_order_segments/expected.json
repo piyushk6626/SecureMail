@@ -41,16 +41,36 @@
     }
   ],
   "handshakes": [],
+  "policy_checks": [],
+  "posture": {
+    "assessment_state": "none",
+    "coverage": {
+      "by_category": {},
+      "by_protocol": {},
+      "by_protocol_and_category": {},
+      "overall": {
+        "applicable_count": 0,
+        "failed_count": 0,
+        "not_observable_count": 0,
+        "passed_count": 0,
+        "unknown_count": 0
+      }
+    },
+    "prioritized_findings": [],
+    "risk_score": null,
+    "schema_version": "securemail.posture/v1",
+    "scoring_schema_version": "securemail.scoring/v1"
+  },
   "run_identity": {
     "analysis_time": "2026-09-04T12:00:00Z",
     "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
     "capture_sha256": "71eb838445146211fca0c425a29474089b54af466446b04981e10016ac8fbab8",
-    "configuration_digest": "dac7231c9fc00ae0d79e9ee382ee67277613f1276c08e3e3e86cad33850250cd",
+    "configuration_digest": "2cd49c4b40e93e47f7c30ee35ba5f83220aacc652d10bb8a4c1d3a485415d3e1",
     "normalization_schema_version": "v1",
     "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
     "policy_profile": "ietf_current",
     "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
   },
-  "schema_version": "v1",
+  "schema_version": "v2",
   "sessions": []
 }

@@ -142,20 +142,32 @@ plus RFC 9525 SAN identity against `ssl.log` `server_name` or
 
 ## 9. Evaluate policy
 
-After Steps 3–6 normalization, `evaluate_policy` applies the selected YAML pack
-without mutating evidence. The default profile is `ietf_current`.
-`nist_federal` adds NIST-approved-suite/key rules without relabeling strong
-non-approved crypto as weak. `historical_at_capture` uses `capture_start_time`
-as the evaluation clock and fails closed if that timestamp is missing.
+After Steps 3–6 normalization, `evaluate_policy_batch` applies the selected YAML
+pack without mutating evidence. Session-level `Finding` records are still only
+negative and indeterminate. Applicable pass/fail/unknown/not-observable
+evaluations are retained as `policy_checks`. Genuine non-applicability (inactive
+rule, role mismatch, where-clause fail) is omitted.
+
+The default profile is `ietf_current`. `nist_federal` adds NIST-approved-suite/key
+rules without relabeling strong non-approved crypto as weak.
+`historical_at_capture` uses `capture_start_time` as the evaluation clock and
+fails closed if that timestamp is missing.
 
 Service role is inferred from payload-confirmed protocol plus responder port.
 Ambiguous or nonstandard SMTP stays unclassified so relay/submission policy is
 never guessed from a port alone.
 
-## 10. Emit `EvidenceDocument`
+## 10. Score, dedup, coverage
+
+`score_findings` collapses session findings that share a code and endpoint,
+computes `securemail.scoring/v1` named components, and publishes coverage
+denominators. See [scoring.md](scoring.md). Analyze always runs this step.
+Inventory labels default to `unknown`.
+
+## 11. Emit `EvidenceDocument`
 
 ```text
-schema_version = "v1"
+schema_version = "v2"
 run_identity.capture_sha256            = intake hash
 run_identity.analyzer_bundle_digest    = SHA-256(lockfile)
 run_identity.normalization_schema_version = "v1"
@@ -166,7 +178,8 @@ run_identity.analysis_time             = --analysis-time or now
 run_identity.policy_profile            = --policy-profile (default ietf_current)
 run_identity.policy_pack_version       = SHA-256 of canonical pack JSON
 run_identity.trust_store_digest        = SHA-256 of trust-store-snapshot.pem
-capture_preflight, flows, sessions, handshakes, certificates, findings
+capture_preflight, flows, sessions, handshakes, certificates, findings,
+policy_checks, posture
 ```
 
 The CLI dumps `document.model_dump(mode="json")` with `json.dumps(..., indent=2,
@@ -190,6 +203,9 @@ sort_keys=True, ensure_ascii=False)` plus a trailing newline.
     "expiry_warning_seconds": 2592000,
     "tshark_corroboration": "smtp_imap_pop_tls_handshake",
     "starttls_evaluation": "v1",
+    "scoring_schema_version": "securemail.scoring/v1",
+    "posture_schema_version": "securemail.posture/v1",
+    "evidence_document_schema_version": "v2",
     "expected_hostname": None,
     "iana_tls_parameters_sha256": "<SHA-256 of iana-tls-parameters.json>",
 }
@@ -220,5 +236,4 @@ UIDs — it does not ignore any field.
 
 ## Not in this build
 
-No scoring, report freeze, or ML step after JSON emission. The pipeline stops
-after deterministic findings.
+No report freeze or ML step after JSON emission. HTML/PDF are Step 9.

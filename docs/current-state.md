@@ -1,8 +1,9 @@
 # Current state
 
 SecureMail is a **CLI-only**, offline, deterministic analyzer of SMTP, IMAP, and
-POP3 traffic in PCAP/PCAPNG files. It does not yet score findings, render
-HTML/PDF, run ML, or expose an API.
+POP3 traffic in PCAP/PCAPNG files. It scores and deduplicates findings and
+publishes coverage denominators. It does not yet render HTML/PDF, run ML, or
+expose an API.
 
 Python orchestrates. Zeek is the primary packet engine. A bounded TShark pass
 corroborates mail command/status and TLS handshake message frames when the first
@@ -10,12 +11,14 @@ Zeek pass shows mail, implicit-TLS, or any `ssl.log` UID.
 
 ## What is live
 
-The one use case is `run_analysis` in
+Use cases in
 [`src/securemail/application/run_analysis.py`](../src/securemail/application/run_analysis.py),
-wired through [`src/securemail/bootstrap.py`](../src/securemail/bootstrap.py) to
-the Typer command `securemail analyze`.
+wired through [`src/securemail/bootstrap.py`](../src/securemail/bootstrap.py):
 
-It produces a frozen v1 JSON document with:
+- `securemail analyze` — PCAP/PCAPNG → v2 `EvidenceDocument`
+- `securemail score` — synthetic finding JSON → `PostureAssessment` on stdout
+
+Analyze produces a frozen v2 JSON document with:
 
 - run identity (capture hash, analyzer-bundle digest, configuration digest,
   analysis time, policy profile, policy-pack SHA-256)
@@ -28,11 +31,14 @@ It produces a frozen v1 JSON document with:
   public-key algorithm and effective strength, certificate signature algorithm)
 - leaf-only chain validation and RFC 9525 identity matching against a pinned
   offline trust snapshot
-- deterministic `Finding` records from a versioned YAML rule pack (negative and
-  indeterminate outcomes only)
+- deterministic session-level `Finding` records from a versioned YAML rule pack
+  (negative and indeterminate outcomes only)
+- applicable `policy_checks` (pass/fail/unknown/not_observable) and a posture
+  summary (prioritized endpoint findings, coverage denominators, risk score)
 
-There are **71** committed fixtures under `tests/fixtures/<case_id>/`. The
-harness in [`tests/support/fixture_harness.py`](../tests/support/fixture_harness.py)
+There are **71** PCAP fixture directories under `tests/fixtures/<case_id>/`
+plus `tests/fixtures/synthetic_findings/` for Step 8. The harness in
+[`tests/support/fixture_harness.py`](../tests/support/fixture_harness.py)
 runs the real CLI and diffs the entire output against `expected.json` (no
 ignored fields). Optional `analyze.json` supplies `--analysis-time`,
 `--expiry-warning-days`, `--expected-hostname`, and `--policy-profile`. When
@@ -51,7 +57,7 @@ stay stable; the live CLI still defaults analysis time to now.
 | 5 | Certificate facts | **Done** |
 | 6 | Chain + identity (offline trust store) | **Done** |
 | 7 | Versioned rule packs + forward secrecy | **Done** |
-| 8 | Scoring, dedup, coverage denominators | Placeholder (`domain/findings` scoring modules, `api/cli/commands/score.py`) |
+| 8 | Scoring, dedup, coverage denominators | **Done** |
 | 9 | Canonical JSON → HTML/PDF | Placeholder (report adapters/templates, `report.py`) |
 | 10 | Advisory ML | Placeholder (`advisory_pipeline.py`, `evaluate_ml.py`, baselines) |
 | 11 | FastAPI + React | Placeholder (`api/main.py`, routers, `frontend/` README only) |
@@ -89,36 +95,40 @@ uv run securemail analyze tests/fixtures/cert_chain_san_mismatch/capture.pcapng 
 
 # Step 7 — TLS 1.3 PSK-only resumption; forward secrecy is indeterminate
 uv run securemail analyze tests/fixtures/tls13_psk_only_resumption/capture.pcapng --policy-profile ietf_current --out out/policy.json
+
+# Step 8 — mixed severity score vectors, named components, analyst order
+uv run securemail score tests/fixtures/synthetic_findings/mixed_severity.json
 ```
 
-`--out` is required. Output is JSON with sorted keys, 2-space indent, a trailing
-newline, and `ensure_ascii=False`. `--policy-profile` defaults to `ietf_current`.
-Unknown profiles exit 2. A malformed pack or missing capture start time for
-`historical_at_capture` exits 1.
+Analyze `--out` is required. Output is JSON with sorted keys, 2-space indent, a
+trailing newline, and `ensure_ascii=False`. `--policy-profile` defaults to
+`ietf_current`. Unknown profiles exit 2. A malformed pack or missing capture
+start time for `historical_at_capture` exits 1. `score` writes that same JSON
+style to stdout; invalid/oversized input exits 1.
 
 ## CLI that exists vs files that do not run
 
 [`src/securemail/api/cli/main.py`](../src/securemail/api/cli/main.py) registers
-**`analyze` only**. These files exist as Step N stubs and are **not** wired:
+**`analyze` and `score`**. These files exist as Step N stubs and are **not**
+wired:
 
 - `api/cli/commands/analyze.py` — leftover Step 0 stub; the live command is in `main.py`
-- `api/cli/commands/score.py` — Step 8
 - `api/cli/commands/report.py` — Step 9
 - `api/cli/commands/evaluate_ml.py` — Step 10
 
-`securemail score`, `securemail report`, and `securemail evaluate-ml` are not
-commands.
+`securemail report` and `securemail evaluate-ml` are not commands.
 
 ## Not in this build
 
-The JSON does **not** contain posture scores or a report manifest. Pass/present
-policy outcomes are not serialized as findings. Scoring and dedup are Step 8.
-Revocation without imported OCSP/CRL is `unknown`. `run_identity.policy_pack_version`
-is the SHA-256 of the canonical validated pack JSON.
+The JSON does **not** contain a report manifest. Pass/present policy outcomes
+are serialized as `policy_checks`, not as `Finding` records. Revocation without
+imported OCSP/CRL is `unknown`. `run_identity.policy_pack_version` is the
+SHA-256 of the canonical validated pack JSON.
 `run_identity.trust_store_digest` is the SHA-256 of the pinned PEM snapshot. No
 network calls happen during analysis (analyzer containers use `--network=none`;
 chain validation does not fetch AIA/OCSP/CRL/CT/DNS). No dashboard, no Postgres,
 no queue.
 
-See [architecture.md](architecture.md) for the live module map and
-[fixtures.md](fixtures.md) for every committed case.
+See [architecture.md](architecture.md) for the live module map,
+[scoring.md](scoring.md) for the v1 formula, and [fixtures.md](fixtures.md) for
+every committed case.

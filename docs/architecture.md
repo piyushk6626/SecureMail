@@ -42,9 +42,9 @@ Three import-linter contracts:
 
 Canonical records that exist today: `AnalysisRun` (inside `EvidenceDocument`),
 `CapturePreflight`, `Flow`, `EmailSession`, `TlsHandshake`,
-`CertificateEvidence` (with leaf `CertificateValidation`). The names `Case`,
-`Capture`, `Finding`, `AnomalyResult`,
-`ReportManifest`, and `AuditEvent` are design vocabulary from
+`CertificateEvidence` (with leaf `CertificateValidation`), `Finding`,
+`PolicyCheck`, and `PostureAssessment`. The names `Case`, `Capture`,
+`AnomalyResult`, `ReportManifest`, and `AuditEvent` are design vocabulary from
 [`plans/TECHNICAL_DESIGN.md`](../plans/TECHNICAL_DESIGN.md); they are not live
 models except where a placeholder file already occupies the scaffold path.
 
@@ -60,7 +60,8 @@ models except where a placeholder file already occupies the scaffold path.
 - `load_trust_store_snapshot()`
 
 and closes them over `_analyze`, which calls `run_analysis`. `create_cli()`
-passes that function into `build_app` so the Typer layer never imports adapters.
+passes `_analyze` and `score_findings` into `build_app` so the Typer layer never
+imports adapters.
 
 ## Live modules
 
@@ -68,8 +69,10 @@ passes that function into `build_app` so the Typer layer never imports adapters.
 
 | Path | Role |
 |---|---|
-| `api/cli/main.py` | Typer app; registers `analyze`; writes JSON |
-| `api/cli/commands/*.py` | Stubs except that `analyze` actually lives in `main.py` |
+| `api/cli/main.py` | Typer app; registers `analyze` and `score`; writes JSON |
+| `api/cli/commands/score.py` | Thin `score` command: bounded JSON in, stdout JSON out |
+| `api/cli/commands/analyze.py` | Unused Step 0 stub; live `analyze` lives in `main.py` |
+| `api/cli/commands/report.py`, `evaluate_ml.py` | Step 9 / 10 stubs |
 | `api/main.py`, `api/dependencies.py`, `api/routers/` | Step 11 placeholders |
 
 Console script: `securemail = "securemail.api.cli.main:main"` in
@@ -80,7 +83,7 @@ Console script: `securemail = "securemail.api.cli.main:main"` in
 
 | Path | Role |
 |---|---|
-| `run_analysis.py` | Intake, hash, preflight, Zeek, optional TShark, normalize, policy, assemble `EvidenceDocument` |
+| `run_analysis.py` | Intake, hash, preflight, Zeek, optional TShark, normalize, policy, score, assemble `EvidenceDocument`; `score_findings` RORO use case |
 | `normalize_flows.py` | Zeek `conn.log` / `weird.log` / `capture_loss.log` / `sm_tcp_recon.log` → `Flow` |
 | `normalize_sessions.py` | `sm_email.log` + optional TShark frames + `ssl.log` → `EmailSession` |
 | `normalize_handshakes.py` | `ssl.log` / ssl-log-ext + optional TShark frames → `TlsHandshake` |
@@ -94,7 +97,7 @@ themselves.
 
 | Path | Role |
 |---|---|
-| `evidence/run.py` | `EvidenceState`, `PolicyProfile`, `AnalysisRun`, `CapturePreflight`, `EvidenceDocument`, schema version `v1` |
+| `evidence/run.py` | `EvidenceState`, `PolicyProfile`, `AnalysisRun`, `CapturePreflight`, `EvidenceDocument`; normalization schema `v1`, document schema `v2` |
 | `evidence/flow.py` | `Flow` + pure `classify_reconstruction` |
 | `evidence/session.py` | `EmailSession`, protocol/port/payload enums, upgrade and implicit-TLS models |
 | `policies/starttls/smtp_upgrade.py` | SMTP STARTTLS machine |
@@ -104,13 +107,16 @@ themselves.
 | `evidence/handshake.py` | `TlsHandshake`, version/cipher/key-exchange evidence, visibility, CertificateVerify signature |
 | `policies/tls/key_exchange.py` | Pure version-aware key-exchange classifier (no weakness/FS judgment) |
 | `policies/tls/forward_secrecy.py` | Version-aware FS table; never infers reuse or ticket rotation |
-| `policies/rule_engine.py` | Pure tri-state evaluator over typed evidence |
+| `policies/rule_engine.py` | Pure tri-state evaluator; emits findings plus applicable `PolicyCheck` coverage |
 | `policies/rules/*.yaml` | `ietf_current`, `nist_federal`, `historical_at_capture` |
 | `evidence/certificate.py` | `CertificateEvidence` facts plus leaf-only `CertificateValidation` |
 | `policies/pki/key_strength.py` | Data-driven effective-strength table |
 | `policies/pki/chain_validation.py` | Path validation at an explicit verification time |
 | `policies/pki/identity.py` | RFC 9525 SAN matching; no CN fallback |
-| `findings/finding.py` | Canonical `Finding` (scoring/dedup remain Step 8) |
+| `findings/finding.py` | Canonical session-level `Finding` |
+| `findings/scoring.py` | Versioned integer priority and named components |
+| `findings/dedup.py` | Session findings → endpoint clusters |
+| `findings/posture.py` | Coverage matrix, prioritized findings, assessment state |
 | `reports/` | Placeholder for Step 9 |
 
 ### `ports/`

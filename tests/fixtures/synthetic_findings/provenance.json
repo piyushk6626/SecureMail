@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-09-04T12:00:00Z",
+  "description": "Hand-assembled finding sets for Step 8 scoring, dedup, ordering, and coverage denominators. No PCAP.",
+  "expected_sha256": "f0be0e634a146ffac6c7ccabfca39d2555d112eaefa07c4adfcf0a895ab19275",
+  "generator": "tests/fixtures/generators/step8_synthetic_findings.py",
+  "inputs": {
+    "coverage_denominators": "e9e9a005fc81124421b0b26038883f6f248795cb037c647f88658ab399b23ee2",
+    "many_low_severity_one_endpoint": "228e14bf698c0cb5500b00f0b80922a9aef6f500e0f77680ea30a885dd32d0e8",
+    "mixed_severity": "df3f2c90ca8b66934c7dc80f1719644d59ad08d2bfd9a1a6c69d766b3db7c02a",
+    "recurring_sessions": "a975395764a6b589dc9c0177d79342aba1c7561a82a7175d8c43c99bc664fca9"
+  },
+  "posture_schema_version": "securemail.posture/v1",
+  "scoring_schema_version": "securemail.scoring/v1",
+  "source": "synthetic"
+}

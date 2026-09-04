@@ -1,0 +1,682 @@
+{
+  "cases": {
+    "coverage_denominators": {
+      "assessment_state": "limited",
+      "coverage": {
+        "by_category": {
+          "certificate": {
+            "applicable_count": 3,
+            "failed_count": 0,
+            "not_observable_count": 2,
+            "passed_count": 0,
+            "unknown_count": 1
+          },
+          "mail_protocol": {
+            "applicable_count": 1,
+            "failed_count": 0,
+            "not_observable_count": 0,
+            "passed_count": 1,
+            "unknown_count": 0
+          },
+          "tls_handshake": {
+            "applicable_count": 5,
+            "failed_count": 1,
+            "not_observable_count": 0,
+            "passed_count": 2,
+            "unknown_count": 2
+          }
+        },
+        "by_protocol": {
+          "imap": {
+            "applicable_count": 4,
+            "failed_count": 0,
+            "not_observable_count": 2,
+            "passed_count": 1,
+            "unknown_count": 1
+          },
+          "smtp": {
+            "applicable_count": 5,
+            "failed_count": 1,
+            "not_observable_count": 0,
+            "passed_count": 2,
+            "unknown_count": 2
+          }
+        },
+        "by_protocol_and_category": {
+          "imap": {
+            "certificate": {
+              "applicable_count": 3,
+              "failed_count": 0,
+              "not_observable_count": 2,
+              "passed_count": 0,
+              "unknown_count": 1
+            },
+            "mail_protocol": {
+              "applicable_count": 1,
+              "failed_count": 0,
+              "not_observable_count": 0,
+              "passed_count": 1,
+              "unknown_count": 0
+            }
+          },
+          "smtp": {
+            "tls_handshake": {
+              "applicable_count": 5,
+              "failed_count": 1,
+              "not_observable_count": 0,
+              "passed_count": 2,
+              "unknown_count": 2
+            }
+          }
+        },
+        "overall": {
+          "applicable_count": 9,
+          "failed_count": 1,
+          "not_observable_count": 2,
+          "passed_count": 3,
+          "unknown_count": 3
+        }
+      },
+      "prioritized_findings": [],
+      "risk_score": null,
+      "schema_version": "securemail.posture/v1",
+      "scoring_schema_version": "securemail.scoring/v1"
+    },
+    "many_low_severity_one_endpoint": {
+      "assessment_state": "none",
+      "coverage": {
+        "by_category": {},
+        "by_protocol": {},
+        "by_protocol_and_category": {},
+        "overall": {
+          "applicable_count": 0,
+          "failed_count": 0,
+          "not_observable_count": 0,
+          "passed_count": 0,
+          "unknown_count": 0
+        }
+      },
+      "prioritized_findings": [
+        {
+          "affected_endpoint": "192.0.2.25:143",
+          "asset_criticality": "unknown",
+          "basis_state": "observed",
+          "blast_radius": "unknown",
+          "code": "MAIL_ACCESS_CLEARTEXT",
+          "components": {
+            "asset_criticality": 2,
+            "blast_radius": 1,
+            "confidence": 16,
+            "exposure": 4,
+            "recurrence": 6,
+            "severity": 15
+          },
+          "contributing_finding_ids": [
+            "0000000000000000000000000000000000000000000000000000000000000001",
+            "0000000000000000000000000000000000000000000000000000000000000002",
+            "0000000000000000000000000000000000000000000000000000000000000003",
+            "0000000000000000000000000000000000000000000000000000000000000004"
+          ],
+          "contributing_occurrences": [
+            {
+              "finding_id": "0000000000000000000000000000000000000000000000000000000000000001",
+              "record_key": "C1",
+              "record_type": "session",
+              "session_uid": "C1"
+            },
+            {
+              "finding_id": "0000000000000000000000000000000000000000000000000000000000000002",
+              "record_key": "C2",
+              "record_type": "session",
+              "session_uid": "C2"
+            },
+            {
+              "finding_id": "0000000000000000000000000000000000000000000000000000000000000003",
+              "record_key": "C3",
+              "record_type": "session",
+              "session_uid": "C3"
+            },
+            {
+              "finding_id": "0000000000000000000000000000000000000000000000000000000000000004",
+              "record_key": "C4",
+              "record_type": "session",
+              "session_uid": "C4"
+            }
+          ],
+          "evaluation_state": "verified",
+          "evidence_references": [
+            {
+              "evidence_state": "observed",
+              "field_path": "session.protocol",
+              "frame_number": null,
+              "record_key": "C1",
+              "record_type": "session"
+            },
+            {
+              "evidence_state": "observed",
+              "field_path": "session.protocol",
+              "frame_number": null,
+              "record_key": "C2",
+              "record_type": "session"
+            },
+            {
+              "evidence_state": "observed",
+              "field_path": "session.protocol",
+              "frame_number": null,
+              "record_key": "C3",
+              "record_type": "session"
+            },
+            {
+              "evidence_state": "observed",
+              "field_path": "session.protocol",
+              "frame_number": null,
+              "record_key": "C4",
+              "record_type": "session"
+            }
+          ],
+          "exposure": "unknown",
+          "finding_id": "7388fa0f2c41acc17956b02049749bd663b7a71d2972f7085faeb34f251bd513",
+          "outcome": "negative",
+          "policy_evaluation_time": "2026-09-04T12:00:00Z",
+          "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "policy_profile": "ietf_current",
+          "rationale": "Synthetic Step 8 finding.",
+          "recurrence_count": 4,
+          "remediation_id": "rem.synthetic",
+          "rule_effective_from": "2018-01-01",
+          "rule_effective_until": null,
+          "score": 44,
+          "scoring_schema_version": "securemail.scoring/v1",
+          "severity": "low",
+          "standards": [
+            "RFC 0"
+          ],
+          "title": "Mail Access Cleartext",
+          "unique_occurrences": 4
+        },
+        {
+          "affected_endpoint": "192.0.2.25:143",
+          "asset_criticality": "unknown",
+          "basis_state": "observed",
+          "blast_radius": "unknown",
+          "code": "IMAP_LOGIN_WITHOUT_TLS",
+          "components": {
+            "asset_criticality": 2,
+            "blast_radius": 1,
+            "confidence": 16,
+            "exposure": 4,
+            "recurrence": 0,
+            "severity": 15
+          },
+          "contributing_finding_ids": [
+            "0000000000000000000000000000000000000000000000000000000000000005"
+          ],
+          "contributing_occurrences": [
+            {
+              "finding_id": "0000000000000000000000000000000000000000000000000000000000000005",
+              "record_key": "C5",
+              "record_type": "session",
+              "session_uid": "C5"
+            }
+          ],
+          "evaluation_state": "verified",
+          "evidence_references": [
+            {
+              "evidence_state": "observed",
+              "field_path": "session.protocol",
+              "frame_number": null,
+              "record_key": "C5",
+              "record_type": "session"
+            }
+          ],
+          "exposure": "unknown",
+          "finding_id": "a09791cb6e895f5eaa5733a764ceb8a50162a8e0c7eddceb281762be329d41a5",
+          "outcome": "negative",
+          "policy_evaluation_time": "2026-09-04T12:00:00Z",
+          "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "policy_profile": "ietf_current",
+          "rationale": "Synthetic Step 8 finding.",
+          "recurrence_count": 1,
+          "remediation_id": "rem.synthetic",
+          "rule_effective_from": "2018-01-01",
+          "rule_effective_until": null,
+          "score": 38,
+          "scoring_schema_version": "securemail.scoring/v1",
+          "severity": "low",
+          "standards": [
+            "RFC 0"
+          ],
+          "title": "Imap Login Without Tls",
+          "unique_occurrences": 1
+        }
+      ],
+      "risk_score": 44,
+      "schema_version": "securemail.posture/v1",
+      "scoring_schema_version": "securemail.scoring/v1"
+    },
+    "mixed_severity": {
+      "assessment_state": "complete",
+      "coverage": {
+        "by_category": {
+          "tls_handshake": {
+            "applicable_count": 2,
+            "failed_count": 1,
+            "not_observable_count": 0,
+            "passed_count": 1,
+            "unknown_count": 0
+          }
+        },
+        "by_protocol": {
+          "smtp": {
+            "applicable_count": 2,
+            "failed_count": 1,
+            "not_observable_count": 0,
+            "passed_count": 1,
+            "unknown_count": 0
+          }
+        },
+        "by_protocol_and_category": {
+          "smtp": {
+            "tls_handshake": {
+              "applicable_count": 2,
+              "failed_count": 1,
+              "not_observable_count": 0,
+              "passed_count": 1,
+              "unknown_count": 0
+            }
+          }
+        },
+        "overall": {
+          "applicable_count": 2,
+          "failed_count": 1,
+          "not_observable_count": 0,
+          "passed_count": 1,
+          "unknown_count": 0
+        }
+      },
+      "prioritized_findings": [
+        {
+          "affected_endpoint": "192.0.2.10:25",
+          "asset_criticality": "critical",
+          "basis_state": "verified",
+          "blast_radius": "organization",
+          "code": "TLS_NEGOTIATED_TLS10",
+          "components": {
+            "asset_criticality": 5,
+            "blast_radius": 5,
+            "confidence": 20,
+            "exposure": 10,
+            "recurrence": 0,
+            "severity": 50
+          },
+          "contributing_finding_ids": [
+            "0000000000000000000000000000000000000000000000000000000000000001"
+          ],
+          "contributing_occurrences": [
+            {
+              "finding_id": "0000000000000000000000000000000000000000000000000000000000000001",
+              "record_key": "C1",
+              "record_type": "session",
+              "session_uid": "C1"
+            }
+          ],
+          "evaluation_state": "verified",
+          "evidence_references": [
+            {
+              "evidence_state": "verified",
+              "field_path": "session.protocol",
+              "frame_number": null,
+              "record_key": "C1",
+              "record_type": "session"
+            }
+          ],
+          "exposure": "public",
+          "finding_id": "4c1c333e2b1ef26e63cac68bc9338a463dae68a7cad719cd07d405ad07b80217",
+          "outcome": "negative",
+          "policy_evaluation_time": "2026-09-04T12:00:00Z",
+          "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "policy_profile": "ietf_current",
+          "rationale": "Synthetic Step 8 finding.",
+          "recurrence_count": 1,
+          "remediation_id": "rem.synthetic",
+          "rule_effective_from": "2018-01-01",
+          "rule_effective_until": null,
+          "score": 90,
+          "scoring_schema_version": "securemail.scoring/v1",
+          "severity": "high",
+          "standards": [
+            "RFC 0"
+          ],
+          "title": "Tls Negotiated Tls10",
+          "unique_occurrences": 1
+        },
+        {
+          "affected_endpoint": "192.0.2.11:993",
+          "asset_criticality": "low",
+          "basis_state": "inferred",
+          "blast_radius": "single_endpoint",
+          "code": "TLS_CIPHER_CBC",
+          "components": {
+            "asset_criticality": 1,
+            "blast_radius": 1,
+            "confidence": 12,
+            "exposure": 2,
+            "recurrence": 0,
+            "severity": 50
+          },
+          "contributing_finding_ids": [
+            "0000000000000000000000000000000000000000000000000000000000000002"
+          ],
+          "contributing_occurrences": [
+            {
+              "finding_id": "0000000000000000000000000000000000000000000000000000000000000002",
+              "record_key": "C2",
+              "record_type": "session",
+              "session_uid": "C2"
+            }
+          ],
+          "evaluation_state": "verified",
+          "evidence_references": [
+            {
+              "evidence_state": "inferred",
+              "field_path": "session.protocol",
+              "frame_number": null,
+              "record_key": "C2",
+              "record_type": "session"
+            }
+          ],
+          "exposure": "isolated",
+          "finding_id": "6d232a1c2ab57133a9caec1b2089add369d852778190fce16ebcca699f03bc8d",
+          "outcome": "negative",
+          "policy_evaluation_time": "2026-09-04T12:00:00Z",
+          "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "policy_profile": "ietf_current",
+          "rationale": "Synthetic Step 8 finding.",
+          "recurrence_count": 1,
+          "remediation_id": "rem.synthetic",
+          "rule_effective_from": "2018-01-01",
+          "rule_effective_until": null,
+          "score": 66,
+          "scoring_schema_version": "securemail.scoring/v1",
+          "severity": "high",
+          "standards": [
+            "RFC 0"
+          ],
+          "title": "Tls Cipher Cbc",
+          "unique_occurrences": 1
+        },
+        {
+          "affected_endpoint": "192.0.2.12:587",
+          "asset_criticality": "high",
+          "basis_state": "observed",
+          "blast_radius": "multi_asset",
+          "code": "CERT_EXPIRED_AT_CAPTURE",
+          "components": {
+            "asset_criticality": 4,
+            "blast_radius": 3,
+            "confidence": 16,
+            "exposure": 8,
+            "recurrence": 0,
+            "severity": 30
+          },
+          "contributing_finding_ids": [
+            "0000000000000000000000000000000000000000000000000000000000000003"
+          ],
+          "contributing_occurrences": [
+            {
+              "finding_id": "0000000000000000000000000000000000000000000000000000000000000003",
+              "record_key": "C3",
+              "record_type": "session",
+              "session_uid": "C3"
+            }
+          ],
+          "evaluation_state": "verified",
+          "evidence_references": [
+            {
+              "evidence_state": "observed",
+              "field_path": "session.protocol",
+              "frame_number": null,
+              "record_key": "C3",
+              "record_type": "session"
+            }
+          ],
+          "exposure": "partner",
+          "finding_id": "6cc7ad6a1760713410872c52f69895c401a51adf1cb0a4df334ab1112f08d8be",
+          "outcome": "negative",
+          "policy_evaluation_time": "2026-09-04T12:00:00Z",
+          "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "policy_profile": "ietf_current",
+          "rationale": "Synthetic Step 8 finding.",
+          "recurrence_count": 1,
+          "remediation_id": "rem.synthetic",
+          "rule_effective_from": "2018-01-01",
+          "rule_effective_until": null,
+          "score": 61,
+          "scoring_schema_version": "securemail.scoring/v1",
+          "severity": "medium",
+          "standards": [
+            "RFC 0"
+          ],
+          "title": "Cert Expired At Capture",
+          "unique_occurrences": 1
+        },
+        {
+          "affected_endpoint": "192.0.2.13:143",
+          "asset_criticality": "medium",
+          "basis_state": "inferred",
+          "blast_radius": "single_endpoint",
+          "code": "MAIL_ACCESS_CLEARTEXT",
+          "components": {
+            "asset_criticality": 3,
+            "blast_radius": 1,
+            "confidence": 12,
+            "exposure": 5,
+            "recurrence": 0,
+            "severity": 15
+          },
+          "contributing_finding_ids": [
+            "0000000000000000000000000000000000000000000000000000000000000004"
+          ],
+          "contributing_occurrences": [
+            {
+              "finding_id": "0000000000000000000000000000000000000000000000000000000000000004",
+              "record_key": "C4",
+              "record_type": "session",
+              "session_uid": "C4"
+            }
+          ],
+          "evaluation_state": "verified",
+          "evidence_references": [
+            {
+              "evidence_state": "inferred",
+              "field_path": "session.protocol",
+              "frame_number": null,
+              "record_key": "C4",
+              "record_type": "session"
+            }
+          ],
+          "exposure": "internal",
+          "finding_id": "6db038bdb445a013f437f9a967a96a398c6f9b84beb4bb7f9e67acf3bbed7a31",
+          "outcome": "negative",
+          "policy_evaluation_time": "2026-09-04T12:00:00Z",
+          "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "policy_profile": "ietf_current",
+          "rationale": "Synthetic Step 8 finding.",
+          "recurrence_count": 1,
+          "remediation_id": "rem.synthetic",
+          "rule_effective_from": "2018-01-01",
+          "rule_effective_until": null,
+          "score": 36,
+          "scoring_schema_version": "securemail.scoring/v1",
+          "severity": "low",
+          "standards": [
+            "RFC 0"
+          ],
+          "title": "Mail Access Cleartext",
+          "unique_occurrences": 1
+        },
+        {
+          "affected_endpoint": "192.0.2.14:4433",
+          "asset_criticality": "unknown",
+          "basis_state": "indeterminate",
+          "blast_radius": "unknown",
+          "code": "TLS_FORWARD_SECRECY_INDETERMINATE",
+          "components": {
+            "asset_criticality": 2,
+            "blast_radius": 1,
+            "confidence": 2,
+            "exposure": 4,
+            "recurrence": 0,
+            "severity": 0
+          },
+          "contributing_finding_ids": [
+            "0000000000000000000000000000000000000000000000000000000000000005"
+          ],
+          "contributing_occurrences": [
+            {
+              "finding_id": "0000000000000000000000000000000000000000000000000000000000000005",
+              "record_key": "C5",
+              "record_type": "session",
+              "session_uid": "C5"
+            }
+          ],
+          "evaluation_state": "indeterminate",
+          "evidence_references": [
+            {
+              "evidence_state": "indeterminate",
+              "field_path": "session.protocol",
+              "frame_number": null,
+              "record_key": "C5",
+              "record_type": "session"
+            }
+          ],
+          "exposure": "unknown",
+          "finding_id": "c0ae9ab2ae9d96b65612cb883dd611f1ddc722b0a6e4082c6095cb7718a6d36f",
+          "outcome": "indeterminate",
+          "policy_evaluation_time": "2026-09-04T12:00:00Z",
+          "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "policy_profile": "ietf_current",
+          "rationale": "Synthetic Step 8 finding.",
+          "recurrence_count": 1,
+          "remediation_id": "rem.synthetic",
+          "rule_effective_from": "2018-01-01",
+          "rule_effective_until": null,
+          "score": 9,
+          "scoring_schema_version": "securemail.scoring/v1",
+          "severity": "informational",
+          "standards": [
+            "RFC 0"
+          ],
+          "title": "Tls Forward Secrecy Indeterminate",
+          "unique_occurrences": 1
+        }
+      ],
+      "risk_score": 90,
+      "schema_version": "securemail.posture/v1",
+      "scoring_schema_version": "securemail.scoring/v1"
+    },
+    "recurring_sessions": {
+      "assessment_state": "none",
+      "coverage": {
+        "by_category": {},
+        "by_protocol": {},
+        "by_protocol_and_category": {},
+        "overall": {
+          "applicable_count": 0,
+          "failed_count": 0,
+          "not_observable_count": 0,
+          "passed_count": 0,
+          "unknown_count": 0
+        }
+      },
+      "prioritized_findings": [
+        {
+          "affected_endpoint": "192.0.2.25:465",
+          "asset_criticality": "unknown",
+          "basis_state": "observed",
+          "blast_radius": "unknown",
+          "code": "TLS_CIPHER_CBC",
+          "components": {
+            "asset_criticality": 2,
+            "blast_radius": 1,
+            "confidence": 16,
+            "exposure": 10,
+            "recurrence": 4,
+            "severity": 30
+          },
+          "contributing_finding_ids": [
+            "0000000000000000000000000000000000000000000000000000000000000001",
+            "0000000000000000000000000000000000000000000000000000000000000002",
+            "0000000000000000000000000000000000000000000000000000000000000003"
+          ],
+          "contributing_occurrences": [
+            {
+              "finding_id": "0000000000000000000000000000000000000000000000000000000000000001",
+              "record_key": "C1",
+              "record_type": "session",
+              "session_uid": "C1"
+            },
+            {
+              "finding_id": "0000000000000000000000000000000000000000000000000000000000000002",
+              "record_key": "C2",
+              "record_type": "session",
+              "session_uid": "C2"
+            },
+            {
+              "finding_id": "0000000000000000000000000000000000000000000000000000000000000003",
+              "record_key": "C3",
+              "record_type": "session",
+              "session_uid": "C3"
+            }
+          ],
+          "evaluation_state": "verified",
+          "evidence_references": [
+            {
+              "evidence_state": "observed",
+              "field_path": "session.protocol",
+              "frame_number": null,
+              "record_key": "C1",
+              "record_type": "session"
+            },
+            {
+              "evidence_state": "observed",
+              "field_path": "session.protocol",
+              "frame_number": null,
+              "record_key": "C2",
+              "record_type": "session"
+            },
+            {
+              "evidence_state": "observed",
+              "field_path": "session.protocol",
+              "frame_number": null,
+              "record_key": "C3",
+              "record_type": "session"
+            }
+          ],
+          "exposure": "public",
+          "finding_id": "508f8a52dc359cbee90cf7e8be848c8fab8d7ff7d8e985857bbf866f9fc6e345",
+          "outcome": "negative",
+          "policy_evaluation_time": "2026-03-01T12:00:00Z",
+          "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "policy_profile": "ietf_current",
+          "rationale": "Synthetic Step 8 finding.",
+          "recurrence_count": 3,
+          "remediation_id": "rem.synthetic",
+          "rule_effective_from": "2018-01-01",
+          "rule_effective_until": null,
+          "score": 63,
+          "scoring_schema_version": "securemail.scoring/v1",
+          "severity": "medium",
+          "standards": [
+            "RFC 0"
+          ],
+          "title": "Tls Cipher Cbc",
+          "unique_occurrences": 3
+        }
+      ],
+      "risk_score": 63,
+      "schema_version": "securemail.posture/v1",
+      "scoring_schema_version": "securemail.scoring/v1"
+    }
+  }
+}

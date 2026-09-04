@@ -6,6 +6,7 @@ import hashlib
 import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -17,16 +18,36 @@ from securemail.application.normalize_sessions import (
     normalize_sessions,
 )
 from securemail.domain.evidence.run import (
+    EVIDENCE_DOCUMENT_SCHEMA_VERSION,
     NORMALIZATION_SCHEMA_VERSION,
     AnalysisRun,
     EvidenceDocument,
     PolicyProfile,
 )
+from securemail.domain.findings.dedup import dedup_findings
+from securemail.domain.findings.finding import Finding
+from securemail.domain.findings.posture import (
+    POSTURE_SCHEMA_VERSION,
+    PolicyCheck,
+    PostureAssessment,
+    ScoredEndpointFinding,
+    build_posture,
+    scored_from_cluster,
+)
+from securemail.domain.findings.scoring import (
+    SCORING_SCHEMA_VERSION,
+    AssetContext,
+    AssetCriticality,
+    BlastRadius,
+    ExposureClass,
+    ScoreInput,
+    compute_score,
+)
 from securemail.domain.policies.pki.chain_validation import TrustStoreSnapshot
 from securemail.domain.policies.rule_engine import (
     PolicyEngineError,
     PolicyPack,
-    evaluate_policy,
+    evaluate_policy_batch,
     resolve_evaluation_clock,
 )
 from securemail.domain.policies.tls.key_exchange import (
@@ -64,6 +85,9 @@ _CONFIGURATION = {
     "expiry_warning_seconds": DEFAULT_EXPIRY_WARNING_SECONDS,
     "tshark_corroboration": "smtp_imap_pop_tls_handshake",
     "starttls_evaluation": "v1",
+    "scoring_schema_version": SCORING_SCHEMA_VERSION,
+    "posture_schema_version": POSTURE_SCHEMA_VERSION,
+    "evidence_document_schema_version": EVIDENCE_DOCUMENT_SCHEMA_VERSION,
 }
 
 
@@ -91,6 +115,48 @@ class AnalyzeRequest(BaseModel):
             return None
         text = value.strip()
         return text or None
+
+
+class ScoreRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    schema_version: Literal["securemail.score_request/v1"] = "securemail.score_request/v1"
+    findings: list[Finding] = Field(default_factory=list, max_length=4096)
+    policy_checks: list[PolicyCheck] = Field(default_factory=list, max_length=16384)
+    asset_context: list[AssetContext] = Field(default_factory=list, max_length=1024)
+
+
+def score_findings(request: ScoreRequest) -> PostureAssessment:
+    """Dedup, score, and publish coverage. Pure orchestration over domain functions."""
+
+    context_by_endpoint = {item.endpoint: item for item in request.asset_context}
+    scored: list[ScoredEndpointFinding] = []
+    for cluster in dedup_findings(request.findings):
+        context = context_by_endpoint.get(cluster.affected_endpoint)
+        exposure = ExposureClass.UNKNOWN if context is None else context.exposure
+        criticality = AssetCriticality.UNKNOWN if context is None else context.asset_criticality
+        blast_radius = BlastRadius.UNKNOWN if context is None else context.blast_radius
+        vector = compute_score(
+            ScoreInput(
+                severity=cluster.severity,
+                basis_state=cluster.basis_state,
+                exposure=exposure,
+                unique_occurrences=cluster.unique_occurrences,
+                asset_criticality=criticality,
+                blast_radius=blast_radius,
+            )
+        )
+        scored.append(
+            scored_from_cluster(
+                cluster,
+                score=vector.score,
+                components=vector.components,
+                exposure=exposure,
+                asset_criticality=criticality,
+                blast_radius=blast_radius,
+            )
+        )
+    return build_posture(scored, request.policy_checks)
 
 
 class _MemoryArtifactStore:
@@ -208,7 +274,7 @@ def run_analysis(
         )
     except PolicyEngineError as exc:
         raise AnalysisError(str(exc)) from exc
-    findings = evaluate_policy(
+    evaluation = evaluate_policy_batch(
         pack=policy_pack,
         pack_digest=policy_pack_digest,
         capture_sha256=capture_digest,
@@ -218,8 +284,14 @@ def run_analysis(
         handshakes=handshakes,
         certificates=certificates,
     )
+    posture = score_findings(
+        ScoreRequest(
+            findings=evaluation.findings,
+            policy_checks=evaluation.checks,
+        )
+    )
     return EvidenceDocument(
-        schema_version=NORMALIZATION_SCHEMA_VERSION,
+        schema_version=EVIDENCE_DOCUMENT_SCHEMA_VERSION,
         run_identity=AnalysisRun(
             capture_sha256=capture_digest,
             analyzer_bundle_digest=zeek_result.analyzer_bundle_digest,
@@ -239,5 +311,7 @@ def run_analysis(
         sessions=sessions,
         handshakes=handshakes,
         certificates=certificates,
-        findings=findings,
+        findings=evaluation.findings,
+        policy_checks=evaluation.checks,
+        posture=posture,
     )
