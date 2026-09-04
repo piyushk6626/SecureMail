@@ -27,7 +27,8 @@ Every analyzer container gets the flags in
 
 Also `--rm`, capture bind-mounted **readonly** at `/data/capture.pcapng`,
 output directory bind-mounted at `/data/out`. Timeout 120s. Combined stdout
-(or Zeek log bytes) capped at 50 MiB.
+(or Zeek log bytes plus extracted certificate DER) capped at 50 MiB.
+Extracted certificates are additionally bounded to 64 KiB each and 256 files.
 
 `assert_fixed_argv` rejects empty parts and the substrings ` && `, ` | `, `;`,
 `$(`, backtick.
@@ -83,6 +84,7 @@ reassemble.
 - DPD signatures [`zeek/signatures/email-dpd.sig`](../zeek/signatures/email-dpd.sig)
 - [`zeek/scripts/tcp-reconstruction.zeek`](../zeek/scripts/tcp-reconstruction.zeek)
 - [`zeek/scripts/securemail-email.zeek`](../zeek/scripts/securemail-email.zeek)
+- [`zeek/scripts/securemail-certs.zeek`](../zeek/scripts/securemail-certs.zeek)
 
 ### `sm_tcp_recon.log`
 
@@ -116,8 +118,21 @@ DPD signatures enable analyzers from payload (HELO/EHLO+220, `* OK`+IMAP verbs,
 Standard Zeek logs used by Python: `conn.log`, `weird.log`, `capture_loss.log`,
 `ssl.log` plus `ssl-log-ext` fields (`server_supported_version`,
 `server_key_share_group`, `psk_key_exchange_modes`, `ssl_history`, `cipher`,
-`curve`, `uid`, …). Python does not treat Zeek `x509.log` as TLS 1.3 certificate
-evidence.
+`curve`, `uid`, `cert_chain_fps`, …), plus `sm_cert.log` / `files.log` for
+extracted certificate linkage. `x509.log` is enabled as a cross-check; Python
+does not treat it as TLS 1.3 certificate evidence and does not parse it as the
+source of truth.
+
+### Certificate extraction
+
+[`zeek/scripts/securemail-certs.zeek`](../zeek/scripts/securemail-certs.zeek)
+enables file extraction only for SSL certificate MIME types (and opaque SSL
+files, so malformed Certificate messages still fail closed). DER is written
+under `/data/out/certs/<fuid>.der` with a 64 KiB per-file extract limit. The
+Zeek runner copies those bytes into `ZeekRunResult.extracted_certificates`
+before the output directory is deleted. Python stores them by SHA-256 via
+[`certificate_store.py`](../src/securemail/adapters/artifacts/certificate_store.py)
+and parses them with `cryptography`.
 
 ## TShark
 
@@ -177,8 +192,11 @@ lock before the container starts.
 
 Treat every capture as hostile. Bounds in the session normalizer include 10 000
 Zeek rows, 10 000 TShark frames, 256 events per session, 64-char UIDs, 253-char
-hosts, 32-char commands/tags, 128-char text. No packet payloads, credentials,
-or message bodies are written to logs or JSON.
+hosts, 32-char commands/tags, 128-char text. Certificate parsing rejects DER
+above 64 KiB and ASN.1 constructed depth above 16 before large allocation. No
+packet payloads, credentials, or message bodies are written to logs or JSON.
+Certificate DER sidecars are content-addressed by SHA-256 next to `--out`
+(`<out-dir>/certificates/<sha256>.der`).
 
 ## Not in this build
 

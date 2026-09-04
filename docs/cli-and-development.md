@@ -11,9 +11,12 @@ uv run securemail analyze <capture.pcap|capture.pcapng> --out <path.json>
 ```
 
 - `--out` is required.
+- Optional `--analysis-time` (RFC 3339 UTC) freezes `valid_at_analysis_time`.
+- Optional `--expiry-warning-days` (default 30) sets the expiry warning window.
 - Capture must exist, be a file, and be readable (Typer checks).
 - Parent directories of `--out` are created.
 - JSON: `indent=2`, `sort_keys=True`, `ensure_ascii=False`, trailing newline.
+- Extracted certificate DER is written under `<out-parent>/certificates/<sha256>.der`.
 - Success: exit 0. `AnalysisError`, `InvalidCaptureError`, `FileNotFoundError`,
   `OSError`: message on stderr, exit 1.
 

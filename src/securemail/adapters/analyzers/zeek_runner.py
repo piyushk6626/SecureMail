@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import subprocess
@@ -25,7 +26,11 @@ from securemail.adapters.analyzers.sandbox import (
     assert_fixed_argv,
     sandbox_docker_flags,
 )
-from securemail.ports.analyzers import ZeekRunResult
+from securemail.domain.evidence.certificate import (
+    MAX_CERTIFICATE_DER_BYTES,
+    MAX_CERTIFICATES_PER_RUN,
+)
+from securemail.ports.analyzers import ExtractedCertificate, ZeekRunResult
 
 _DOCKER = "docker"
 
@@ -104,11 +109,13 @@ class DockerZeekRunner:
                 raise AnalyzerExecutionError(
                     f"Zeek exited {completed.returncode}: {stderr[-2000:]}"
                 )
-            logs = _read_zeek_json_logs(output_dir)
+            logs, consumed = _read_zeek_json_logs(output_dir)
+            extracted = _read_extracted_certificates(output_dir, consumed_bytes=consumed)
         return ZeekRunResult(
             image_digest=ZEEK_IMAGE_DIGEST,
             analyzer_bundle_digest=bundle_digest,
             logs=logs,
+            extracted_certificates=extracted,
         )
 
     def _assert_image_labels(self, expected_bundle_sha: str) -> None:
@@ -149,7 +156,7 @@ class DockerZeekRunner:
             )
 
 
-def _read_zeek_json_logs(output_dir: Path) -> dict[str, list[dict[str, object]]]:
+def _read_zeek_json_logs(output_dir: Path) -> tuple[dict[str, list[dict[str, object]]], int]:
     total = 0
     logs: dict[str, list[dict[str, object]]] = {}
     for path in sorted(output_dir.glob("*.log")):
@@ -165,4 +172,43 @@ def _read_zeek_json_logs(output_dir: Path) -> dict[str, list[dict[str, object]]]
             if isinstance(parsed, dict):
                 records.append(parsed)
         logs[path.name] = records
-    return logs
+    return logs, total
+
+
+def _read_extracted_certificates(
+    output_dir: Path,
+    *,
+    consumed_bytes: int,
+) -> tuple[ExtractedCertificate, ...]:
+    cert_root = (output_dir / "certs").resolve()
+    if not cert_root.is_dir():
+        return ()
+    paths = sorted(path for path in cert_root.iterdir() if path.is_file())
+    if len(paths) > MAX_CERTIFICATES_PER_RUN:
+        raise AnalyzerExecutionError("Zeek extracted too many certificate files")
+    total = consumed_bytes
+    found: list[ExtractedCertificate] = []
+    for path in paths:
+        resolved = path.resolve()
+        if not resolved.is_relative_to(cert_root):
+            raise AnalyzerExecutionError(
+                "Zeek extracted a certificate outside the output directory"
+            )
+        size = resolved.stat().st_size
+        if size > MAX_CERTIFICATE_DER_BYTES:
+            raise AnalyzerExecutionError(
+                "Zeek extracted a certificate that exceeded the size bound"
+            )
+        payload = resolved.read_bytes()
+        total += len(payload)
+        if total > MAX_OUTPUT_BYTES:
+            raise AnalyzerExecutionError("Zeek output exceeded the configured size bound")
+        digest = hashlib.sha256(payload).hexdigest()
+        found.append(
+            ExtractedCertificate(
+                sha256=digest,
+                fuid=resolved.stem if resolved.stem else None,
+                payload=payload,
+            )
+        )
+    return tuple(found)

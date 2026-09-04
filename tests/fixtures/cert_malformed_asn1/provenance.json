@@ -1,0 +1,10 @@
+{
+  "created_at": "2026-09-03T00:00:00Z",
+  "generator": "tests/fixtures/generators/scapy_cert_malformed_captures.py --case cert_malformed_asn1",
+  "notes": "Scapy TLS 1.2 Certificate message with truncated/over-nested ASN.1. The parser must fail safely rather than crash or hang.",
+  "sha256": "95178dd3293adea8ceed1358d7ca004c7ab1d06b39b32812d341db81252415fc",
+  "source": "scapy",
+  "tool_versions": {
+    "scapy": "2.7.0"
+  }
+}

@@ -3,13 +3,23 @@
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from securemail.domain.evidence.run import CapturePreflight
 
 
 class AnalyzerError(Exception):
     """Raised by analyzer adapters when a sandboxed run cannot complete."""
+
+
+class ExtractedCertificate(BaseModel):
+    """TLS certificate DER copied out of the Zeek output mount before it is deleted."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    fuid: str | None = None
+    payload: bytes
 
 
 class ZeekRunResult(BaseModel):
@@ -20,6 +30,7 @@ class ZeekRunResult(BaseModel):
     image_digest: str
     analyzer_bundle_digest: str
     logs: dict[str, list[dict[str, object]]]
+    extracted_certificates: tuple[ExtractedCertificate, ...] = ()
 
 
 class TSharkRunResult(BaseModel):

@@ -56,3 +56,4 @@ def test_v0_document_requires_run_identity_fields() -> None:
     assert identity["trust_store_digest"] is None
     assert payload["sessions"] == []
     assert payload["handshakes"] == []
+    assert payload["certificates"] == []

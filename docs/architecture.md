@@ -41,8 +41,8 @@ Three import-linter contracts:
 3. Domain, application, adapters, and ports are independent of `api`.
 
 Canonical records that exist today: `AnalysisRun` (inside `EvidenceDocument`),
-`CapturePreflight`, `Flow`, `EmailSession`, `TlsHandshake`. The names `Case`,
-`Capture`, `CertificateEvidence`, `Finding`, `AnomalyResult`,
+`CapturePreflight`, `Flow`, `EmailSession`, `TlsHandshake`,
+`CertificateEvidence`. The names `Case`, `Capture`, `Finding`, `AnomalyResult`,
 `ReportManifest`, and `AuditEvent` are design vocabulary from
 [`plans/TECHNICAL_DESIGN.md`](../plans/TECHNICAL_DESIGN.md); they are not live
 models except where a placeholder file already occupies the scaffold path.
@@ -54,6 +54,7 @@ models except where a placeholder file already occupies the scaffold path.
 - `DockerZeekRunner`
 - `DockerCapinfosRunner`
 - `DockerTSharkRunner`
+- `CertificateStore`
 - `load_iana_tls_parameters()`
 
 and closes them over `_analyze`, which calls `run_analysis`. `create_cli()`
@@ -77,10 +78,11 @@ Console script: `securemail = "securemail.api.cli.main:main"` in
 
 | Path | Role |
 |---|---|
-| `run_analysis.py` | Intake hash, PCAP magic check, capinfos, Zeek, optional TShark, handshake normalize, assemble `EvidenceDocument` |
+| `run_analysis.py` | Intake hash, PCAP magic check, capinfos, Zeek, optional TShark, handshake/certificate normalize, assemble `EvidenceDocument` |
 | `normalize_flows.py` | Zeek `conn.log` / `weird.log` / `capture_loss.log` / `sm_tcp_recon.log` → `Flow` |
 | `normalize_sessions.py` | `sm_email.log` + optional TShark frames + `ssl.log` → `EmailSession` |
 | `normalize_handshakes.py` | `ssl.log` / ssl-log-ext + optional TShark frames → `TlsHandshake` |
+| `normalize_certificates.py` | Extracted DER + `ssl.log` chain fingerprints → `CertificateEvidence` |
 | `advisory_pipeline.py` | Step 10 placeholder |
 
 Domain models are constructed here. They do not parse raw Zeek/TShark output
@@ -97,16 +99,18 @@ themselves.
 | `policies/starttls/imap_upgrade.py` | IMAP STARTTLS machine |
 | `policies/starttls/pop3_upgrade.py` | POP3 STLS machine |
 | `policies/starttls/implicit_tls.py` | ALPN correlation; port is never proof |
-| `evidence/handshake.py` | `TlsHandshake`, version/cipher/key-exchange evidence, visibility |
+| `evidence/handshake.py` | `TlsHandshake`, version/cipher/key-exchange evidence, visibility, CertificateVerify signature slot |
 | `policies/tls/key_exchange.py` | Pure version-aware key-exchange classifier (no weakness/FS judgment) |
-| `evidence/certificate.py`, `findings/`, `reports/`, remaining TLS/PKI/rule packs | Placeholders for Steps 5–9 |
+| `evidence/certificate.py` | `CertificateEvidence` facts (syntax, validity instants, key strength, cert signature) |
+| `policies/pki/key_strength.py` | Data-driven effective-strength table |
+| `findings/`, `reports/`, remaining TLS/PKI/rule packs | Placeholders for Steps 6–9 |
 
 ### `ports/`
 
 | Path | Role |
 |---|---|
 | `analyzers.py` | `ZeekRunner`, `TSharkRunner`, `CapturePreflightRunner` protocols and result models |
-| `artifacts.py` | `ArtifactStore` protocol (`put`/`get` by SHA-256) — no adapter yet |
+| `artifacts.py` | `ArtifactStore` protocol (`put`/`get` by SHA-256) |
 | `persistence.py`, `ml.py` | Step 11 / Step 10 placeholders |
 
 ### `adapters/`
@@ -115,10 +119,11 @@ themselves.
 |---|---|
 | `analyzers/sandbox.py` | Shared Docker flags, image refs, argv guard |
 | `analyzers/bundle_lock.py` | Load/verify `tools/analyzer-bundle.lock`; hash `zeek/` |
-| `analyzers/zeek_runner.py` | Pinned `docker run` of `securemail/zeek:step0` |
+| `analyzers/zeek_runner.py` | Pinned `docker run` of `securemail/zeek:step0`; copies extracted cert DER |
 | `analyzers/tshark_runner.py` | Pinned bounded TShark field dump |
 | `analyzers/capinfos_runner.py` | capinfos inside the TShark image (same sandbox) |
 | `reference_data/iana_tls_parameters.py` | Bounded load of the checked-in IANA TLS Parameters snapshot |
+| `artifacts/certificate_store.py` | Content-addressed DER store (SHA-256 filenames under a caller root) |
 | PKI, reports, ML | Placeholders |
 
 ## Toolchain (what the package actually pins)

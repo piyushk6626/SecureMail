@@ -84,6 +84,7 @@ def test_run_analysis_hashes_before_returning_document(tmp_path: Path) -> None:
     assert document.flows[0].uid == "Ctest"
     assert document.sessions == []
     assert document.handshakes == []
+    assert document.certificates == []
 
 
 def test_run_analysis_normalizes_email_sessions(tmp_path: Path) -> None:

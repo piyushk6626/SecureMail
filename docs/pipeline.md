@@ -16,6 +16,7 @@ flowchart TD
   tshark[Docker_TShark]
   sess2[normalize_sessions_with_frames]
   hs[normalize_handshakes]
+  certs[normalize_certificates]
   out[EvidenceDocument_v0]
   intake --> hash
   hash --> pre
@@ -33,7 +34,9 @@ flowchart TD
   sess2 --> hs
   zeek --> hs
   flows --> hs
-  hs --> out
+  hs --> certs
+  zeek --> certs
+  certs --> out
 ```
 
 Capinfos and Zeek both receive the original capture path. The capture is hashed
@@ -73,7 +76,10 @@ JSON ASCII logs (`LogAscii::use_json=T`), and
   `securemail.zeek_base_digest`
 
 Mismatch is fatal (`AnalyzerDigestMismatchError`). Logs are read as one JSON
-object per line from `*.log` in the output mount, bounded to 50 MiB total.
+object per line from `*.log` in the output mount. Certificate DER files under
+`certs/` are copied into memory before the temp directory is deleted. Combined
+log plus DER bytes are bounded to 50 MiB; each DER file is also capped at
+64 KiB.
 
 `analyzer_bundle_digest` on the run is the SHA-256 of the **lockfile bytes**,
 not of the image.
@@ -117,7 +123,16 @@ Zeek remains the parameter source. Cipher identifiers are resolved through the
 checked-in IANA snapshot loaded in `bootstrap.py`. See
 [evidence-model.md](evidence-model.md).
 
-## 8. Emit `EvidenceDocument`
+## 8. Normalize certificates
+
+`normalize_certificates` stores extracted DER by SHA-256, joins `ssl.log`
+`cert_chain_fps` (and `sm_cert.log` / `files.log` as fallback) to those bytes,
+and parses with `cryptography`. Capture-time validity uses the TLS observation
+timestamp. Analysis-time validity uses `--analysis-time` (default now). The
+expiry warning window defaults to 30 days. TLS 1.3 UIDs without history letter
+`x` emit no certificates.
+
+## 9. Emit `EvidenceDocument`
 
 ```text
 schema_version = "v0"
@@ -128,7 +143,7 @@ run_identity.configuration_digest      = SHA-256 of the frozen config dict
                                          plus iana_tls_parameters_sha256
 run_identity.policy_pack_version       = null
 run_identity.trust_store_digest        = null
-capture_preflight, flows, sessions, handshakes
+capture_preflight, flows, sessions, handshakes, certificates
 ```
 
 The CLI dumps `document.model_dump(mode="json")` with `json.dumps(..., indent=2,
@@ -147,6 +162,8 @@ sort_keys=True, ensure_ascii=False)` plus a trailing newline.
     "flow_normalization": "v1",
     "session_normalization": "v2",
     "handshake_normalization": "v1",
+    "certificate_normalization": "v1",
+    "expiry_warning_seconds": 2592000,
     "tshark_corroboration": "smtp_imap_pop_tls_handshake",
     "starttls_evaluation": "v1",
     "iana_tls_parameters_sha256": "<SHA-256 of iana-tls-parameters.json>",
@@ -156,7 +173,7 @@ sort_keys=True, ensure_ascii=False)` plus a trailing newline.
 Changing any of those strings, or the checked-in IANA snapshot bytes, changes
 every fixture’s `expected.json` `run_identity.configuration_digest`. Current
 fixtures pin
-`4166b2016e562efcc26e4e70ab1c5015106691dd557ff1ade0f3bbe4dd3d9c73`.
+`cc097d0d9274c93df72590c9bbc9c1560e5019496b89f61f5ce38096a3052ca7`.
 
 ## Idempotency
 

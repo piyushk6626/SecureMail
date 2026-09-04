@@ -28,6 +28,23 @@ def fixture_dir(case_id: str, root: Path | None = None) -> Path:
     return path
 
 
+def _analyze_args(base: Path) -> list[str]:
+    config_path = base / "analyze.json"
+    if not config_path.is_file():
+        return []
+    payload = json.loads(config_path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise AssertionError(f"analyze.json must be an object: {config_path}")
+    args: list[str] = []
+    analysis_time = payload.get("analysis_time")
+    if analysis_time is not None:
+        args.extend(["--analysis-time", str(analysis_time)])
+    warning_days = payload.get("expiry_warning_days")
+    if warning_days is not None:
+        args.extend(["--expiry-warning-days", str(warning_days)])
+    return args
+
+
 def diff_json(expected: JSONValue, actual: JSONValue, prefix: str = "$") -> list[str]:
     """Return human-readable field-level diffs. Empty list means equality."""
 
@@ -71,13 +88,14 @@ def run_fixture(case_id: str, *, root: Path | None = None) -> Path:
     if not expected_path.is_file():
         raise FileNotFoundError(f"missing expected.json: {expected_path}")
     expected = json.loads(expected_path.read_text(encoding="utf-8"))
+    extra_args = _analyze_args(base)
 
     with tempfile.TemporaryDirectory(prefix=f"securemail-fixture-{case_id}-") as tmp:
         out = Path(tmp) / "actual.json"
         runner = CliRunner()
         result = runner.invoke(
             create_cli(),
-            ["analyze", str(capture), "--out", str(out)],
+            ["analyze", str(capture), "--out", str(out), *extra_args],
             catch_exceptions=False,
         )
         if result.exit_code != 0:

@@ -23,11 +23,14 @@ It produces a frozen v0 JSON document with:
 - per-session protocol identity and STARTTLS/STLS / implicit-TLS assessment
 - top-level TLS handshake evidence (version, IANA cipher, version-aware key
   exchange, `ssl_history`, frame-linked messages)
+- top-level certificate facts (DER SHA-256, subject/issuer, validity window,
+  public-key algorithm and effective strength, certificate signature algorithm)
 
-There are **51** committed fixtures under `tests/fixtures/<case_id>/`. The
+There are **59** committed fixtures under `tests/fixtures/<case_id>/`. The
 harness in [`tests/support/fixture_harness.py`](../tests/support/fixture_harness.py)
 runs the real CLI and diffs the entire output against `expected.json` (no
-ignored fields).
+ignored fields). Optional `analyze.json` supplies `--analysis-time` and
+`--expiry-warning-days` for time-dependent certificate goldens.
 
 ## Step map
 
@@ -38,7 +41,7 @@ ignored fields).
 | 2 | SMTP/IMAP/POP3 identification (`port_hint` ≠ `payload_evidence`) | **Done** |
 | 3 | STARTTLS/STLS state machines + implicit TLS | **Done** |
 | 4 | TLS version / cipher / key exchange | **Done** |
-| 5 | Certificate facts | Placeholder (`domain/evidence/certificate.py`, `pki/key_strength.py`, certificate store) |
+| 5 | Certificate facts | **Done** |
 | 6 | Chain + identity (offline trust store) | Placeholder (PKI adapters and `trust-store-snapshot.pem`) |
 | 7 | Versioned rule packs + forward secrecy | Placeholder (`rule_engine.py`, YAML packs, `forward_secrecy.py`) |
 | 8 | Scoring, dedup, coverage denominators | Placeholder (`domain/findings/*`, `api/cli/commands/score.py`) |
@@ -70,6 +73,9 @@ uv run securemail analyze tests/fixtures/imap_starttls_capability_stripped/captu
 
 # Step 4 — TLS 1.3 HelloRetryRequest; version/cipher/key-exchange evidence
 uv run securemail analyze tests/fixtures/tls13_hello_retry_request/capture.pcapng --out out/tls13-hrr.json
+
+# Step 5 — expired RSA-1024 certificate facts (not a finding)
+uv run securemail analyze tests/fixtures/cert_expired_rsa1024/capture.pcapng --out out/cert.json
 ```
 
 `--out` is required. Output is JSON with sorted keys, 2-space indent, a trailing
@@ -90,9 +96,10 @@ commands.
 
 ## Not in this build
 
-The JSON does **not** contain `CertificateEvidence`, `Finding`, posture scores,
-or a report manifest. Handshake records do not parse certificate bytes or
-judge forward secrecy / weak-suite policy (Steps 5 and 7).
+The JSON does **not** contain `Finding`, posture scores, or a report manifest.
+Handshake records do not judge forward secrecy or weak-suite policy (Step 7).
+Certificate records are **facts** only: RSA-1024 and SHA-1 signatures are stored
+without becoming findings. Path validation and identity matching are Step 6.
 `run_identity.policy_pack_version` and `run_identity.trust_store_digest` are
 always `null`. No network calls happen during analysis (analyzer containers use
 `--network=none`). No dashboard, no Postgres, no queue.

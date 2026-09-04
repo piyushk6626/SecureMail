@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from securemail.application.normalize_certificates import normalize_certificates
 from securemail.application.normalize_flows import normalize_flows
 from securemail.application.normalize_handshakes import normalize_handshakes
 from securemail.application.normalize_sessions import (
@@ -29,6 +31,7 @@ from securemail.ports.analyzers import (
     TSharkRunner,
     ZeekRunner,
 )
+from securemail.ports.artifacts import ArtifactStore
 
 PCAPNG_MAGIC = b"\x0a\x0d\x0d\x0a"
 PCAP_MAGICS = {
@@ -38,6 +41,8 @@ PCAP_MAGICS = {
     b"\xa1\xb2\x3c\x4d",
 }
 
+DEFAULT_EXPIRY_WARNING_SECONDS = 30 * 24 * 60 * 60
+
 _CONFIGURATION = {
     "normalization_schema_version": NORMALIZATION_SCHEMA_VERSION,
     "zeek_entry": "zeek/site/__load__.zeek",
@@ -46,6 +51,8 @@ _CONFIGURATION = {
     "flow_normalization": "v1",
     "session_normalization": "v2",
     "handshake_normalization": "v1",
+    "certificate_normalization": "v1",
+    "expiry_warning_seconds": DEFAULT_EXPIRY_WARNING_SECONDS,
     "tshark_corroboration": "smtp_imap_pop_tls_handshake",
     "starttls_evaluation": "v1",
 }
@@ -63,12 +70,35 @@ class AnalyzeRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, arbitrary_types_allowed=True)
 
     capture_path: Path = Field(...)
+    analysis_time: datetime | None = None
+    expiry_warning_seconds: int = Field(default=DEFAULT_EXPIRY_WARNING_SECONDS, ge=1)
 
 
-def configuration_digest(*, iana_tls_parameters_sha256: str | None = None) -> str:
+class _MemoryArtifactStore:
+    def __init__(self) -> None:
+        self._items: dict[str, bytes] = {}
+
+    def put(self, payload: bytes) -> str:
+        digest = hashlib.sha256(payload).hexdigest()
+        self._items[digest] = payload
+        return digest
+
+    def get(self, digest: str) -> bytes:
+        return self._items[digest]
+
+
+def configuration_digest(
+    *,
+    iana_tls_parameters_sha256: str | None = None,
+    expiry_warning_seconds: int = DEFAULT_EXPIRY_WARNING_SECONDS,
+) -> str:
     digest = iana_tls_parameters_sha256 or empty_tls_parameter_index().digest
     payload = json.dumps(
-        {**_CONFIGURATION, "iana_tls_parameters_sha256": digest},
+        {
+            **_CONFIGURATION,
+            "expiry_warning_seconds": expiry_warning_seconds,
+            "iana_tls_parameters_sha256": digest,
+        },
         sort_keys=True,
         separators=(",", ":"),
     ).encode("utf-8")
@@ -93,6 +123,7 @@ def run_analysis(
     preflight_runner: CapturePreflightRunner,
     tshark_runner: TSharkRunner | None = None,
     tls_parameters: TlsParameterIndex | None = None,
+    artifact_store: ArtifactStore | None = None,
 ) -> EvidenceDocument:
     capture_path = request.capture_path
     if not capture_path.is_file():
@@ -103,6 +134,16 @@ def run_analysis(
         raise InvalidCaptureError(f"not a PCAP/PCAPNG file: {capture_path}")
 
     identifiers = tls_parameters if tls_parameters is not None else empty_tls_parameter_index()
+    store = artifact_store if artifact_store is not None else _MemoryArtifactStore()
+    if request.analysis_time is None:
+        analysis_time = datetime.now(UTC)
+    else:
+        analysis_time = request.analysis_time
+    if analysis_time.tzinfo is None:
+        analysis_time = analysis_time.replace(tzinfo=UTC)
+    else:
+        analysis_time = analysis_time.astimezone(UTC)
+    warning_window = timedelta(seconds=request.expiry_warning_seconds)
     capture_digest = sha256_file(capture_path)
     try:
         preflight = preflight_runner.run(capture_path)
@@ -125,6 +166,14 @@ def run_analysis(
         identifiers,
         tshark_frames=tshark_frames,
     )
+    certificates = normalize_certificates(
+        zeek_result.logs,
+        zeek_result.extracted_certificates,
+        handshakes,
+        analysis_time=analysis_time,
+        expiry_warning=warning_window,
+        artifact_store=store,
+    )
     return EvidenceDocument(
         schema_version=NORMALIZATION_SCHEMA_VERSION,
         run_identity=AnalysisRun(
@@ -132,7 +181,8 @@ def run_analysis(
             analyzer_bundle_digest=zeek_result.analyzer_bundle_digest,
             normalization_schema_version=NORMALIZATION_SCHEMA_VERSION,
             configuration_digest=configuration_digest(
-                iana_tls_parameters_sha256=identifiers.digest
+                iana_tls_parameters_sha256=identifiers.digest,
+                expiry_warning_seconds=request.expiry_warning_seconds,
             ),
             policy_pack_version=None,
             trust_store_digest=None,
@@ -141,4 +191,5 @@ def run_analysis(
         flows=flows,
         sessions=sessions,
         handshakes=handshakes,
+        certificates=certificates,
     )

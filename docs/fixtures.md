@@ -10,7 +10,7 @@ tests/fixtures/<case_id>/
 ```
 
 `<case_id>` is `<protocol_or_area>_<condition>` as named in
-[`plans/build_plan.md`](../plans/build_plan.md). There are **51** committed
+[`plans/build_plan.md`](../plans/build_plan.md). There are **59** committed
 fixture directories. Some are reused as proof in more than one step
 (`tcp_smtp_clean_baseline` in Steps 1–2; `*_nonstandard_port` in Steps 2–3;
 `tls13_psk_only_resumption` is also named for Step 7 later).
@@ -21,6 +21,8 @@ fixture directories. Some are reused as proof in more than one step
 `run_fixture(case_id)`:
 
 1. Invokes `create_cli()` with `analyze <capture> --out <tmp>/actual.json`
+   plus optional `--analysis-time` / `--expiry-warning-days` from
+   `analyze.json`
 2. Parses both JSON documents
 3. Recursively diffs keys, types, list lengths, and values
 4. Fails with field paths like `$.sessions[0].explicit_upgrade.state`
@@ -145,28 +147,42 @@ Step 2 `*_nonstandard_port` Scapy fixtures.
 | `tls12_public_corpus` | public_corpus | TLS 1.2 regression |
 | `tls13_public_corpus` | public_corpus | TLS 1.3 regression |
 
+### Step 5 — Certificate facts
+
+| Case | Source | Asserts |
+|---|---|---|
+| `cert_valid_current` | lab | Currently valid RSA-2048 SHA-256; both validity booleans true; strength 112-bit |
+| `cert_expired_rsa1024` | lab | Expired RSA-1024 fact; both validity booleans false; strength 80-bit. CLI proof |
+| `cert_not_yet_valid` | lab | Not-yet-valid window; both validity booleans false |
+| `cert_ecdsa_p256` | lab | ECDSA P-256; effective strength 128-bit, not compared to RSA by raw bits |
+| `cert_sha1_signed` | lab | Certificate signature `sha1WithRSAEncryption`, kept separate from handshake CV |
+| `cert_expiry_warning` | lab | `analyze.json` freezes analysis time; `expires_within_warning_window=true` |
+| `cert_malformed_asn1` | scapy | `syntax_valid=false` with a reason; completes under analyzer resource limits |
+| `cert_chain_public_corpus` | public_corpus | Independent TLS 1.2 chain (≥2 certs), regression only |
+
 Pytest parametrizes the unique directories above; overlapping Step 2/3
 directories are listed in both `STEP2_CASES` / `ADVERTISED_NOT_REQUESTED` as
 applicable.
 
 ## Directory count
 
-Unique fixture directories: **51**.
+Unique fixture directories: **59**.
 
 `empty` (1) + TCP including baseline (8) + remaining Step 2 (`smtp_submission_port`,
 `imap_standard_port`, `pop3_standard_port`, three nonstandard, ambiguous, two
-public) (9) + remaining Step 3 (22) + Step 4 (11) = 51.
+public) (9) + remaining Step 3 (22) + Step 4 (11) + Step 5 (8) = 59.
 
 ## Regenerating
 
 After changing Zeek scripts, the lockfile, or `_CONFIGURATION` in
-`run_analysis.py`, golden `run_identity` values change. Re-run analyze into a
-temp file and update `expected.json` only for fields that are supposed to
-change; do not edit `capture.pcapng`. Prefer `uv run pytest` on the named
-`test_*_fixtures.py` file rather than hand-diffing.
+`run_analysis.py`, golden `run_identity` values change. Re-run
+`uv run python tools/refresh_fixture_expected.py` (or analyze into a temp file)
+and update `expected.json` only for fields that are supposed to change; do not
+edit `capture.pcapng`. Prefer `uv run pytest` on the named `test_*_fixtures.py`
+file rather than hand-diffing.
 
 ## Not in this build
 
-No Step 5+ cases (`cert_expired_rsa1024`, `cert_chain_san_mismatch`, …). No
-golden HTML/PDF under `tests/fixtures/reports/`. Step 4 records cipher and key
-exchange as facts; whether a weak suite is a *finding* is Step 7.
+No Step 6+ cases (`cert_chain_san_mismatch`, …). No golden HTML/PDF under
+`tests/fixtures/reports/`. Step 5 records certificate facts; whether RSA-1024
+or SHA-1 is a *finding* is Step 7.

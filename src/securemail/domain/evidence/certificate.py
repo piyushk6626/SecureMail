@@ -1,1 +1,77 @@
-"""Filled in at Step 5."""
+"""Canonical per-certificate facts (schema v0, Step 5). No path or policy judgment."""
+
+from __future__ import annotations
+
+from datetime import UTC, datetime
+from enum import StrEnum
+
+from pydantic import BaseModel, ConfigDict, Field, field_serializer
+
+from securemail.domain.evidence.run import EvidenceState
+
+MAX_CERTIFICATE_DER_BYTES = 65_536
+MAX_CERTIFICATES_PER_RUN = 256
+MAX_ASN1_DEPTH = 16
+
+
+class CertificateRole(StrEnum):
+    """Whether the certificate was offered by the TLS server or the client."""
+
+    SERVER = "server"
+    CLIENT = "client"
+
+
+class CertificateEvidence(BaseModel):
+    """One extracted X.509 certificate, parsed as facts only."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    der_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    uid: str
+    chain_index: int = Field(ge=0)
+    role: CertificateRole
+    source_frames: list[int] = Field(default_factory=list)
+    syntax_valid: bool
+    syntax_error: str | None = None
+    subject: str | None = None
+    issuer: str | None = None
+    serial_number: str | None = None
+    not_before: datetime | None = None
+    not_after: datetime | None = None
+    valid_at_capture_time: bool | None = None
+    valid_at_analysis_time: bool | None = None
+    expires_within_warning_window: bool | None = None
+    public_key_algorithm: str | None = None
+    public_key_size: int | None = None
+    public_key_curve: str | None = None
+    effective_strength_bits: int | None = None
+    signature_algorithm: str | None = None
+    evidence_state: EvidenceState
+
+    @field_serializer("not_before", "not_after")
+    def _serialize_datetime(self, value: datetime | None) -> str | None:
+        if value is None:
+            return None
+        aware = value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
+        return aware.replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _rebuild_evidence_document() -> None:
+    """Resolve `CertificateEvidence` on `EvidenceDocument` without an import cycle."""
+
+    from securemail.domain.evidence.flow import Flow
+    from securemail.domain.evidence.handshake import TlsHandshake
+    from securemail.domain.evidence.run import EvidenceDocument
+    from securemail.domain.evidence.session import EmailSession
+
+    EvidenceDocument.model_rebuild(
+        _types_namespace={
+            "Flow": Flow,
+            "EmailSession": EmailSession,
+            "TlsHandshake": TlsHandshake,
+            "CertificateEvidence": CertificateEvidence,
+        }
+    )
+
+
+_rebuild_evidence_document()

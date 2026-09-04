@@ -9,6 +9,7 @@
     "packet_size_limit_min_inferred": null,
     "truncated_packets_present": false
   },
+  "certificates": [],
   "flows": [
     {
       "conflicting_byte_ranges": [],
@@ -37,6 +38,10 @@
   ],
   "handshakes": [
     {
+      "certificate_verify_signature": {
+        "algorithm": null,
+        "evidence_state": "not_observable"
+      },
       "certificate_verify_state": "not_observable",
       "cipher_suite": {
         "code": "0x1302",
@@ -110,9 +115,9 @@
     }
   ],
   "run_identity": {
-    "analyzer_bundle_digest": "73627a8875f130609b6513f715c6ae5b873c9484cb356bb14d0f9d9c38727594",
+    "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
     "capture_sha256": "bb59afad366152ea817b4472170ff680b935ee2a69793d2e2ec329a059942b89",
-    "configuration_digest": "4166b2016e562efcc26e4e70ab1c5015106691dd557ff1ade0f3bbe4dd3d9c73",
+    "configuration_digest": "cc097d0d9274c93df72590c9bbc9c1560e5019496b89f61f5ce38096a3052ca7",
     "normalization_schema_version": "v0",
     "policy_pack_version": null,
     "trust_store_digest": null

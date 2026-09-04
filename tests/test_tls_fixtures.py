@@ -150,6 +150,8 @@ def test_psk_only_resumption_does_not_use_cipher_name() -> None:
 
 @pytest.mark.parametrize("case_id", TLS13_CASES)
 def test_tls13_certificate_and_verify_are_not_fabricated(case_id: str) -> None:
+    document = _document(case_id)
+    assert document["certificates"] == []
     for handshake in _handshakes(case_id):
         version = handshake["version"]
         assert isinstance(version, dict)

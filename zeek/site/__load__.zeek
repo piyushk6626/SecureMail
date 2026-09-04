@@ -9,3 +9,4 @@ redef global_hash_seed = "securemail-v0";
 @load-sigs ../signatures/email-dpd.sig
 @load ../scripts/tcp-reconstruction
 @load ../scripts/securemail-email
+@load ../scripts/securemail-certs

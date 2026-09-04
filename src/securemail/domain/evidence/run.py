@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 if TYPE_CHECKING:
+    from securemail.domain.evidence.certificate import CertificateEvidence
     from securemail.domain.evidence.flow import Flow
     from securemail.domain.evidence.handshake import TlsHandshake
     from securemail.domain.evidence.session import EmailSession
@@ -66,3 +67,4 @@ class EvidenceDocument(BaseModel):
     flows: list[Flow] = Field(default_factory=list)
     sessions: list[EmailSession] = Field(default_factory=list)
     handshakes: list[TlsHandshake] = Field(default_factory=list)
+    certificates: list[CertificateEvidence] = Field(default_factory=list)

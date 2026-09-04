@@ -1,0 +1,145 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.05,
+    "file_time_precision": "microsecond",
+    "original_packet_bytes": 503,
+    "packet_count": 6,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "certificates": [
+    {
+      "chain_index": 0,
+      "der_sha256": "04034e2560c35cf116595c992f7f69457014a40824ea5a0313f7ae7db7b9c1a5",
+      "effective_strength_bits": null,
+      "evidence_state": "observed",
+      "expires_within_warning_window": null,
+      "issuer": null,
+      "not_after": null,
+      "not_before": null,
+      "public_key_algorithm": null,
+      "public_key_curve": null,
+      "public_key_size": null,
+      "role": "server",
+      "serial_number": null,
+      "signature_algorithm": null,
+      "source_frames": [],
+      "subject": null,
+      "syntax_error": "certificate_asn1_nesting_exceeds_limit",
+      "syntax_valid": false,
+      "uid": "CJKFoj4bpHEhTeaRoj",
+      "valid_at_analysis_time": null,
+      "valid_at_capture_time": null
+    }
+  ],
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "S2",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShADdF",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "192.0.2.10",
+        "port": 49152
+      },
+      "orig_bytes": 52,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "192.0.2.25",
+        "port": 4433
+      },
+      "resp_bytes": 127,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "handshakes": [
+    {
+      "certificate_verify_signature": {
+        "algorithm": null,
+        "evidence_state": "not_observable"
+      },
+      "certificate_verify_state": "not_observable",
+      "cipher_suite": {
+        "code": "0x002F",
+        "evidence_state": "observed",
+        "name": "TLS_RSA_WITH_AES_128_CBC_SHA"
+      },
+      "established": false,
+      "evidence_state": "observed",
+      "hello_retry_request": false,
+      "key_exchange": {
+        "dh_param_size": null,
+        "evidence_state": "inferred",
+        "mechanism": "RSA",
+        "psk_key_exchange_modes": [],
+        "selected_group": null,
+        "selected_group_code": null,
+        "source_fields": [
+          "cipher"
+        ]
+      },
+      "last_alert": null,
+      "messages": [
+        {
+          "direction": "orig",
+          "evidence_state": "observed",
+          "frame_number": 4,
+          "history_letter": "C",
+          "kind": "client_hello"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 5,
+          "history_letter": "s",
+          "kind": "server_hello"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "x",
+          "kind": "certificate"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "n",
+          "kind": "server_hello_done"
+        }
+      ],
+      "resumed": false,
+      "server_certificate_state": "observed",
+      "ssl_history": "Csxn",
+      "uid": "CJKFoj4bpHEhTeaRoj",
+      "version": {
+        "client_supported_versions": [],
+        "evidence_state": "observed",
+        "legacy_record_version": "TLSv12",
+        "selected": "TLSv12",
+        "server_supported_version": null,
+        "source": "legacy_record"
+      },
+      "visibility": "partial"
+    }
+  ],
+  "run_identity": {
+    "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
+    "capture_sha256": "95178dd3293adea8ceed1358d7ca004c7ab1d06b39b32812d341db81252415fc",
+    "configuration_digest": "cc097d0d9274c93df72590c9bbc9c1560e5019496b89f61f5ce38096a3052ca7",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0",
+  "sessions": []
+}

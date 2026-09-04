@@ -11,6 +11,7 @@ from securemail.domain.evidence.handshake import (
     CipherSuiteEvidence,
     HandshakeMessage,
     HandshakeMessageKind,
+    HandshakeSignatureEvidence,
     HandshakeVisibility,
     KeyExchangeEvidence,
     TlsHandshake,
@@ -444,6 +445,18 @@ def _certificate_states(
     return cert_state, verify_state
 
 
+def _certificate_verify_signature(ssl_history: str) -> HandshakeSignatureEvidence:
+    if "y" not in ssl_history and "Y" not in ssl_history:
+        return HandshakeSignatureEvidence(
+            algorithm=None,
+            evidence_state=EvidenceState.NOT_OBSERVABLE,
+        )
+    return HandshakeSignatureEvidence(
+        algorithm=None,
+        evidence_state=EvidenceState.INCOMPLETE,
+    )
+
+
 def _cipher_evidence(
     row: Mapping[str, object],
     index: TlsParameterIndex,
@@ -549,6 +562,7 @@ def _handshake_from_row(
         messages=messages,
         server_certificate_state=cert_state,
         certificate_verify_state=verify_state,
+        certificate_verify_signature=_certificate_verify_signature(history),
         evidence_state=_handshake_evidence_state(
             flow=flow,
             version=version,

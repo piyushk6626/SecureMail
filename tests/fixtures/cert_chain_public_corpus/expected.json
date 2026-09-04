@@ -1,0 +1,204 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.047878,
+    "file_time_precision": "microsecond",
+    "original_packet_bytes": 5343,
+    "packet_count": 14,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "certificates": [
+    {
+      "chain_index": 0,
+      "der_sha256": "a1a0ce42b5da24e6210fb4b27614bcfda36e4756296c6a9cd93105f1c76ed360",
+      "effective_strength_bits": 112,
+      "evidence_state": "observed",
+      "expires_within_warning_window": false,
+      "issuer": "CN=Sectigo RSA Domain Validation Secure Server CA,O=Sectigo Limited,L=Salford,ST=Greater Manchester,C=GB",
+      "not_after": "2022-06-10T23:59:59Z",
+      "not_before": "2020-03-12T00:00:00Z",
+      "public_key_algorithm": "RSA",
+      "public_key_curve": null,
+      "public_key_size": 2048,
+      "role": "server",
+      "serial_number": "a019448608546ff902711845dbad8abc",
+      "signature_algorithm": "sha256WithRSAEncryption",
+      "source_frames": [],
+      "subject": "CN=www.heise.de",
+      "syntax_error": null,
+      "syntax_valid": true,
+      "uid": "CJKFoj4bpHEhTeaRoj",
+      "valid_at_analysis_time": false,
+      "valid_at_capture_time": true
+    },
+    {
+      "chain_index": 1,
+      "der_sha256": "7fa4ff68ec04a99d7528d5085f94907f4d1dd1c5381bacdc832ed5c960214676",
+      "effective_strength_bits": 112,
+      "evidence_state": "observed",
+      "expires_within_warning_window": false,
+      "issuer": "CN=USERTrust RSA Certification Authority,O=The USERTRUST Network,L=Jersey City,ST=New Jersey,C=US",
+      "not_after": "2030-12-31T23:59:59Z",
+      "not_before": "2018-11-02T00:00:00Z",
+      "public_key_algorithm": "RSA",
+      "public_key_curve": null,
+      "public_key_size": 2048,
+      "role": "server",
+      "serial_number": "7d5b5126b476ba11db74160bbc530da7",
+      "signature_algorithm": "sha384WithRSAEncryption",
+      "source_frames": [],
+      "subject": "CN=Sectigo RSA Domain Validation Secure Server CA,O=Sectigo Limited,L=Salford,ST=Greater Manchester,C=GB",
+      "syntax_error": null,
+      "syntax_valid": true,
+      "uid": "CJKFoj4bpHEhTeaRoj",
+      "valid_at_analysis_time": true,
+      "valid_at_capture_time": true
+    }
+  ],
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "SF",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShADadFf",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "2001:470:1f0b:16b0:221:70ff:feb2:e6c",
+        "port": 33712
+      },
+      "orig_bytes": 471,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "2a02:2e0:3fe:1001:7777:772e:2:85",
+        "port": 443
+      },
+      "resp_bytes": 3652,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "handshakes": [
+    {
+      "certificate_verify_signature": {
+        "algorithm": null,
+        "evidence_state": "not_observable"
+      },
+      "certificate_verify_state": "not_observable",
+      "cipher_suite": {
+        "code": "0xC030",
+        "evidence_state": "observed",
+        "name": "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+      },
+      "established": true,
+      "evidence_state": "observed",
+      "hello_retry_request": false,
+      "key_exchange": {
+        "dh_param_size": null,
+        "evidence_state": "inferred",
+        "mechanism": "ECDHE",
+        "psk_key_exchange_modes": [
+          "psk_dhe_ke"
+        ],
+        "selected_group": "secp256r1",
+        "selected_group_code": 23,
+        "source_fields": [
+          "cipher",
+          "curve"
+        ]
+      },
+      "last_alert": null,
+      "messages": [
+        {
+          "direction": "orig",
+          "evidence_state": "observed",
+          "frame_number": 4,
+          "history_letter": "C",
+          "kind": "client_hello"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 6,
+          "history_letter": "s",
+          "kind": "server_hello"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "x",
+          "kind": "certificate"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "k",
+          "kind": "server_key_exchange"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "n",
+          "kind": "server_hello_done"
+        },
+        {
+          "direction": "orig",
+          "evidence_state": "observed",
+          "frame_number": 8,
+          "history_letter": "G",
+          "kind": "client_key_exchange"
+        },
+        {
+          "direction": "orig",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "I",
+          "kind": "change_cipher_spec"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "i",
+          "kind": "change_cipher_spec"
+        }
+      ],
+      "resumed": false,
+      "server_certificate_state": "observed",
+      "ssl_history": "CsxknGIi",
+      "uid": "CJKFoj4bpHEhTeaRoj",
+      "version": {
+        "client_supported_versions": [
+          "TLSv13",
+          "TLSv12",
+          "TLSv11",
+          "TLSv10"
+        ],
+        "evidence_state": "observed",
+        "legacy_record_version": "TLSv12",
+        "selected": "TLSv12",
+        "server_supported_version": null,
+        "source": "legacy_record"
+      },
+      "visibility": "full"
+    }
+  ],
+  "run_identity": {
+    "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
+    "capture_sha256": "723a6be05da8ee9ded7dfecaad15158297d5f854c92738b91e78767d8764eee9",
+    "configuration_digest": "cc097d0d9274c93df72590c9bbc9c1560e5019496b89f61f5ce38096a3052ca7",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0",
+  "sessions": []
+}

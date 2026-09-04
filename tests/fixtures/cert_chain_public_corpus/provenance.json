@@ -1,0 +1,15 @@
+{
+  "conversion": "tshark stream extract of a TLS 1.2 certificate chain; editcap -T ether; editcap -F pcap; editcap -F pcapng -> tests/fixtures/cert_chain_public_corpus/capture.pcapng",
+  "created_at": "2026-09-04T08:22:31Z",
+  "generator": "tests/fixtures/generators/import_cert_public_corpus.py --case cert_chain_public_corpus",
+  "license": "The Ultimate PCAP by Johannes Weber (weberblog.net); used as an independent regression cross-check only, not as sole proof of a rule.",
+  "notes": "Public-corpus TLS 1.2 handshake with a multi-certificate chain from The Ultimate PCAP (weberblog.net). Regression only, not sole proof of a rule.",
+  "sha256": "723a6be05da8ee9ded7dfecaad15158297d5f854c92738b91e78767d8764eee9",
+  "source": "public_corpus",
+  "source_sha256": "96359b8119ec53f347af4b7e55727d020d2ff60f30b0906da350b8564f49f49c",
+  "source_url": "https://weberblog.net/wp-content/uploads/2020/02/The-Ultimate-PCAP.pcapng.gz",
+  "tool_versions": {
+    "tshark": "TShark (Wireshark) 4.4.18.",
+    "tshark_image": "securemail/tshark:step0"
+  }
+}

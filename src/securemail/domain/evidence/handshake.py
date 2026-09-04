@@ -104,6 +104,15 @@ class KeyExchangeEvidence(BaseModel):
     psk_key_exchange_modes: list[str] = Field(default_factory=list)
 
 
+class HandshakeSignatureEvidence(BaseModel):
+    """TLS handshake CertificateVerify signature algorithm, not the X.509 cert signature."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    algorithm: str | None = None
+    evidence_state: EvidenceState
+
+
 class TlsHandshake(BaseModel):
     """TLS handshake record linked to a `Flow` by Zeek `uid`."""
 
@@ -122,12 +131,14 @@ class TlsHandshake(BaseModel):
     messages: list[HandshakeMessage] = Field(default_factory=list)
     server_certificate_state: EvidenceState
     certificate_verify_state: EvidenceState
+    certificate_verify_signature: HandshakeSignatureEvidence
     evidence_state: EvidenceState
 
 
 def _rebuild_evidence_document() -> None:
     """Resolve `TlsHandshake` on `EvidenceDocument` without an import cycle."""
 
+    from securemail.domain.evidence.certificate import CertificateEvidence
     from securemail.domain.evidence.flow import Flow
     from securemail.domain.evidence.run import EvidenceDocument
     from securemail.domain.evidence.session import EmailSession
@@ -137,6 +148,7 @@ def _rebuild_evidence_document() -> None:
             "Flow": Flow,
             "EmailSession": EmailSession,
             "TlsHandshake": TlsHandshake,
+            "CertificateEvidence": CertificateEvidence,
         }
     )
 

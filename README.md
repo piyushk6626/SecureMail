@@ -3,11 +3,11 @@
 Offline, deterministic-first cryptographic posture analysis for SMTP, IMAP, and
 POP3 traffic captured in PCAP/PCAPNG files.
 
-This repository has completed **Steps 0–4** of `plans/build_plan.md`: package
+This repository has completed **Steps 0–5** of `plans/build_plan.md`: package
 layout, sandboxed Zeek/TShark runners, TCP reconstruction quality, payload-driven
-protocol identification, STARTTLS/STLS plus implicit-TLS assessment, and TLS
-version / cipher / key-exchange evidence. The live command is `securemail
-analyze`. Steps 5–11 remain named placeholders.
+protocol identification, STARTTLS/STLS plus implicit-TLS assessment, TLS
+version / cipher / key-exchange evidence, and per-certificate facts. The live
+command is `securemail analyze`. Steps 6–11 remain named placeholders.
 
 **As-built documentation** (what the code does today) lives in
 [`docs/README.md`](docs/README.md). Plan contracts (what to build next) remain in
@@ -53,10 +53,13 @@ uv run securemail analyze tests/fixtures/imap_starttls_capability_stripped/captu
 
 # Step 4 — TLS 1.3 HelloRetryRequest, version/cipher/key-exchange evidence
 uv run securemail analyze tests/fixtures/tls13_hello_retry_request/capture.pcapng --out out/tls13-hrr.json
+
+# Step 5 — expired RSA-1024 certificate facts (not a finding)
+uv run securemail analyze tests/fixtures/cert_expired_rsa1024/capture.pcapng --out out/cert.json
 ```
 
 `--out` is required. Output is a v0 `EvidenceDocument` JSON file (flows,
-sessions, and top-level `handshakes`). There is no `score`, `report`, or
+sessions, top-level `handshakes`, and `certificates`). There is no `score`, `report`, or
 `evaluate-ml` command yet.
 
 ## Layout

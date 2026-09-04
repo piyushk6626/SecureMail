@@ -3,15 +3,39 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Callable
+from datetime import UTC, datetime
 from pathlib import Path
+from typing import Protocol
 
 import typer
 
-from securemail.application.run_analysis import AnalysisError, InvalidCaptureError
+from securemail.application.run_analysis import (
+    DEFAULT_EXPIRY_WARNING_SECONDS,
+    AnalysisError,
+    InvalidCaptureError,
+)
 from securemail.domain.evidence.run import EvidenceDocument
 
-AnalyzeFn = Callable[[Path], EvidenceDocument]
+
+class AnalyzeFn(Protocol):
+    def __call__(
+        self,
+        capture: Path,
+        *,
+        artifact_root: Path | None = None,
+        analysis_time: datetime | None = None,
+        expiry_warning_seconds: int = DEFAULT_EXPIRY_WARNING_SECONDS,
+    ) -> EvidenceDocument: ...
+
+
+def parse_analysis_time(value: str) -> datetime:
+    text = value.strip()
+    if text.endswith("Z"):
+        text = f"{text[:-1]}+00:00"
+    parsed = datetime.fromisoformat(text)
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
 
 
 def build_app(analyze: AnalyzeFn) -> typer.Typer:
@@ -30,10 +54,27 @@ def register_analyze(app: typer.Typer, analyze: AnalyzeFn) -> None:
     def analyze_command(
         capture: Path = typer.Argument(..., exists=True, dir_okay=False, readable=True),
         out: Path = typer.Option(..., "--out", help="Canonical JSON output path"),
+        analysis_time: str | None = typer.Option(
+            None,
+            "--analysis-time",
+            help="UTC instant for valid_at_analysis_time (RFC 3339). Default: now.",
+        ),
+        expiry_warning_days: int = typer.Option(
+            30,
+            "--expiry-warning-days",
+            min=1,
+            help="Warning window in days for expires_within_warning_window.",
+        ),
     ) -> None:
         try:
-            document = analyze(capture)
-        except (AnalysisError, InvalidCaptureError, FileNotFoundError, OSError) as exc:
+            parsed_time = parse_analysis_time(analysis_time) if analysis_time else None
+            document = analyze(
+                capture,
+                artifact_root=out.parent / "certificates",
+                analysis_time=parsed_time,
+                expiry_warning_seconds=expiry_warning_days * 24 * 60 * 60,
+            )
+        except (AnalysisError, InvalidCaptureError, FileNotFoundError, OSError, ValueError) as exc:
             typer.secho(str(exc), err=True)
             raise typer.Exit(code=1) from exc
         out.parent.mkdir(parents=True, exist_ok=True)

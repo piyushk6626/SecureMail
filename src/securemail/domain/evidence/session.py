@@ -127,12 +127,18 @@ class EmailSession(BaseModel):
 def _rebuild_evidence_document() -> None:
     """Resolve `EmailSession` on `EvidenceDocument` without an import cycle."""
 
+    from securemail.domain.evidence.certificate import CertificateEvidence
     from securemail.domain.evidence.flow import Flow
     from securemail.domain.evidence.handshake import TlsHandshake
     from securemail.domain.evidence.run import EvidenceDocument
 
     EvidenceDocument.model_rebuild(
-        _types_namespace={"Flow": Flow, "EmailSession": EmailSession, "TlsHandshake": TlsHandshake}
+        _types_namespace={
+            "Flow": Flow,
+            "EmailSession": EmailSession,
+            "TlsHandshake": TlsHandshake,
+            "CertificateEvidence": CertificateEvidence,
+        }
     )
 
 

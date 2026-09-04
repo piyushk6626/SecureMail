@@ -1,5 +1,6 @@
 """Evidence models. `EvidenceState` is defined only in `run.py`."""
 
+from securemail.domain.evidence.certificate import CertificateEvidence, CertificateRole
 from securemail.domain.evidence.flow import (
     ByteRange,
     Flow,
@@ -16,6 +17,7 @@ from securemail.domain.evidence.handshake import (
     CipherSuiteEvidence,
     HandshakeMessage,
     HandshakeMessageKind,
+    HandshakeSignatureEvidence,
     HandshakeVisibility,
     KeyExchangeEvidence,
     TlsHandshake,
@@ -43,7 +45,12 @@ from securemail.domain.evidence.session import (
 )
 
 EvidenceDocument.model_rebuild(
-    _types_namespace={"Flow": Flow, "EmailSession": EmailSession, "TlsHandshake": TlsHandshake}
+    _types_namespace={
+        "Flow": Flow,
+        "EmailSession": EmailSession,
+        "TlsHandshake": TlsHandshake,
+        "CertificateEvidence": CertificateEvidence,
+    }
 )
 
 __all__ = [
@@ -51,6 +58,8 @@ __all__ = [
     "AnalysisRun",
     "ByteRange",
     "CapturePreflight",
+    "CertificateEvidence",
+    "CertificateRole",
     "CipherSuiteEvidence",
     "EmailSession",
     "EventSource",
@@ -62,6 +71,7 @@ __all__ = [
     "FlowEndpoint",
     "HandshakeMessage",
     "HandshakeMessageKind",
+    "HandshakeSignatureEvidence",
     "HandshakeVisibility",
     "KeyExchangeEvidence",
     "MailProtocol",

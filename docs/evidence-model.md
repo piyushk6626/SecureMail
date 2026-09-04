@@ -18,10 +18,12 @@ EvidenceDocument
   flows: Flow[]
   sessions: EmailSession[]
   handshakes: TlsHandshake[]
+  certificates: CertificateEvidence[]
 ```
 
-Standalone TLS (no mail session) is retained in `handshakes`. There is no
-`certificates` or `findings` array.
+Standalone TLS (no mail session) is retained in `handshakes`. Certificates are
+a separate top-level array linked by Zeek `uid` and `chain_index`. There is no
+`findings` array.
 
 ### `AnalysisRun`
 
@@ -178,6 +180,7 @@ literals.
 | `key_exchange` | Version-aware classifier; see below |
 | `messages` | Ordered handshake/record kinds with optional `frame_number` |
 | `server_certificate_state` / `certificate_verify_state` | From history letters `x` / `y` only. TLS 1.3 post-ServerHello is `not_observable` unless those letters are present — never fabricated from `x509.log` |
+| `certificate_verify_signature` | Handshake `CertificateVerify` algorithm, **not** the X.509 certificate signature. `not_observable` when history lacks `y`; `incomplete` when `y` is present but the selected algorithm is not decoded |
 | `evidence_state` | Handshake-level visibility (`observed` / `incomplete` / `conflicting`) |
 
 TLS 1.2 key exchange is **inferred** from the IANA suite-name grammar (`ECDHE`,
@@ -189,6 +192,36 @@ key_share is `PSK-(EC)DHE`.
 TLS 1.3 visibility is `partial` unless both certificate and `CertificateVerify`
 are actually observed. A truncated handshake that stops after ClientHello has
 `version.selected=null` and `evidence_state=incomplete`.
+
+## `CertificateEvidence`
+
+Top-level certificate facts, linked to a handshake/flow by Zeek `uid`. Built by
+[`normalize_certificates`](../src/securemail/application/normalize_certificates.py)
+from Zeek-extracted DER bytes. `x509.log` is a cross-check only. TShark is never
+the source of certificate bytes.
+
+| Field | Notes |
+|---|---|
+| `der_sha256` | SHA-256 of the extracted DER; also the content-addressed store key |
+| `uid` | Same Zeek UID as the `Flow` / `TlsHandshake` |
+| `chain_index` | 0 = leaf, then intermediates in `ssl.log` `cert_chain_fps` order |
+| `role` | `server` or `client` |
+| `source_frames` | Certificate handshake frames when TShark attached them |
+| `syntax_valid` | `false` with `syntax_error` on malformed/truncated/hostile ASN.1 |
+| `subject` / `issuer` | RFC 4514 strings, bounded |
+| `not_before` / `not_after` | UTC instants from the certificate |
+| `valid_at_capture_time` | Inclusive RFC 5280 window vs the TLS observation timestamp |
+| `valid_at_analysis_time` | Inclusive window vs `--analysis-time` (default: now, UTC) |
+| `expires_within_warning_window` | Remaining lifetime ≤ `--expiry-warning-days` (default 30) and not already expired |
+| `public_key_algorithm` / `public_key_size` / `public_key_curve` | Parsed key facts |
+| `effective_strength_bits` | From [`key_strength.py`](../src/securemail/domain/policies/pki/key_strength.py); RSA-2048 is 112-bit, P-256 is 128-bit |
+| `signature_algorithm` | The certificate's own signature (e.g. `sha256WithRSAEncryption`), never the handshake `CertificateVerify` algorithm |
+
+Parser bounds: 64 KiB DER, 16 constructed ASN.1 levels, 256 certificates per
+run. Oversized or over-nested input is `syntax_valid: false` without calling
+into a large `cryptography` allocation.
+
+TLS 1.3 handshakes without history letter `x` emit no certificate records.
 
 ## Example (shape, not a golden file)
 
@@ -205,6 +238,6 @@ requires byte-for-field equality with `expected.json`.
 
 ## Not in this build
 
-No `CertificateEvidence` (subject, expiry, key size). No `Finding`. `verified`
-is a legal enum member but unused by current classifiers. Handshake records do
-not judge weak suites or forward secrecy.
+No path validation, SAN identity matching, or revocation (Step 6). No `Finding`.
+`verified` is a legal enum member but unused by current classifiers. Handshake
+and certificate records do not judge weak suites or forward secrecy.
