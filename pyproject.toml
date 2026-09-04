@@ -33,6 +33,7 @@ dev = [
     "scapy",
     "jsonschema",
     "pypdf",
+    "httpx",
 ]
 
 [project.scripts]

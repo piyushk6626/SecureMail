@@ -1,0 +1,1414 @@
+{
+  "advisory": {
+    "items": [
+      {
+        "code": "ADVISORY_TLS_VERSION_SHIFT",
+        "reason": "TLS 1.0 appears in a cohort otherwise dominated by TLS 1.2 and TLS 1.3."
+      }
+    ],
+    "present": true
+  },
+  "analyst_conclusions": {
+    "notes": [],
+    "present": false
+  },
+  "evidence": {
+    "capture_preflight": {
+      "capture_duration_seconds": 1.25,
+      "capture_start_time": "2026-09-04T12:00:00Z",
+      "file_time_precision": "nanosecond",
+      "original_packet_bytes": 12000,
+      "packet_count": 48,
+      "packet_size_limit": 96,
+      "packet_size_limit_max_inferred": 96,
+      "packet_size_limit_min_inferred": 96,
+      "truncated_packets_present": true
+    },
+    "certificates": [
+      {
+        "chain_index": 0,
+        "der_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "effective_strength_bits": 112,
+        "evidence_state": "observed",
+        "expires_within_warning_window": false,
+        "issuer": "CN=SecureMail Lab Intermediate CA,O=SecureMail Lab",
+        "not_after": "2021-01-01T00:00:00Z",
+        "not_before": "2020-01-01T00:00:00Z",
+        "public_key_algorithm": "RSA",
+        "public_key_curve": null,
+        "public_key_size": 2048,
+        "role": "server",
+        "serial_number": "11",
+        "signature_algorithm": "sha256WithRSAEncryption",
+        "source_frames": [
+          8
+        ],
+        "subject": "CN=mail.example",
+        "syntax_error": null,
+        "syntax_valid": true,
+        "uid": "CSmtp",
+        "valid_at_analysis_time": false,
+        "valid_at_capture_time": false,
+        "validation": {
+          "certificate_observed": true,
+          "identity_match": true,
+          "identity_mismatch_reasons": [],
+          "indeterminate_reasons": [
+            "revocation_unknown"
+          ],
+          "path_invalid_reasons_at_analysis_time": [
+            "expired"
+          ],
+          "path_invalid_reasons_at_capture_time": [
+            "expired"
+          ],
+          "path_valid_at_analysis_time": false,
+          "path_valid_at_capture_time": false,
+          "reference_identity": "mail.example",
+          "reference_identity_source": "sni",
+          "revocation_status": "unknown",
+          "syntax_valid": true,
+          "trust_profile_id": "offline_v1",
+          "trust_store_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        }
+      },
+      {
+        "chain_index": 1,
+        "der_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+        "effective_strength_bits": 112,
+        "evidence_state": "inferred",
+        "expires_within_warning_window": null,
+        "issuer": "CN=SecureMail Lab Root CA,O=SecureMail Lab",
+        "not_after": "2099-01-01T00:00:00Z",
+        "not_before": "2020-01-01T00:00:00Z",
+        "public_key_algorithm": "RSA",
+        "public_key_curve": null,
+        "public_key_size": 2048,
+        "role": "server",
+        "serial_number": "22",
+        "signature_algorithm": "sha256WithRSAEncryption",
+        "source_frames": [
+          8
+        ],
+        "subject": "CN=SecureMail Lab Intermediate CA,O=SecureMail Lab",
+        "syntax_error": null,
+        "syntax_valid": true,
+        "uid": "CSmtp",
+        "valid_at_analysis_time": true,
+        "valid_at_capture_time": true,
+        "validation": null
+      }
+    ],
+    "findings": [
+      {
+        "affected_endpoint": "192.0.2.10:25",
+        "basis_state": "verified",
+        "code": "TLS_NEGOTIATED_TLS10",
+        "evaluation_state": "verified",
+        "evidence_references": [
+          {
+            "evidence_state": "verified",
+            "field_path": "version.selected",
+            "frame_number": 6,
+            "record_key": "CTrunc",
+            "record_type": "handshake"
+          }
+        ],
+        "finding_id": "ca3bee569ace1f6fbf19d7ea3acfe1c4f46f189398265e4ef6e11302737d4169",
+        "outcome": "negative",
+        "policy_evaluation_time": "2026-09-04T12:00:00Z",
+        "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "policy_profile": "ietf_current",
+        "rationale": "Golden-report TLS_NEGOTIATED_TLS10 with basis_state=verified.",
+        "remediation_id": "rem.golden",
+        "rule_effective_from": "2018-01-01",
+        "rule_effective_until": null,
+        "severity": "high",
+        "standards": [
+          "RFC 0"
+        ],
+        "title": "TLS 1.0 negotiated"
+      },
+      {
+        "affected_endpoint": "192.0.2.11:587",
+        "basis_state": "observed",
+        "code": "TLS_CIPHER_CBC",
+        "evaluation_state": "verified",
+        "evidence_references": [
+          {
+            "evidence_state": "observed",
+            "field_path": "cipher_suite.name",
+            "frame_number": 8,
+            "record_key": "CSmtp",
+            "record_type": "handshake"
+          }
+        ],
+        "finding_id": "c7d16b4cd2a13b1b39add8ad5ebc05f736680915e6eb07f591188f070460639a",
+        "outcome": "negative",
+        "policy_evaluation_time": "2026-09-04T12:00:00Z",
+        "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "policy_profile": "ietf_current",
+        "rationale": "Golden-report TLS_CIPHER_CBC with basis_state=observed.",
+        "remediation_id": "rem.golden",
+        "rule_effective_from": "2018-01-01",
+        "rule_effective_until": null,
+        "severity": "medium",
+        "standards": [
+          "RFC 0"
+        ],
+        "title": "CBC cipher suite negotiated"
+      },
+      {
+        "affected_endpoint": "192.0.2.11:587",
+        "basis_state": "inferred",
+        "code": "CERT_EXPIRED_AT_CAPTURE",
+        "evaluation_state": "verified",
+        "evidence_references": [
+          {
+            "evidence_state": "inferred",
+            "field_path": "valid_at_capture_time",
+            "frame_number": null,
+            "record_key": "CSmtp",
+            "record_type": "certificate"
+          }
+        ],
+        "finding_id": "a14b5ea20505d891418d278b2191fb74891aab3e07edcd91b47e9ecfb0497c48",
+        "outcome": "negative",
+        "policy_evaluation_time": "2026-09-04T12:00:00Z",
+        "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "policy_profile": "ietf_current",
+        "rationale": "Golden-report CERT_EXPIRED_AT_CAPTURE with basis_state=inferred.",
+        "remediation_id": "rem.golden",
+        "rule_effective_from": "2018-01-01",
+        "rule_effective_until": null,
+        "severity": "low",
+        "standards": [
+          "RFC 0"
+        ],
+        "title": "Certificate expired at capture time"
+      },
+      {
+        "affected_endpoint": "192.0.2.10:25",
+        "basis_state": "incomplete",
+        "code": "MAIL_STARTTLS_PLAINTEXT_FALLBACK",
+        "evaluation_state": "verified",
+        "evidence_references": [
+          {
+            "evidence_state": "incomplete",
+            "field_path": "explicit_upgrade.state",
+            "frame_number": 4,
+            "record_key": "CTrunc",
+            "record_type": "session"
+          }
+        ],
+        "finding_id": "141c8a33bffd33261b61f50af018dabb75825f365a2ffb209a824c748b4f10da",
+        "outcome": "negative",
+        "policy_evaluation_time": "2026-09-04T12:00:00Z",
+        "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "policy_profile": "ietf_current",
+        "rationale": "Golden-report MAIL_STARTTLS_PLAINTEXT_FALLBACK with basis_state=incomplete.",
+        "remediation_id": "rem.golden",
+        "rule_effective_from": "2018-01-01",
+        "rule_effective_until": null,
+        "severity": "medium",
+        "standards": [
+          "RFC 0"
+        ],
+        "title": "STARTTLS plaintext fallback"
+      },
+      {
+        "affected_endpoint": "192.0.2.12:993",
+        "basis_state": "conflicting",
+        "code": "TCP_RECONSTRUCTION_CONFLICTING",
+        "evaluation_state": "verified",
+        "evidence_references": [
+          {
+            "evidence_state": "conflicting",
+            "field_path": "reconstruction_quality",
+            "frame_number": null,
+            "record_key": "CConf",
+            "record_type": "flow"
+          }
+        ],
+        "finding_id": "35074ec2d74375e2f04aa0a841116002b78c5732ea3b723bcea4d4a873542f79",
+        "outcome": "negative",
+        "policy_evaluation_time": "2026-09-04T12:00:00Z",
+        "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "policy_profile": "ietf_current",
+        "rationale": "Golden-report TCP_RECONSTRUCTION_CONFLICTING with basis_state=conflicting.",
+        "remediation_id": "rem.golden",
+        "rule_effective_from": "2018-01-01",
+        "rule_effective_until": null,
+        "severity": "informational",
+        "standards": [
+          "RFC 0"
+        ],
+        "title": "Conflicting TCP reconstruction"
+      },
+      {
+        "affected_endpoint": "192.0.2.13:465",
+        "basis_state": "indeterminate",
+        "code": "TLS_FORWARD_SECRECY_INDETERMINATE",
+        "evaluation_state": "verified",
+        "evidence_references": [
+          {
+            "evidence_state": "indeterminate",
+            "field_path": "key_exchange.mechanism",
+            "frame_number": null,
+            "record_key": "CTls13",
+            "record_type": "handshake"
+          }
+        ],
+        "finding_id": "cd5c59686922db832507e5fdd360d13aff3c4149809962419bb8217e4b43f89b",
+        "outcome": "indeterminate",
+        "policy_evaluation_time": "2026-09-04T12:00:00Z",
+        "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "policy_profile": "ietf_current",
+        "rationale": "Golden-report TLS_FORWARD_SECRECY_INDETERMINATE with basis_state=indeterminate.",
+        "remediation_id": "rem.golden",
+        "rule_effective_from": "2018-01-01",
+        "rule_effective_until": null,
+        "severity": "informational",
+        "standards": [
+          "RFC 0"
+        ],
+        "title": "Forward secrecy indeterminate"
+      },
+      {
+        "affected_endpoint": "192.0.2.13:465",
+        "basis_state": "not_observable",
+        "code": "CERT_TLS13_NOT_OBSERVABLE",
+        "evaluation_state": "verified",
+        "evidence_references": [
+          {
+            "evidence_state": "not_observable",
+            "field_path": "server_certificate_state",
+            "frame_number": null,
+            "record_key": "CTls13",
+            "record_type": "handshake"
+          }
+        ],
+        "finding_id": "a8787823c83a7fc605278820cf1cc66bbcf9fa9568ad950ebf6f386e752bdb15",
+        "outcome": "indeterminate",
+        "policy_evaluation_time": "2026-09-04T12:00:00Z",
+        "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "policy_profile": "ietf_current",
+        "rationale": "Golden-report CERT_TLS13_NOT_OBSERVABLE with basis_state=not_observable.",
+        "remediation_id": "rem.golden",
+        "rule_effective_from": "2018-01-01",
+        "rule_effective_until": null,
+        "severity": "informational",
+        "standards": [
+          "RFC 0"
+        ],
+        "title": "TLS 1.3 certificate not observable"
+      }
+    ],
+    "flows": [
+      {
+        "conflicting_byte_ranges": [],
+        "conn_state": "SF",
+        "evidence_state": "observed",
+        "gap_bytes": 0,
+        "gap_bytes_exact": true,
+        "history": "ShADadFf",
+        "missed_bytes": 0,
+        "observed_conditions": [],
+        "orig": {
+          "host": "198.51.100.10",
+          "port": 40100
+        },
+        "orig_bytes": 800,
+        "proto": "tcp",
+        "reason_code": null,
+        "reconstruction_quality": "complete",
+        "resp": {
+          "host": "192.0.2.11",
+          "port": 587
+        },
+        "resp_bytes": 2400,
+        "uid": "CSmtp"
+      },
+      {
+        "conflicting_byte_ranges": [],
+        "conn_state": "S1",
+        "evidence_state": "incomplete",
+        "gap_bytes": 120,
+        "gap_bytes_exact": true,
+        "history": "ShAD",
+        "missed_bytes": 120,
+        "observed_conditions": [],
+        "orig": {
+          "host": "198.51.100.11",
+          "port": 40101
+        },
+        "orig_bytes": 200,
+        "proto": "tcp",
+        "reason_code": "snaplen_truncation",
+        "reconstruction_quality": "incomplete",
+        "resp": {
+          "host": "192.0.2.10",
+          "port": 25
+        },
+        "resp_bytes": 80,
+        "uid": "CTrunc"
+      },
+      {
+        "conflicting_byte_ranges": [
+          {
+            "direction": "resp",
+            "end": 80,
+            "exact": true,
+            "start": 40
+          }
+        ],
+        "conn_state": "S1",
+        "evidence_state": "conflicting",
+        "gap_bytes": 0,
+        "gap_bytes_exact": true,
+        "history": "ShADad",
+        "missed_bytes": 0,
+        "observed_conditions": [],
+        "orig": {
+          "host": "198.51.100.12",
+          "port": 40102
+        },
+        "orig_bytes": 900,
+        "proto": "tcp",
+        "reason_code": "overlapping_retransmission_conflict",
+        "reconstruction_quality": "conflicting",
+        "resp": {
+          "host": "192.0.2.12",
+          "port": 993
+        },
+        "resp_bytes": 1100,
+        "uid": "CConf"
+      },
+      {
+        "conflicting_byte_ranges": [],
+        "conn_state": "SF",
+        "evidence_state": "observed",
+        "gap_bytes": 0,
+        "gap_bytes_exact": true,
+        "history": "ShADadFf",
+        "missed_bytes": 0,
+        "observed_conditions": [],
+        "orig": {
+          "host": "198.51.100.13",
+          "port": 40103
+        },
+        "orig_bytes": 1500,
+        "proto": "tcp",
+        "reason_code": null,
+        "reconstruction_quality": "complete",
+        "resp": {
+          "host": "192.0.2.13",
+          "port": 465
+        },
+        "resp_bytes": 2200,
+        "uid": "CTls13"
+      }
+    ],
+    "handshakes": [
+      {
+        "certificate_verify_signature": {
+          "algorithm": null,
+          "evidence_state": "not_observable"
+        },
+        "certificate_verify_state": "not_observable",
+        "cipher_suite": {
+          "code": "0xc013",
+          "evidence_state": "observed",
+          "name": "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA"
+        },
+        "established": true,
+        "evidence_state": "observed",
+        "hello_retry_request": false,
+        "key_exchange": {
+          "dh_param_size": null,
+          "evidence_state": "observed",
+          "mechanism": "ECDHE",
+          "psk_key_exchange_modes": [],
+          "selected_group": "secp256r1",
+          "selected_group_code": 23,
+          "source_fields": [
+            "cipher_suite",
+            "server_key_exchange"
+          ]
+        },
+        "last_alert": null,
+        "messages": [
+          {
+            "direction": "orig",
+            "evidence_state": "observed",
+            "frame_number": 6,
+            "history_letter": "C",
+            "kind": "client_hello"
+          },
+          {
+            "direction": "resp",
+            "evidence_state": "observed",
+            "frame_number": 7,
+            "history_letter": "s",
+            "kind": "server_hello"
+          },
+          {
+            "direction": "resp",
+            "evidence_state": "observed",
+            "frame_number": 8,
+            "history_letter": "x",
+            "kind": "certificate"
+          },
+          {
+            "direction": "orig",
+            "evidence_state": "inferred",
+            "frame_number": 9,
+            "history_letter": "X",
+            "kind": "certificate"
+          }
+        ],
+        "resumed": false,
+        "server_certificate_state": "observed",
+        "ssl_history": "CsxX",
+        "uid": "CSmtp",
+        "version": {
+          "client_supported_versions": [
+            "TLSv12"
+          ],
+          "evidence_state": "observed",
+          "legacy_record_version": "TLSv12",
+          "selected": "TLSv12",
+          "server_supported_version": null,
+          "source": "legacy_record"
+        },
+        "visibility": "full"
+      },
+      {
+        "certificate_verify_signature": {
+          "algorithm": null,
+          "evidence_state": "not_observable"
+        },
+        "certificate_verify_state": "not_observable",
+        "cipher_suite": {
+          "code": null,
+          "evidence_state": "incomplete",
+          "name": null
+        },
+        "established": false,
+        "evidence_state": "incomplete",
+        "hello_retry_request": false,
+        "key_exchange": {
+          "dh_param_size": null,
+          "evidence_state": "incomplete",
+          "mechanism": null,
+          "psk_key_exchange_modes": [],
+          "selected_group": null,
+          "selected_group_code": null,
+          "source_fields": []
+        },
+        "last_alert": null,
+        "messages": [
+          {
+            "direction": "orig",
+            "evidence_state": "incomplete",
+            "frame_number": 6,
+            "history_letter": "C",
+            "kind": "client_hello"
+          }
+        ],
+        "resumed": false,
+        "server_certificate_state": "incomplete",
+        "ssl_history": "C",
+        "uid": "CTrunc",
+        "version": {
+          "client_supported_versions": [],
+          "evidence_state": "verified",
+          "legacy_record_version": "TLSv10",
+          "selected": "TLSv10",
+          "server_supported_version": null,
+          "source": "legacy_record"
+        },
+        "visibility": "partial"
+      },
+      {
+        "certificate_verify_signature": {
+          "algorithm": null,
+          "evidence_state": "not_observable"
+        },
+        "certificate_verify_state": "not_observable",
+        "cipher_suite": {
+          "code": "0x1302",
+          "evidence_state": "observed",
+          "name": "TLS_AES_256_GCM_SHA384"
+        },
+        "established": true,
+        "evidence_state": "observed",
+        "hello_retry_request": false,
+        "key_exchange": {
+          "dh_param_size": null,
+          "evidence_state": "indeterminate",
+          "mechanism": "PSK",
+          "psk_key_exchange_modes": [
+            "psk_ke"
+          ],
+          "selected_group": null,
+          "selected_group_code": null,
+          "source_fields": [
+            "psk_key_exchange_modes"
+          ]
+        },
+        "last_alert": null,
+        "messages": [
+          {
+            "direction": "orig",
+            "evidence_state": "observed",
+            "frame_number": 4,
+            "history_letter": "C",
+            "kind": "client_hello"
+          },
+          {
+            "direction": "resp",
+            "evidence_state": "observed",
+            "frame_number": 6,
+            "history_letter": "s",
+            "kind": "server_hello"
+          }
+        ],
+        "resumed": false,
+        "server_certificate_state": "not_observable",
+        "ssl_history": "CsiI",
+        "uid": "CTls13",
+        "version": {
+          "client_supported_versions": [
+            "TLSv13"
+          ],
+          "evidence_state": "observed",
+          "legacy_record_version": "TLSv12",
+          "selected": "TLSv13",
+          "server_supported_version": "TLSv13",
+          "source": "supported_versions"
+        },
+        "visibility": "partial"
+      }
+    ],
+    "policy_checks": [
+      {
+        "affected_endpoint": "192.0.2.10:25",
+        "category": "tls_handshake",
+        "check_id": "cb515d9b416bba28d62b57a8f0c721373e76596d357874d021df8e0e0dce9436",
+        "code": "TLS_NEGOTIATED_TLS10",
+        "evidence_state": "verified",
+        "outcome": "fail",
+        "protocol": "smtp",
+        "record_key": "CTrunc",
+        "record_type": "handshake",
+        "title": "TLS 1.0 negotiated"
+      },
+      {
+        "affected_endpoint": "192.0.2.11:587",
+        "category": "tls_handshake",
+        "check_id": "bacde071605b6cfb61dda1fdd43477ec70b79a2c12ea943fc5428c7c67c9d9ca",
+        "code": "TLS_CIPHER_CBC",
+        "evidence_state": "observed",
+        "outcome": "fail",
+        "protocol": "smtp",
+        "record_key": "CSmtp",
+        "record_type": "handshake",
+        "title": "CBC cipher suite negotiated"
+      },
+      {
+        "affected_endpoint": "192.0.2.11:587",
+        "category": "tls_handshake",
+        "check_id": "d717cdfccfdab960b5aecc554cdc74e934d2d86e32805febc2d7ca2c4c3fc22c",
+        "code": "TLS_CIPHER_NULL",
+        "evidence_state": "observed",
+        "outcome": "pass",
+        "protocol": "smtp",
+        "record_key": "CSmtp",
+        "record_type": "handshake",
+        "title": "NULL cipher suite negotiated"
+      },
+      {
+        "affected_endpoint": "192.0.2.11:587",
+        "category": "mail_protocol",
+        "check_id": "225a7f34133e907d56bece7c81f1a79291a7919bec88ef3463d04a8c2ef48a29",
+        "code": "MAIL_STARTTLS_ADVERTISED",
+        "evidence_state": "observed",
+        "outcome": "pass",
+        "protocol": "smtp",
+        "record_key": "CSmtp",
+        "record_type": "session",
+        "title": "STARTTLS advertised"
+      },
+      {
+        "affected_endpoint": "192.0.2.11:587",
+        "category": "certificate",
+        "check_id": "a8520b30024a53d5ac23424fcefa84e105016d156746ee09ce253f8bc044cabd",
+        "code": "CERT_REVOCATION",
+        "evidence_state": "indeterminate",
+        "outcome": "unknown",
+        "protocol": "smtp",
+        "record_key": "CSmtp",
+        "record_type": "certificate",
+        "title": "Revocation status"
+      },
+      {
+        "affected_endpoint": "192.0.2.13:465",
+        "category": "certificate",
+        "check_id": "ca1c0684fa8b29e1ab3211666ee13d3f0da6638c52e264fba1017c72e9f90fc8",
+        "code": "CERT_CHAIN_VALID",
+        "evidence_state": "not_observable",
+        "outcome": "not_observable",
+        "protocol": "imap",
+        "record_key": "CTls13",
+        "record_type": "handshake",
+        "title": "TLS 1.3 certificate chain"
+      },
+      {
+        "affected_endpoint": "192.0.2.12:993",
+        "category": "transport",
+        "check_id": "84fd3d5783a1032e7dd7c86b539474705fe489d3809dce5144b37d4654359abe",
+        "code": "TCP_RECONSTRUCTION",
+        "evidence_state": "conflicting",
+        "outcome": "unknown",
+        "protocol": "imap",
+        "record_key": "CConf",
+        "record_type": "flow",
+        "title": "TCP reconstruction quality"
+      },
+      {
+        "affected_endpoint": "192.0.2.12:993",
+        "category": "mail_protocol",
+        "check_id": "471da575e13a26410973fa95ea347bf1709a9e7ed518c813e2f3e3a1877d42eb",
+        "code": "IMPLICIT_TLS_CORRELATED",
+        "evidence_state": "observed",
+        "outcome": "pass",
+        "protocol": "imap",
+        "record_key": "CConf",
+        "record_type": "session",
+        "title": "Implicit TLS correlated"
+      }
+    ],
+    "posture": {
+      "assessment_state": "limited",
+      "coverage": {
+        "by_category": {
+          "certificate": {
+            "applicable_count": 2,
+            "failed_count": 0,
+            "not_observable_count": 1,
+            "passed_count": 0,
+            "unknown_count": 1
+          },
+          "mail_protocol": {
+            "applicable_count": 2,
+            "failed_count": 0,
+            "not_observable_count": 0,
+            "passed_count": 2,
+            "unknown_count": 0
+          },
+          "tls_handshake": {
+            "applicable_count": 3,
+            "failed_count": 2,
+            "not_observable_count": 0,
+            "passed_count": 1,
+            "unknown_count": 0
+          },
+          "transport": {
+            "applicable_count": 1,
+            "failed_count": 0,
+            "not_observable_count": 0,
+            "passed_count": 0,
+            "unknown_count": 1
+          }
+        },
+        "by_protocol": {
+          "imap": {
+            "applicable_count": 3,
+            "failed_count": 0,
+            "not_observable_count": 1,
+            "passed_count": 1,
+            "unknown_count": 1
+          },
+          "smtp": {
+            "applicable_count": 5,
+            "failed_count": 2,
+            "not_observable_count": 0,
+            "passed_count": 2,
+            "unknown_count": 1
+          }
+        },
+        "by_protocol_and_category": {
+          "imap": {
+            "certificate": {
+              "applicable_count": 1,
+              "failed_count": 0,
+              "not_observable_count": 1,
+              "passed_count": 0,
+              "unknown_count": 0
+            },
+            "mail_protocol": {
+              "applicable_count": 1,
+              "failed_count": 0,
+              "not_observable_count": 0,
+              "passed_count": 1,
+              "unknown_count": 0
+            },
+            "transport": {
+              "applicable_count": 1,
+              "failed_count": 0,
+              "not_observable_count": 0,
+              "passed_count": 0,
+              "unknown_count": 1
+            }
+          },
+          "smtp": {
+            "certificate": {
+              "applicable_count": 1,
+              "failed_count": 0,
+              "not_observable_count": 0,
+              "passed_count": 0,
+              "unknown_count": 1
+            },
+            "mail_protocol": {
+              "applicable_count": 1,
+              "failed_count": 0,
+              "not_observable_count": 0,
+              "passed_count": 1,
+              "unknown_count": 0
+            },
+            "tls_handshake": {
+              "applicable_count": 3,
+              "failed_count": 2,
+              "not_observable_count": 0,
+              "passed_count": 1,
+              "unknown_count": 0
+            }
+          }
+        },
+        "overall": {
+          "applicable_count": 8,
+          "failed_count": 2,
+          "not_observable_count": 1,
+          "passed_count": 3,
+          "unknown_count": 2
+        }
+      },
+      "prioritized_findings": [
+        {
+          "affected_endpoint": "192.0.2.10:25",
+          "asset_criticality": "critical",
+          "basis_state": "verified",
+          "blast_radius": "organization",
+          "code": "TLS_NEGOTIATED_TLS10",
+          "components": {
+            "asset_criticality": 5,
+            "blast_radius": 5,
+            "confidence": 20,
+            "exposure": 10,
+            "recurrence": 0,
+            "severity": 50
+          },
+          "contributing_finding_ids": [
+            "ca3bee569ace1f6fbf19d7ea3acfe1c4f46f189398265e4ef6e11302737d4169"
+          ],
+          "contributing_occurrences": [
+            {
+              "finding_id": "ca3bee569ace1f6fbf19d7ea3acfe1c4f46f189398265e4ef6e11302737d4169",
+              "record_key": "CTrunc",
+              "record_type": "handshake",
+              "session_uid": "CTrunc"
+            }
+          ],
+          "evaluation_state": "verified",
+          "evidence_references": [
+            {
+              "evidence_state": "verified",
+              "field_path": "version.selected",
+              "frame_number": 6,
+              "record_key": "CTrunc",
+              "record_type": "handshake"
+            }
+          ],
+          "exposure": "public",
+          "finding_id": "ca3bee569ace1f6fbf19d7ea3acfe1c4f46f189398265e4ef6e11302737d4169",
+          "outcome": "negative",
+          "policy_evaluation_time": "2026-09-04T12:00:00Z",
+          "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "policy_profile": "ietf_current",
+          "rationale": "Golden-report TLS_NEGOTIATED_TLS10 with basis_state=verified.",
+          "recurrence_count": 1,
+          "remediation_id": "rem.golden",
+          "rule_effective_from": "2018-01-01",
+          "rule_effective_until": null,
+          "score": 90,
+          "scoring_schema_version": "securemail.scoring/v1",
+          "severity": "high",
+          "standards": [
+            "RFC 0"
+          ],
+          "title": "TLS 1.0 negotiated",
+          "unique_occurrences": 1
+        },
+        {
+          "affected_endpoint": "192.0.2.11:587",
+          "asset_criticality": "low",
+          "basis_state": "observed",
+          "blast_radius": "single_endpoint",
+          "code": "TLS_CIPHER_CBC",
+          "components": {
+            "asset_criticality": 1,
+            "blast_radius": 1,
+            "confidence": 16,
+            "exposure": 2,
+            "recurrence": 0,
+            "severity": 30
+          },
+          "contributing_finding_ids": [
+            "c7d16b4cd2a13b1b39add8ad5ebc05f736680915e6eb07f591188f070460639a"
+          ],
+          "contributing_occurrences": [
+            {
+              "finding_id": "c7d16b4cd2a13b1b39add8ad5ebc05f736680915e6eb07f591188f070460639a",
+              "record_key": "CSmtp",
+              "record_type": "handshake",
+              "session_uid": "CSmtp"
+            }
+          ],
+          "evaluation_state": "verified",
+          "evidence_references": [
+            {
+              "evidence_state": "observed",
+              "field_path": "cipher_suite.name",
+              "frame_number": 8,
+              "record_key": "CSmtp",
+              "record_type": "handshake"
+            }
+          ],
+          "exposure": "isolated",
+          "finding_id": "c7d16b4cd2a13b1b39add8ad5ebc05f736680915e6eb07f591188f070460639a",
+          "outcome": "negative",
+          "policy_evaluation_time": "2026-09-04T12:00:00Z",
+          "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "policy_profile": "ietf_current",
+          "rationale": "Golden-report TLS_CIPHER_CBC with basis_state=observed.",
+          "recurrence_count": 1,
+          "remediation_id": "rem.golden",
+          "rule_effective_from": "2018-01-01",
+          "rule_effective_until": null,
+          "score": 50,
+          "scoring_schema_version": "securemail.scoring/v1",
+          "severity": "medium",
+          "standards": [
+            "RFC 0"
+          ],
+          "title": "CBC cipher suite negotiated",
+          "unique_occurrences": 1
+        },
+        {
+          "affected_endpoint": "192.0.2.10:25",
+          "asset_criticality": "medium",
+          "basis_state": "incomplete",
+          "blast_radius": "single_endpoint",
+          "code": "MAIL_STARTTLS_PLAINTEXT_FALLBACK",
+          "components": {
+            "asset_criticality": 3,
+            "blast_radius": 1,
+            "confidence": 6,
+            "exposure": 5,
+            "recurrence": 0,
+            "severity": 30
+          },
+          "contributing_finding_ids": [
+            "141c8a33bffd33261b61f50af018dabb75825f365a2ffb209a824c748b4f10da"
+          ],
+          "contributing_occurrences": [
+            {
+              "finding_id": "141c8a33bffd33261b61f50af018dabb75825f365a2ffb209a824c748b4f10da",
+              "record_key": "CTrunc",
+              "record_type": "session",
+              "session_uid": "CTrunc"
+            }
+          ],
+          "evaluation_state": "verified",
+          "evidence_references": [
+            {
+              "evidence_state": "incomplete",
+              "field_path": "explicit_upgrade.state",
+              "frame_number": 4,
+              "record_key": "CTrunc",
+              "record_type": "session"
+            }
+          ],
+          "exposure": "internal",
+          "finding_id": "141c8a33bffd33261b61f50af018dabb75825f365a2ffb209a824c748b4f10da",
+          "outcome": "negative",
+          "policy_evaluation_time": "2026-09-04T12:00:00Z",
+          "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "policy_profile": "ietf_current",
+          "rationale": "Golden-report MAIL_STARTTLS_PLAINTEXT_FALLBACK with basis_state=incomplete.",
+          "recurrence_count": 1,
+          "remediation_id": "rem.golden",
+          "rule_effective_from": "2018-01-01",
+          "rule_effective_until": null,
+          "score": 45,
+          "scoring_schema_version": "securemail.scoring/v1",
+          "severity": "medium",
+          "standards": [
+            "RFC 0"
+          ],
+          "title": "STARTTLS plaintext fallback",
+          "unique_occurrences": 1
+        },
+        {
+          "affected_endpoint": "192.0.2.11:587",
+          "asset_criticality": "high",
+          "basis_state": "inferred",
+          "blast_radius": "multi_asset",
+          "code": "CERT_EXPIRED_AT_CAPTURE",
+          "components": {
+            "asset_criticality": 4,
+            "blast_radius": 3,
+            "confidence": 12,
+            "exposure": 8,
+            "recurrence": 0,
+            "severity": 15
+          },
+          "contributing_finding_ids": [
+            "a14b5ea20505d891418d278b2191fb74891aab3e07edcd91b47e9ecfb0497c48"
+          ],
+          "contributing_occurrences": [
+            {
+              "finding_id": "a14b5ea20505d891418d278b2191fb74891aab3e07edcd91b47e9ecfb0497c48",
+              "record_key": "CSmtp",
+              "record_type": "certificate",
+              "session_uid": "CSmtp"
+            }
+          ],
+          "evaluation_state": "verified",
+          "evidence_references": [
+            {
+              "evidence_state": "inferred",
+              "field_path": "valid_at_capture_time",
+              "frame_number": null,
+              "record_key": "CSmtp",
+              "record_type": "certificate"
+            }
+          ],
+          "exposure": "partner",
+          "finding_id": "a14b5ea20505d891418d278b2191fb74891aab3e07edcd91b47e9ecfb0497c48",
+          "outcome": "negative",
+          "policy_evaluation_time": "2026-09-04T12:00:00Z",
+          "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "policy_profile": "ietf_current",
+          "rationale": "Golden-report CERT_EXPIRED_AT_CAPTURE with basis_state=inferred.",
+          "recurrence_count": 1,
+          "remediation_id": "rem.golden",
+          "rule_effective_from": "2018-01-01",
+          "rule_effective_until": null,
+          "score": 42,
+          "scoring_schema_version": "securemail.scoring/v1",
+          "severity": "low",
+          "standards": [
+            "RFC 0"
+          ],
+          "title": "Certificate expired at capture time",
+          "unique_occurrences": 1
+        },
+        {
+          "affected_endpoint": "192.0.2.12:993",
+          "asset_criticality": "unknown",
+          "basis_state": "conflicting",
+          "blast_radius": "unknown",
+          "code": "TCP_RECONSTRUCTION_CONFLICTING",
+          "components": {
+            "asset_criticality": 2,
+            "blast_radius": 1,
+            "confidence": 3,
+            "exposure": 4,
+            "recurrence": 0,
+            "severity": 0
+          },
+          "contributing_finding_ids": [
+            "35074ec2d74375e2f04aa0a841116002b78c5732ea3b723bcea4d4a873542f79"
+          ],
+          "contributing_occurrences": [
+            {
+              "finding_id": "35074ec2d74375e2f04aa0a841116002b78c5732ea3b723bcea4d4a873542f79",
+              "record_key": "CConf",
+              "record_type": "flow",
+              "session_uid": "CConf"
+            }
+          ],
+          "evaluation_state": "verified",
+          "evidence_references": [
+            {
+              "evidence_state": "conflicting",
+              "field_path": "reconstruction_quality",
+              "frame_number": null,
+              "record_key": "CConf",
+              "record_type": "flow"
+            }
+          ],
+          "exposure": "unknown",
+          "finding_id": "35074ec2d74375e2f04aa0a841116002b78c5732ea3b723bcea4d4a873542f79",
+          "outcome": "negative",
+          "policy_evaluation_time": "2026-09-04T12:00:00Z",
+          "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "policy_profile": "ietf_current",
+          "rationale": "Golden-report TCP_RECONSTRUCTION_CONFLICTING with basis_state=conflicting.",
+          "recurrence_count": 1,
+          "remediation_id": "rem.golden",
+          "rule_effective_from": "2018-01-01",
+          "rule_effective_until": null,
+          "score": 10,
+          "scoring_schema_version": "securemail.scoring/v1",
+          "severity": "informational",
+          "standards": [
+            "RFC 0"
+          ],
+          "title": "Conflicting TCP reconstruction",
+          "unique_occurrences": 1
+        },
+        {
+          "affected_endpoint": "192.0.2.13:465",
+          "asset_criticality": "unknown",
+          "basis_state": "indeterminate",
+          "blast_radius": "unknown",
+          "code": "TLS_FORWARD_SECRECY_INDETERMINATE",
+          "components": {
+            "asset_criticality": 2,
+            "blast_radius": 1,
+            "confidence": 2,
+            "exposure": 4,
+            "recurrence": 0,
+            "severity": 0
+          },
+          "contributing_finding_ids": [
+            "cd5c59686922db832507e5fdd360d13aff3c4149809962419bb8217e4b43f89b"
+          ],
+          "contributing_occurrences": [
+            {
+              "finding_id": "cd5c59686922db832507e5fdd360d13aff3c4149809962419bb8217e4b43f89b",
+              "record_key": "CTls13",
+              "record_type": "handshake",
+              "session_uid": "CTls13"
+            }
+          ],
+          "evaluation_state": "verified",
+          "evidence_references": [
+            {
+              "evidence_state": "indeterminate",
+              "field_path": "key_exchange.mechanism",
+              "frame_number": null,
+              "record_key": "CTls13",
+              "record_type": "handshake"
+            }
+          ],
+          "exposure": "unknown",
+          "finding_id": "cd5c59686922db832507e5fdd360d13aff3c4149809962419bb8217e4b43f89b",
+          "outcome": "indeterminate",
+          "policy_evaluation_time": "2026-09-04T12:00:00Z",
+          "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "policy_profile": "ietf_current",
+          "rationale": "Golden-report TLS_FORWARD_SECRECY_INDETERMINATE with basis_state=indeterminate.",
+          "recurrence_count": 1,
+          "remediation_id": "rem.golden",
+          "rule_effective_from": "2018-01-01",
+          "rule_effective_until": null,
+          "score": 9,
+          "scoring_schema_version": "securemail.scoring/v1",
+          "severity": "informational",
+          "standards": [
+            "RFC 0"
+          ],
+          "title": "Forward secrecy indeterminate",
+          "unique_occurrences": 1
+        },
+        {
+          "affected_endpoint": "192.0.2.13:465",
+          "asset_criticality": "unknown",
+          "basis_state": "not_observable",
+          "blast_radius": "unknown",
+          "code": "CERT_TLS13_NOT_OBSERVABLE",
+          "components": {
+            "asset_criticality": 2,
+            "blast_radius": 1,
+            "confidence": 0,
+            "exposure": 4,
+            "recurrence": 0,
+            "severity": 0
+          },
+          "contributing_finding_ids": [
+            "a8787823c83a7fc605278820cf1cc66bbcf9fa9568ad950ebf6f386e752bdb15"
+          ],
+          "contributing_occurrences": [
+            {
+              "finding_id": "a8787823c83a7fc605278820cf1cc66bbcf9fa9568ad950ebf6f386e752bdb15",
+              "record_key": "CTls13",
+              "record_type": "handshake",
+              "session_uid": "CTls13"
+            }
+          ],
+          "evaluation_state": "verified",
+          "evidence_references": [
+            {
+              "evidence_state": "not_observable",
+              "field_path": "server_certificate_state",
+              "frame_number": null,
+              "record_key": "CTls13",
+              "record_type": "handshake"
+            }
+          ],
+          "exposure": "unknown",
+          "finding_id": "a8787823c83a7fc605278820cf1cc66bbcf9fa9568ad950ebf6f386e752bdb15",
+          "outcome": "indeterminate",
+          "policy_evaluation_time": "2026-09-04T12:00:00Z",
+          "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "policy_profile": "ietf_current",
+          "rationale": "Golden-report CERT_TLS13_NOT_OBSERVABLE with basis_state=not_observable.",
+          "recurrence_count": 1,
+          "remediation_id": "rem.golden",
+          "rule_effective_from": "2018-01-01",
+          "rule_effective_until": null,
+          "score": 7,
+          "scoring_schema_version": "securemail.scoring/v1",
+          "severity": "informational",
+          "standards": [
+            "RFC 0"
+          ],
+          "title": "TLS 1.3 certificate not observable",
+          "unique_occurrences": 1
+        }
+      ],
+      "risk_score": 90,
+      "schema_version": "securemail.posture/v1",
+      "scoring_schema_version": "securemail.scoring/v1"
+    },
+    "run_identity": {
+      "analysis_time": "2026-09-04T12:00:00Z",
+      "analyzer_bundle_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "capture_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "configuration_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "normalization_schema_version": "v1",
+      "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "policy_profile": "ietf_current",
+      "trust_store_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    "schema_version": "v2",
+    "sessions": [
+      {
+        "corroboration": "zeek+tshark",
+        "events": [
+          {
+            "argument": null,
+            "command": null,
+            "direction": "resp",
+            "frame_number": 3,
+            "kind": "reply",
+            "reply_code": null,
+            "source": "zeek",
+            "tag": null,
+            "text": "220 mail.example<script>alert(1)</script>\u0007\u0000‮ON.example"
+          }
+        ],
+        "evidence_state": "observed",
+        "explicit_upgrade": {
+          "downgrade_consistent": false,
+          "evidence_frames": [
+            4,
+            5,
+            6
+          ],
+          "evidence_state": "observed",
+          "state": "tls_established"
+        },
+        "identification_confidence": 0.99,
+        "implicit_tls": null,
+        "payload_evidence": "smtp",
+        "port_hint": "smtp",
+        "protocol": "smtp",
+        "uid": "CSmtp"
+      },
+      {
+        "corroboration": "zeek",
+        "events": [
+          {
+            "argument": null,
+            "command": "STARTTLS",
+            "direction": "orig",
+            "frame_number": 4,
+            "kind": "starttls",
+            "reply_code": null,
+            "source": "zeek",
+            "tag": null,
+            "text": null
+          }
+        ],
+        "evidence_state": "incomplete",
+        "explicit_upgrade": {
+          "downgrade_consistent": true,
+          "evidence_frames": [
+            4
+          ],
+          "evidence_state": "incomplete",
+          "state": "plaintext_fallback"
+        },
+        "identification_confidence": 0.6,
+        "implicit_tls": null,
+        "payload_evidence": "smtp",
+        "port_hint": "smtp",
+        "protocol": "smtp",
+        "uid": "CTrunc"
+      },
+      {
+        "corroboration": "zeek",
+        "events": [],
+        "evidence_state": "observed",
+        "explicit_upgrade": null,
+        "identification_confidence": null,
+        "implicit_tls": {
+          "correlated_protocol": "imap",
+          "evidence_frames": [
+            2
+          ],
+          "evidence_state": "observed",
+          "source": "alpn"
+        },
+        "payload_evidence": "imap",
+        "port_hint": "imap",
+        "protocol": "imap",
+        "uid": "CConf"
+      },
+      {
+        "corroboration": "zeek",
+        "events": [],
+        "evidence_state": "observed",
+        "explicit_upgrade": null,
+        "identification_confidence": null,
+        "implicit_tls": {
+          "correlated_protocol": "smtp",
+          "evidence_frames": [
+            2
+          ],
+          "evidence_state": "observed",
+          "source": "alpn"
+        },
+        "payload_evidence": "smtp",
+        "port_hint": "smtp",
+        "protocol": "smtp",
+        "uid": "CTls13"
+      }
+    ]
+  },
+  "exceptions": [],
+  "limitations": {
+    "conflicting_flow_count": 1,
+    "incomplete_flow_count": 1,
+    "not_observable_certificate_count": 1,
+    "not_observable_check_count": 1,
+    "notes": [
+      "Dashboard fixture dashboard_critical derived from reports/golden_report.json.",
+      "Underlying flow, session, TLS, and certificate evidence is retained."
+    ],
+    "truncated_packets_present": true,
+    "unknown_check_count": 2
+  },
+  "manifest": {
+    "analysis_run_id": "dashboard_critical-run",
+    "analyzer_bundle_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "artifact_hashes": [
+      {
+        "availability": "present",
+        "name": "capture.pcapng",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      {
+        "availability": "unavailable",
+        "name": "working_copy",
+        "sha256": null
+      }
+    ],
+    "capture_id": null,
+    "case_id": "dashboard_critical",
+    "configuration_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "dependency_versions": {
+      "jinja2": "3.1.6",
+      "weasyprint": "69.0"
+    },
+    "generated_at": "2026-09-05T00:00:00Z",
+    "os_container": null,
+    "os_container_availability": "unavailable",
+    "policy_pack_version": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "policy_profile": "ietf_current",
+    "posture_summary": {
+      "assessment_state": "limited",
+      "finding_count": 7,
+      "not_observable_count": 1,
+      "risk_score": 90,
+      "unknown_count": 2
+    },
+    "random_seed": null,
+    "renderer": {
+      "fonts": [
+        {
+          "family": "Noto Sans",
+          "filename": "NotoSans-Regular.ttf",
+          "sha256": "1f0826e3f6488a3c14fe54d0ebf860bfad1bc1cc952fd4755ff519f145c9c17e",
+          "style": "normal",
+          "weight": 400
+        },
+        {
+          "family": "Noto Sans",
+          "filename": "NotoSans-Bold.ttf",
+          "sha256": "23f831d62059cc0d0cb4e71dbc9aadd1717d23c457028d81001c925e8a78cd5c",
+          "style": "normal",
+          "weight": 700
+        },
+        {
+          "family": "Noto Sans Mono",
+          "filename": "NotoSansMono-Regular.ttf",
+          "sha256": "213857674181ec82bf4f825a1ddb4b2a30136ca07a30e954c229b816108fc23d",
+          "style": "normal",
+          "weight": 400
+        }
+      ],
+      "html_renderer": "securemail.html/v1",
+      "pdf_renderer": "weasyprint",
+      "pdf_renderer_version": "69.0",
+      "template_name": "report.html.j2",
+      "template_sha256": "9af49e7a478bad9d874034675f2268ff1d16dbc4d206b2cb20fecdeb1ff53b9d"
+    },
+    "schema_version": "securemail.report/v1",
+    "signature": {
+      "algorithm": null,
+      "availability": "unavailable",
+      "timestamp": null
+    },
+    "source_capture_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "source_records": [
+      {
+        "availability": "present",
+        "identifier": "dashboard_critical",
+        "kind": "case"
+      },
+      {
+        "availability": "not_applicable",
+        "identifier": null,
+        "kind": "capture"
+      },
+      {
+        "availability": "present",
+        "identifier": "dashboard_critical-run",
+        "kind": "analysis_run"
+      }
+    ],
+    "timezone": "UTC",
+    "trust_store_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "working_copy_availability": "unavailable",
+    "working_copy_sha256": null
+  },
+  "schema_version": "securemail.report/v1",
+  "stage_errors": [],
+  "suppressed_findings": []
+}

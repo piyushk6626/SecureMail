@@ -1,10 +1,10 @@
 # Current state
 
-SecureMail is a **CLI-only**, offline, deterministic-first analyzer of SMTP, IMAP, and
-POP3 traffic in PCAP/PCAPNG files. It scores and deduplicates findings, publishes
-coverage denominators, exports forensic reports in JSON, HTML, and PDF, and can
-run a shadow-mode advisory ML stage over endpoint-window features. It does not
-yet expose an API.
+SecureMail is an offline, deterministic-first analyzer of SMTP, IMAP, and POP3
+traffic in PCAP/PCAPNG files. It scores and deduplicates findings, publishes
+coverage denominators, exports forensic reports in JSON, HTML, and PDF, can run
+a shadow-mode advisory ML stage, and exposes canonical reports through a
+read-only FastAPI and React dashboard.
 
 Python orchestrates. Zeek is the primary packet engine. A bounded TShark pass
 corroborates mail command/status and TLS handshake message frames when the first
@@ -20,6 +20,7 @@ wired through [`src/securemail/bootstrap.py`](../src/securemail/bootstrap.py):
 - `securemail score` — synthetic finding JSON → `PostureAssessment` on stdout
 - `securemail report` — canonical report JSON → RFC 8785 JSON, HTML, and PDF
 - `securemail evaluate-ml` — seeded cohort directory → detection-delay / precision@K gates
+- FastAPI + React — canonical report preview/catalog → interactive analyst views
 
 Analyze produces a frozen v2 JSON document with:
 
@@ -41,7 +42,8 @@ Analyze produces a frozen v2 JSON document with:
 
 There are **71** PCAP fixture directories under `tests/fixtures/<case_id>/`
 plus `tests/fixtures/synthetic_findings/` for Step 8 and
-`tests/fixtures/reports/` for Step 9. The harness in
+`tests/fixtures/reports/` for Step 9, and multi-case canonical reports under
+`tests/fixtures/dashboard/` for Step 11. The harness in
 [`tests/support/fixture_harness.py`](../tests/support/fixture_harness.py)
 runs the real CLI and diffs analyze/score output against `expected.json` (no
 ignored fields). Optional `analyze.json` supplies `--analysis-time`,
@@ -64,7 +66,7 @@ stay stable; the live CLI still defaults analysis time to now.
 | 8 | Scoring, dedup, coverage denominators | **Done** |
 | 9 | Canonical JSON → HTML/PDF | **Done** |
 | 10 | Advisory ML | **Done** (`evaluate-ml`, `--advisory`, baseline + gated Isolation Forest) |
-| 11 | FastAPI + React | Placeholder (`api/main.py`, routers, `frontend/` README only) |
+| 11 | FastAPI + React | **Done** (byte-identical API, case isolation, Playwright dashboard) |
 
 The *why* and the remaining contracts live in
 [`plans/build_plan.md`](../plans/build_plan.md). This page only records what the
@@ -108,6 +110,10 @@ uv run securemail report tests/fixtures/reports/golden_report.json --format json
 
 # Step 10 — advisory ML evaluation harness (baseline + Isolation Forest gates)
 uv run securemail evaluate-ml tests/support/synthetic_cohorts/cohort_seeded_v1/
+
+# Step 11 — API/CLI contract plus browser workflows
+SECUREMAIL_REPORT_ROOT=tests/fixtures/dashboard uv run uvicorn securemail.api.main:app
+npm --prefix frontend run test:e2e
 ```
 
 Analyze `--out` is required. Output is JSON with sorted keys, 2-space indent, a
@@ -125,16 +131,16 @@ is a leftover Step 0 stub; the live analyze command is in `main.py`.
 ## Not in this build
 
 The analyze JSON does **not** embed a report manifest; `securemail report`
-wraps an `EvidenceDocument` in `securemail.report/v1`. Pass/present policy
+accepts an already assembled `securemail.report/v1` object. Pass/present policy
 outcomes are serialized as `policy_checks`, not as `Finding` records. Revocation without
 imported OCSP/CRL is `unknown`. `run_identity.policy_pack_version` is the
 SHA-256 of the canonical validated pack JSON.
 `run_identity.trust_store_digest` is the SHA-256 of the pinned PEM snapshot. No
 network calls happen during analysis (analyzer containers use `--network=none`;
-chain validation does not fetch AIA/OCSP/CRL/CT/DNS). No dashboard, no Postgres,
-no queue.
+chain validation does not fetch AIA/OCSP/CRL/CT/DNS). There is no PostgreSQL
+control plane or queue in this step.
 
 See [architecture.md](architecture.md) for the live module map,
 [scoring.md](scoring.md) for the v1 formula, [reports.md](reports.md) for
 HTML/PDF, [advisory-ml.md](advisory-ml.md) for Step 10, and
-[fixtures.md](fixtures.md) for every committed case.
+[dashboard.md](dashboard.md) for Step 11.

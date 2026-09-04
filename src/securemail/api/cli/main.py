@@ -10,6 +10,7 @@ from typing import Protocol
 import typer
 
 from securemail.application.render_report import RenderedReport
+from securemail.application.report_queries import ParsedReport, ParseReportRequest
 from securemail.application.run_analysis import (
     DEFAULT_EXPIRY_WARNING_SECONDS,
     AnalysisError,
@@ -61,10 +62,15 @@ class ApplyAdvisoryFn(Protocol):
     def __call__(self, report: CanonicalReport) -> CanonicalReport: ...
 
 
+class ParseReportFn(Protocol):
+    def __call__(self, request: ParseReportRequest) -> ParsedReport: ...
+
+
 def build_app(
     analyze: AnalyzeFn,
     score: ScoreFn,
     report: ReportFn,
+    parse_report: ParseReportFn,
     evaluate_ml: EvaluateMlFn,
     apply_advisory: ApplyAdvisoryFn,
 ) -> typer.Typer:
@@ -80,7 +86,7 @@ def build_app(
     from securemail.api.cli.commands.score import register_score
 
     register_score(app, score)
-    register_report(app, report, apply_advisory=apply_advisory)
+    register_report(app, report, parse_report, apply_advisory=apply_advisory)
     register_evaluate_ml(app, evaluate_ml)
     return app
 

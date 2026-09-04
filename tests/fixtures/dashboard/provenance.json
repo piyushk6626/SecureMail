@@ -1,0 +1,45 @@
+{
+  "created_at": "2026-09-05T00:00:00Z",
+  "generator": "tests/fixtures/dashboard/assemble.py",
+  "notes": [
+    "Reports retain typed flow, session, TLS, certificate, and evidence references.",
+    "Subsets vary posture and severity for deterministic dashboard filtering tests."
+  ],
+  "report_schema_version": "securemail.report/v1",
+  "reports": [
+    {
+      "advisory_present": true,
+      "analyst_conclusions_present": false,
+      "canonical_json_sha256": "a888c948961158387b651437c0000ad542fa6bf035064ee60ba129b3bd6a3071",
+      "case_id": "dashboard_critical",
+      "finding_severities": [
+        "high",
+        "informational",
+        "low",
+        "medium"
+      ],
+      "risk_score": 90
+    },
+    {
+      "advisory_present": false,
+      "analyst_conclusions_present": true,
+      "canonical_json_sha256": "0afa0c062ab739f3d087b35b941637810cab40180af6797b5ca7bdc1103a66eb",
+      "case_id": "dashboard_attention",
+      "finding_severities": [
+        "low",
+        "medium"
+      ],
+      "risk_score": 50
+    },
+    {
+      "advisory_present": false,
+      "analyst_conclusions_present": true,
+      "canonical_json_sha256": "ef42e321214b9198607fbb0192ae5d3b382e0ef53ab9311b00778d5218946f95",
+      "case_id": "dashboard_clear",
+      "finding_severities": [],
+      "risk_score": 0
+    }
+  ],
+  "source": "typed assembly from existing canonical report and earlier evidence",
+  "source_report": "tests/fixtures/reports/golden_report.json"
+}

@@ -78,6 +78,10 @@ Adapters: [`canonical_json.py`](../src/securemail/adapters/reports/canonical_jso
 [`pdf_renderer.py`](../src/securemail/adapters/reports/pdf_renderer.py).
 The CLI is a thin wrapper; bootstrap injects the renderer callables.
 
+The Step 11 API reuses the bounded report parser and returns the same RFC 8785
+bytes for catalog and browser-preview requests. The React presentation is
+documented in [dashboard.md](dashboard.md).
+
 ## HTML design
 
 One template,

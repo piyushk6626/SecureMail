@@ -59,6 +59,21 @@ uv run securemail report tests/fixtures/reports/golden_report.json --format json
 uv run securemail evaluate-ml tests/support/synthetic_cohorts/cohort_seeded_v1/
 ```
 
+## Dashboard development
+
+The FastAPI app is `securemail.api.main:app`. The optional report catalog is a
+directory of validated `securemail.report/v1` JSON files:
+
+```bash
+SECUREMAIL_REPORT_ROOT=tests/fixtures/dashboard \
+  uv run uvicorn securemail.api.main:app --reload
+npm --prefix frontend run dev
+```
+
+The React development server proxies `/api` to Uvicorn. Browser uploads are
+canonical JSON previews retained in memory; they are not PCAP intake and are
+not persisted. See [dashboard.md](dashboard.md).
+
 ## Make targets
 
 From [`Makefile`](../Makefile):
@@ -69,6 +84,8 @@ From [`Makefile`](../Makefile):
 | `make sync` | `uv sync --all-extras` |
 | `make lint` | ruff check + ruff format --check, mypy, import-linter |
 | `make test` | pytest on `tests/unit`, `tests/support`, and `tests/` except `tests/fixtures/generators` |
+| `make frontend-build` | Production Vite build |
+| `make e2e` | FastAPI + Vite Playwright suite |
 | `make analyzer-lock` | regenerate `tools/analyzer-bundle.lock` |
 | `make zeek-image` | build `securemail/zeek:step0` with bundle/base digest build-args |
 | `make tshark-image` | build `securemail/tshark:step0` |
@@ -91,7 +108,7 @@ failed (hint is for the first failure). Checks:
 | zeek/zeek@sha256:73e80e9c… matches lock | lock digest + image or manifest |
 | pango visible via pkg-config | ≥ 1.58 |
 | openssl reports OpenSSL (not LibreSSL) | macOS: `/opt/homebrew/bin/openssl` only |
-| node/nvm | skipped until Step 11 |
+| node | 22.12+ and `frontend/.nvmrc` contains `22` |
 
 `SECUREMAIL_CI=1` (set in GitHub Actions) still runs the checks; it prints that
 Docker Desktop-specific notes are skipped.
@@ -105,7 +122,7 @@ Docker Desktop-specific notes are skipped.
   `/opt/homebrew/bin/openssl` on macOS, never `/usr/bin/openssl` (LibreSSL)
 - git-lfs for `*.pcap`, `*.pcapng`, `*.der`, `*.p12`, `*.pfx`; JSON is ordinary
   git text
-- Frontend Node 22 is pinned in `frontend/.nvmrc` but unused
+- Frontend Node 22 is pinned in `frontend/.nvmrc`; Vite 8 requires Node 22.12+
 
 ## Lint
 
@@ -114,11 +131,13 @@ Docker Desktop-specific notes are skipped.
 - `ruff check` / `ruff format --check` on `src`, `tests`, `tools`
 - `mypy` strict on package `securemail`
 - `lint-imports` with the three contracts in [architecture.md](architecture.md)
+- frontend ESLint and strict TypeScript checks
 
 ## Tests
 
 `make test` does **not** execute generator scripts as tests
 (`--ignore=tests/fixtures/generators`).
+It also runs the frontend Vitest suite after the Python tests.
 
 | Path | Role |
 |---|---|
@@ -157,6 +176,10 @@ Docker Desktop-specific notes are skipped.
 | `tests/unit/test_html_renderer.py` | Autoescape, hostile-input, finding codes |
 | `tests/unit/test_pdf_renderer.py` | PDF text, page range, font/WeasyPrint pins |
 | `tests/test_report_fixtures.py` | Real CLI report proof plus error exits |
+| `tests/unit/test_report_queries.py` | Bounded report parsing and case lookup |
+| `tests/unit/test_report_repository.py` | Filesystem catalog bounds and traversal |
+| `tests/test_report_api.py` | FastAPI/CLI byte identity and case isolation |
+| `tests/e2e/dashboard.spec.ts` | Playwright dashboard workflows |
 | `tests/unit/test_truncated_stream_never_complete.py` | Named never-complete case |
 | `tests/unit/test_fixture_diff.py` | Harness diff helper |
 
@@ -168,11 +191,12 @@ UIDs. Changing `zeek/`, the lockfile, `_CONFIGURATION`, or
 
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml):
 
-1. Checkout with LFS, uv Python 3.13, Pango/Cairo apt packages, `uv sync --extra dev --extra reports --extra ml`
+1. Checkout with LFS, uv Python 3.13, Node 22, Pango/Cairo, Python extras, and `npm ci`
 2. `SECUREMAIL_CI=1 make doctor`
 3. `make lint`
 4. Pull pinned Zeek image, `make zeek-image`, `make tshark-image`
-5. `make test`
+5. `make test` and `make frontend-build`
+6. A separate job installs Chromium and runs `make e2e`
 
 A second job resolves the pinned Zeek and Debian Trixie digests via
 `docker manifest inspect`.
@@ -181,7 +205,8 @@ A second job resolves the pinned Zeek and Debian Trixie digests via
 
 ```bash
 git lfs install
-uv sync --extra dev --extra reports --extra ml
+uv sync --extra dev --extra reports --extra ml --extra api
+cd frontend && nvm install && nvm use && npm ci && cd ..
 docker pull zeek/zeek@sha256:73e80e9cd23ff71fd28d158e9a9af5c7b2b0ef5d4036af61521827531347c0e3
 make tshark-image
 make zeek-image
@@ -197,4 +222,5 @@ container-to-container traffic. Details:
 
 ## Not in this build
 
-No `make` target for a frontend dev server. No docker-compose control plane.
+No docker-compose, PostgreSQL, queue, or OIDC control plane is introduced by
+Step 11.

@@ -45,7 +45,7 @@ or TLS record decoding. Zeek is the primary processing engine.
 
 ## 2. Current project state
 
-This repository has completed **Steps 0–10** of `build_plan.md`: package layout,
+This repository has completed **Steps 0–11** of `build_plan.md`: package layout,
 sandboxed Zeek/TShark runners, the v1 normalization / v2 evidence envelope,
 TCP reconstruction quality, payload-driven SMTP/IMAP/POP3 identification,
 STARTTLS/STLS plus implicit-TLS assessment, TLS version / cipher / key-exchange
@@ -54,8 +54,10 @@ identity matching, versioned IETF/NIST/historical rule packs, forward-secrecy
 assessment, posture scoring with coverage denominators, canonical JSON →
 HTML/PDF reports, and advisory ML after the deterministic baseline. The live
 CLI commands are `securemail analyze`, `securemail score`, `securemail report`,
-and `securemail evaluate-ml`. The next step to implement is **Step 11**
-(FastAPI + React over the same JSON).
+and `securemail evaluate-ml`. A read-only FastAPI and React dashboard consume
+the same canonical report JSON through browser-local preview or a bounded
+filesystem catalog. The named build plan is complete; future phases require an
+explicitly approved contract.
 
 The tree in `PROJECT_SCAFFOLD.md` Section 3 is the layout Step 0 created;
 later steps **fill named files**, they do not invent new top-level layout.
@@ -64,10 +66,8 @@ As-built documentation of the live pipeline is under `docs/` (see
 
 Do not:
 
-- Scaffold `frontend/` beyond the Step 0 placeholder (`.gitkeep` + `README.md` +
-  `.nvmrc`) until Step 11.
 - Add Postgres, RabbitMQ, Celery, Alembic, Keycloak, or `docker-compose` for the
-  control plane before the CLI path has proven the logic (build_plan Ground rule 3).
+  control plane without an explicitly approved post-Step-11 phase.
 - Start Step N before Step N−1 exit criteria are met.
 - Put real policy, ML, or report code into a step that does not own it.
 
@@ -163,7 +163,7 @@ Clean architecture with a single composition root. Enforced by `import-linter`
 in `pyproject.toml` and CI — not by review convention.
 
 ```text
-api/ (Typer CLI now; FastAPI routers at Step 11)
+api/ (Typer CLI and thin FastAPI routers)
   -> application/          # use cases; orchestrate only
     -> domain/             # pure models and rules
     -> ports/              # typing.Protocol only
@@ -210,8 +210,9 @@ Authoritative tree: `plans/PROJECT_SCAFFOLD.md` Section 3. Reconciled deviations
   scaffold §4.7. That is more reproducible than a local docker build id; it is
   still a deviation.
 - Fixtures: `tests/fixtures/<case_id>/`, not `tests/golden_pcaps/`.
-- Until Step 11, the only real `api/` adapter is `api/cli/` (Typer). `api/main.py`
-  and `api/routers/` exist from Step 0 as empty placeholders.
+- `api/cli/` remains the Typer adapter. `api/main.py` and `api/routers/reports.py`
+  are thin FastAPI wrappers over `application/report_queries.py`. The dashboard
+  catalog is a bounded filesystem of canonical reports, not PostgreSQL.
 
 | Need | Put it in |
 |---|---|
@@ -219,7 +220,7 @@ Authoritative tree: `plans/PROJECT_SCAFFOLD.md` Section 3. Reconciled deviations
 | Canonical evidence | `domain/evidence/` |
 | STARTTLS / TLS / PKI / rule packs | `domain/policies/` (pure functions + YAML data) |
 | Scoring / dedup / posture | `domain/findings/` |
-| Use-case orchestration | `application/run_analysis.py`, `application/render_report.py` (or `advisory_pipeline.py` at Step 10) |
+| Use-case orchestration | `application/run_analysis.py`, `application/render_report.py`, `application/report_queries.py` |
 | IANA TLS registry, trust store, cert bytes, reports, ML | `adapters/` as named in the scaffold |
 | Wiring | `bootstrap.py` only |
 | Tests that prove a step | `tests/fixtures/<case_id>/` + unit tests next to the pure function |
@@ -237,7 +238,7 @@ silently changing versions.
 | Tool | Rule |
 |---|---|
 | Python | **CPython 3.13** via `uv`. Not 3.14, not system Python, not Homebrew Python. |
-| Deps | `uv` + committed `uv.lock`. `uv sync --extra dev --extra reports --extra ml` (JSON/HTML work without WeasyPrint; PDF needs the `reports` extra; Isolation Forest needs `ml`). |
+| Deps | `uv` + committed `uv.lock`. `uv sync --extra dev --extra reports --extra ml --extra api` (JSON/HTML work without WeasyPrint; PDF needs the `reports` extra; Isolation Forest needs `ml`; the dashboard needs `api`). |
 | Analyzers | Docker images **pinned by digest**, `--network=none`, `--read-only`, non-root `65532`, `--cap-drop=ALL`, `--security-opt=no-new-privileges`, `--pids-limit=256`, `--memory=2g`, `--cpus=2`. |
 | Zeek | `zeek/zeek:8.0.10` LTS, digest in the scaffold / lockfile — not 8.2 or 9.x unless the lockfile + every fixture are deliberately refreshed. |
 | TShark | Separate image from `debian:trixie-slim` digest; lock records Dockerfile SHA-256, not the built-image digest; GPL; never statically linked. |

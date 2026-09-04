@@ -1,17 +1,15 @@
 # SecureMail as-built documentation
 
 This directory describes **what the code does today**, not the full product
-vision. The live surface is a CLI that reads a PCAP/PCAPNG and writes a v2
-`EvidenceDocument` JSON file, `securemail score` over synthetic finding sets,
-and `securemail report` which renders one canonical report object as JSON, HTML,
-and PDF.
+vision. The live surface includes the deterministic CLI plus a read-only
+FastAPI and React dashboard over the canonical report object.
 
-Current implementation: **Steps 0–10** of
+Current implementation: **Steps 0–11** of
 [`plans/build_plan.md`](../plans/build_plan.md) (foundations, TCP reconstruction,
 SMTP/IMAP/POP3 identification, STARTTLS/STLS and implicit TLS, TLS handshake
 version/cipher/key exchange, certificate facts, chain validation and identity,
 versioned rule packs and forward secrecy, posture scoring and coverage, reports,
-advisory ML). Step 11 is a named placeholder only.
+advisory ML, and the interactive dashboard).
 
 ## How these docs relate to the rest of the repo
 
@@ -44,6 +42,7 @@ source under `src/`, `zeek/`, and `tests/fixtures/` wins.
 | [protocol-identification.md](protocol-identification.md) | `port_hint` vs payload, DPD, corroboration, conflict |
 | [starttls.md](starttls.md) | STARTTLS/STLS machines, `downgrade_consistent`, implicit TLS |
 | [advisory-ml.md](advisory-ml.md) | Baseline + Isolation Forest, `evaluate-ml`, `--advisory` |
+| [dashboard.md](dashboard.md) | FastAPI report API, React analyst UI, case isolation, Playwright |
 | [cli-and-development.md](cli-and-development.md) | CLI, Make targets, doctor, lint, CI |
 | [fixtures.md](fixtures.md) | Catalog of the 71 PCAP cases plus synthetic finding sets |
 | [decisions/step2-imap-pop3-depth.md](decisions/step2-imap-pop3-depth.md) | ADR: Zeek vs TShark vs Spicy for IMAP/POP3 |
@@ -55,9 +54,10 @@ uv run securemail analyze tests/fixtures/empty/capture.pcapng --out out/empty.js
 uv run securemail score tests/fixtures/synthetic_findings/mixed_severity.json
 uv run securemail report tests/fixtures/reports/golden_report.json --format json,html,pdf --out out/
 uv run securemail evaluate-ml tests/support/synthetic_cohorts/cohort_seeded_v1/
+SECUREMAIL_REPORT_ROOT=tests/fixtures/dashboard uv run uvicorn securemail.api.main:app
+npm --prefix frontend run dev
 ```
 
 Registered commands are `analyze`, `score`, `report`, and `evaluate-ml`. See
 [cli-and-development.md](cli-and-development.md) for toolchain and
-[current-state.md](current-state.md) for the proof command of each completed
-step.
+[dashboard.md](dashboard.md) for the API/UI workflow.

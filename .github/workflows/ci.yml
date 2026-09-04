@@ -14,6 +14,11 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.13"
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: "frontend/.nvmrc"
+          cache: "npm"
+          cache-dependency-path: "frontend/package-lock.json"
       - name: Install native packages
         run: |
           sudo apt-get update
@@ -27,7 +32,9 @@ jobs:
           git lfs install
           git lfs pull
       - name: Sync Python environment
-        run: uv sync --extra dev --extra reports --extra ml
+        run: uv sync --extra dev --extra reports --extra ml --extra api
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
       - name: Doctor
         env:
           SECUREMAIL_CI: "1"
@@ -41,6 +48,32 @@ jobs:
           make tshark-image
       - name: Test
         run: make test
+      - name: Build dashboard
+        run: make frontend-build
+
+  dashboard-e2e:
+    runs-on: ubuntu-latest
+    needs: lint-test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: "frontend/.nvmrc"
+          cache: "npm"
+          cache-dependency-path: "frontend/package-lock.json"
+      - name: Sync API environment
+        run: uv sync --extra api --extra dev
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
+      - name: Install Playwright Chromium
+        run: cd frontend && npx playwright install --with-deps chromium
+      - name: Dashboard end-to-end tests
+        run: make e2e
 
   digest-resolve:
     runs-on: ubuntu-latest

@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Protocol
 
 import typer
-from pydantic import ValidationError
 
 from securemail.application.advisory_pipeline import AdvisoryPipelineError
 from securemail.application.render_report import (
@@ -15,9 +13,15 @@ from securemail.application.render_report import (
     ReportError,
     parse_report_formats,
 )
+from securemail.application.report_queries import (
+    ParsedReport,
+    ParseReportRequest,
+    ReportQueryError,
+)
 from securemail.domain.reports.schema import CanonicalReport
+from securemail.ports.persistence import MAX_REPORT_BYTES
 
-MAX_REPORT_INPUT_BYTES = 8 * 1024 * 1024
+MAX_REPORT_INPUT_BYTES = MAX_REPORT_BYTES
 
 
 class ReportFn(Protocol):
@@ -28,9 +32,14 @@ class ApplyAdvisoryFn(Protocol):
     def __call__(self, report: CanonicalReport) -> CanonicalReport: ...
 
 
+class ParseReportFn(Protocol):
+    def __call__(self, request: ParseReportRequest) -> ParsedReport: ...
+
+
 def register_report(
     app: typer.Typer,
     report: ReportFn,
+    parse: ParseReportFn,
     apply_advisory: ApplyAdvisoryFn,
 ) -> None:
     @app.command("report")
@@ -57,22 +66,13 @@ def register_report(
         try:
             requested = parse_report_formats(formats)
             raw = report_json.read_bytes()
-            if len(raw) > MAX_REPORT_INPUT_BYTES:
-                raise ReportError(
-                    f"report input exceeds {MAX_REPORT_INPUT_BYTES} bytes: {report_json}"
-                )
-            payload = json.loads(raw.decode("utf-8"))
-            if not isinstance(payload, dict):
-                raise ReportError("report JSON must be an object")
-            document = CanonicalReport.model_validate(payload)
+            document = parse(ParseReportRequest(report_bytes=raw)).report
             if advisory:
                 document = apply_advisory(document)
             artifacts = report(document, formats=requested)
         except (
             OSError,
-            UnicodeDecodeError,
-            json.JSONDecodeError,
-            ValidationError,
+            ReportQueryError,
             ReportError,
             AdvisoryPipelineError,
             ValueError,

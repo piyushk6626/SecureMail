@@ -1,4 +1,4 @@
-"""Developer workstation checks for Step 0. Prints every check; exits non-zero on failure."""
+"""Developer workstation checks. Prints every check; exits non-zero on failure."""
 
 from __future__ import annotations
 
@@ -147,8 +147,33 @@ def check_openssl() -> Check:
 
 
 def check_node() -> Check:
-    result = Check("node/nvm (only required for Step 11)")
-    result.skip("only required for Step 11")
+    result = Check("node 22.12+ matches frontend/.nvmrc")
+    node = shutil.which("node")
+    if node is None:
+        result.fail("node not on PATH", "cd frontend && nvm install && nvm use")
+        return result
+    completed = _run([node, "--version"])
+    match = re.fullmatch(r"v(\d+)\.(\d+)\.(\d+)\s*", completed.stdout)
+    if match is None:
+        result.fail(
+            completed.stdout.strip() or completed.stderr.strip() or "unreadable node version",
+            "cd frontend && nvm install && nvm use",
+        )
+        return result
+    major, minor = int(match.group(1)), int(match.group(2))
+    nvmrc = ROOT / "frontend" / ".nvmrc"
+    if not nvmrc.is_file() or nvmrc.read_text(encoding="utf-8").strip() != "22":
+        result.fail("frontend/.nvmrc must contain 22", "restore frontend/.nvmrc")
+        return result
+    if major == 22 and minor >= 12:
+        return result
+    if os.environ.get("SECUREMAIL_CI") == "1":
+        result.fail(completed.stdout.strip(), "actions/setup-node should use frontend/.nvmrc")
+        return result
+    if major > 22:
+        result.skip(f"{completed.stdout.strip()} present; CI and frontend/.nvmrc pin Node 22 LTS")
+        return result
+    result.fail(completed.stdout.strip(), "cd frontend && nvm install && nvm use")
     return result
 
 

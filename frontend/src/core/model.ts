@@ -1,0 +1,53 @@
+import type {
+  CanonicalReport,
+  EvidenceState,
+  FindingSeverity,
+} from "../types/canonical_report.generated";
+
+export type { CanonicalReport, EvidenceState, FindingSeverity };
+
+export interface CaseSummary {
+  case_id: string;
+  title?: string | null;
+  generated_at?: string | null;
+  risk_score?: number | null;
+  finding_count?: number;
+  unknown_count?: number;
+  not_observable_count?: number;
+  assessment_state?: "complete" | "limited" | "none";
+  protocols?: string[];
+}
+
+export interface CaseCatalog {
+  cases: CaseSummary[];
+}
+
+export type ViewMode = "portfolio" | "case";
+
+export const severity_order: Record<FindingSeverity, number> = {
+  high: 4,
+  medium: 3,
+  low: 2,
+  informational: 1,
+};
+
+export function normalize_case_catalog(payload: unknown): CaseCatalog {
+  if (Array.isArray(payload)) return { cases: payload.filter(is_case_summary) };
+  if (!is_record(payload) || !Array.isArray(payload.cases)) return { cases: [] };
+  return { cases: payload.cases.filter(is_case_summary) };
+}
+
+function is_case_summary(value: unknown): value is CaseSummary {
+  return is_record(value) && typeof value.case_id === "string";
+}
+
+export function is_record(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export function is_canonical_report(value: unknown): value is CanonicalReport {
+  if (!is_record(value)) return false;
+  if (value.schema_version !== "securemail.report/v1") return false;
+  if (!is_record(value.manifest) || !is_record(value.evidence)) return false;
+  return is_record(value.limitations);
+}

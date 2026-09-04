@@ -1,5 +1,29 @@
-# Frontend placeholder
+# SecureMail dashboard
 
-This directory is intentionally empty until Step 11 of `plans/build_plan.md`.
-Do not scaffold a React app, install Node dependencies, or add source files here
-before that step. Node 22 LTS is pinned in `.nvmrc` so CI can reference it later.
+React/Vite dashboard for the canonical `securemail.report/v1` contract.
+
+```bash
+nvm use
+npm ci
+npm run dev
+```
+
+Vite proxies `/api` to `http://127.0.0.1:8000`. The dashboard reads catalog
+reports from the FastAPI service; uploaded report previews stay in browser
+memory.
+
+Checks:
+
+```bash
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+npm run test:e2e
+```
+
+Regenerate checked-in report types after changing the canonical schema:
+
+```bash
+npm run generate:types
+```

@@ -7,12 +7,14 @@ not by review convention.
 ```mermaid
 flowchart TB
   cli[api_cli_Typer]
+  api[api_FastAPI]
   app[application]
   domain[domain]
   ports[ports]
   adapters[adapters]
   bootstrap[bootstrap.py]
   cli --> app
+  api --> app
   app --> domain
   app --> ports
   adapters --> ports
@@ -20,6 +22,7 @@ flowchart TB
   bootstrap --> adapters
   bootstrap --> app
   bootstrap --> cli
+  bootstrap --> api
 ```
 
 `bootstrap.py` is the **only** module that imports a port and its adapter.
@@ -61,8 +64,9 @@ scaffold path.
 - `load_trust_store_snapshot()`
 
 and closes them over `_analyze`, which calls `run_analysis`. `create_cli()`
-passes `_analyze`, `score_findings`, and `_render_report` into `build_app` so
-the Typer layer never imports adapters.
+passes `_analyze`, `score_findings`, and `_render_report` into the Typer app.
+`create_api()` wires the report query operations to the filesystem catalog and
+FastAPI app. Neither API adapter imports a concrete I/O adapter.
 
 ## Live modules
 
@@ -75,7 +79,9 @@ the Typer layer never imports adapters.
 | `api/cli/commands/report.py` | Thin `report` command: bounded JSON in, JSON/HTML/PDF out; `--advisory` |
 | `api/cli/commands/analyze.py` | Unused Step 0 stub; live `analyze` lives in `main.py` |
 | `api/cli/commands/evaluate_ml.py` | Thin `evaluate-ml` command over a seeded cohort directory |
-| `api/main.py`, `api/dependencies.py`, `api/routers/` | Step 11 placeholders |
+| `api/main.py` | FastAPI app factory, security headers, optional built frontend |
+| `api/dependencies.py` | Shared bounded request/report dependencies |
+| `api/routers/reports.py` | Thin health, case catalog, report, and preview routes |
 
 Console script: `securemail = "securemail.api.cli.main:main"` in
 `pyproject.toml`. `main()` imports `create_cli` from bootstrap (lazy, to keep
@@ -87,6 +93,7 @@ Console script: `securemail = "securemail.api.cli.main:main"` in
 |---|---|
 | `run_analysis.py` | Intake, hash, preflight, Zeek, optional TShark, normalize, policy, score, assemble `EvidenceDocument`; `score_findings` RORO use case |
 | `render_report.py` | Dump one `CanonicalReport` to JSON-compatible payload; derive JCS/HTML/PDF from that dump |
+| `report_queries.py` | Bounded report parsing, summaries, catalog lookup, canonical response bytes |
 | `normalize_flows.py` | Zeek `conn.log` / `weird.log` / `capture_loss.log` / `sm_tcp_recon.log` → `Flow` |
 | `normalize_sessions.py` | `sm_email.log` + optional TShark frames + `ssl.log` → `EmailSession` |
 | `normalize_handshakes.py` | `ssl.log` / ssl-log-ext + optional TShark frames → `TlsHandshake` |
@@ -131,7 +138,7 @@ themselves.
 | `analyzers.py` | `ZeekRunner`, `TSharkRunner`, `CapturePreflightRunner` protocols and result models |
 | `artifacts.py` | `ArtifactStore` protocol (`put`/`get` by SHA-256) |
 | `ml.py` | `AnomalyScorer` protocol; sklearn stays in adapters |
-| `persistence.py` | Step 11 placeholder |
+| `persistence.py` | Read-only canonical report catalog protocol |
 
 ### `adapters/`
 
@@ -155,6 +162,7 @@ themselves.
 | `reports/fonts/` | Bundled Noto Sans / Noto Sans Mono (OFL) |
 | `ml/baselines.py` | Median/MAD, categorical rarity, Page-Hinkley |
 | `ml/isolation_forest.py` | Isolation Forest challenger; gated by the evaluation harness |
+| `persistence/report_repository.py` | Bounded, symlink-safe filesystem report catalog |
 
 ## Toolchain (what the package actually pins)
 
@@ -162,14 +170,16 @@ themselves.
 - Default deps: pydantic v2, typer, cryptography, pyyaml, jinja2, rfc8785==0.1.4
 - Extra `reports` (WeasyPrint==69.0) is required for PDF; JSON/HTML report rendering
   uses core deps. Extra `ml` (scikit-learn, numpy, scipy) is required for
-  `securemail evaluate-ml` and `--advisory`. Extra `api` remains for Step 11.
+  `securemail evaluate-ml` and `--advisory`. Extra `api` provides FastAPI and
+  Uvicorn for Step 11.
 - Dev extra: pytest, hypothesis, import-linter, ruff, mypy, pre-commit,
   playwright, scapy, jsonschema, pypdf
+- Frontend: Node 22, React, TypeScript, Vite, TanStack Query/Table, ECharts,
+  Tailwind, Shadcn/Radix primitives, Motion, Vitest, and Playwright
 - Analyzers: Docker images, `--network=none` (see [analyzers.md](analyzers.md))
 
-## Not in this build
+## Deliberately deferred
 
-No FastAPI app factory with routes, no Celery workers, no SQLAlchemy
-repositories, no React tree under `frontend/` (only `.nvmrc` + README). The
-scaffold directories exist so later steps fill named files instead of inventing
-layout.
+The dashboard catalog is filesystem-backed and read-only. PostgreSQL,
+SQLAlchemy repositories, OIDC/RBAC, Celery/RabbitMQ workers, packet upload, and
+analysis inside API request processes remain outside Step 11.
