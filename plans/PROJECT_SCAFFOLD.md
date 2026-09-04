@@ -336,7 +336,7 @@ SecureMail/
 
   docs/
     README.md                            # as-built hub (what the code does today)
-    current-state.md                     # Steps 0–3 done; 4–11 placeholders
+    current-state.md                     # Steps 0–4 done; 5–11 placeholders
     architecture.md
     pipeline.md
     evidence-model.md

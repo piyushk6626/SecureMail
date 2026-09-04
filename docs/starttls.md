@@ -40,7 +40,7 @@ flowchart TD
 `tls_established` requires an observed TLS ClientHello:
 
 - Zeek `ssl.log` `ssl_history` contains `C`, and/or
-- TShark `tls.handshake.type == 1` joined to the flow
+- TShark TLS handshake frames (ClientHello `tls.handshake.type == 1`) joined to the flow
 
 If the server accepted STARTTLS/STLS but no ClientHello was seen, the terminal
 state is `accepted`, not `tls_established`. A second guard in each machine

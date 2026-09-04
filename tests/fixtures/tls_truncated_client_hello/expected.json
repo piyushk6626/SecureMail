@@ -1,0 +1,96 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.04,
+    "file_time_precision": "microsecond",
+    "original_packet_bytes": 331,
+    "packet_count": 5,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "S2",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShADF",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "192.0.2.10",
+        "port": 49152
+      },
+      "orig_bytes": 61,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "192.0.2.25",
+        "port": 4433
+      },
+      "resp_bytes": 0,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "handshakes": [
+    {
+      "certificate_verify_state": "not_observable",
+      "cipher_suite": {
+        "code": null,
+        "evidence_state": "incomplete",
+        "name": null
+      },
+      "established": false,
+      "evidence_state": "incomplete",
+      "hello_retry_request": false,
+      "key_exchange": {
+        "dh_param_size": null,
+        "evidence_state": "incomplete",
+        "mechanism": null,
+        "psk_key_exchange_modes": [],
+        "selected_group": null,
+        "selected_group_code": null,
+        "source_fields": []
+      },
+      "last_alert": null,
+      "messages": [
+        {
+          "direction": "orig",
+          "evidence_state": "observed",
+          "frame_number": 4,
+          "history_letter": "C",
+          "kind": "client_hello"
+        }
+      ],
+      "resumed": false,
+      "server_certificate_state": "not_observable",
+      "ssl_history": "C",
+      "uid": "CJKFoj4bpHEhTeaRoj",
+      "version": {
+        "client_supported_versions": [
+          "TLSv13",
+          "TLSv12"
+        ],
+        "evidence_state": "incomplete",
+        "legacy_record_version": null,
+        "selected": null,
+        "server_supported_version": null,
+        "source": null
+      },
+      "visibility": "partial"
+    }
+  ],
+  "run_identity": {
+    "analyzer_bundle_digest": "73627a8875f130609b6513f715c6ae5b873c9484cb356bb14d0f9d9c38727594",
+    "capture_sha256": "feacae9cd8c6b5bc1f146239ff4dd1369af75435c2c03b9f7a69f5d9dab40cd2",
+    "configuration_digest": "4166b2016e562efcc26e4e70ab1c5015106691dd557ff1ade0f3bbe4dd3d9c73",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0",
+  "sessions": []
+}

@@ -9,6 +9,7 @@ import typer
 from securemail.adapters.analyzers.capinfos_runner import DockerCapinfosRunner
 from securemail.adapters.analyzers.tshark_runner import DockerTSharkRunner
 from securemail.adapters.analyzers.zeek_runner import DockerZeekRunner
+from securemail.adapters.reference_data.iana_tls_parameters import load_iana_tls_parameters
 from securemail.application.run_analysis import AnalyzeRequest, run_analysis
 from securemail.domain.evidence.run import EvidenceDocument
 
@@ -19,6 +20,7 @@ def _analyze(capture: Path) -> EvidenceDocument:
         zeek_runner=DockerZeekRunner(),
         preflight_runner=DockerCapinfosRunner(),
         tshark_runner=DockerTSharkRunner(),
+        tls_parameters=load_iana_tls_parameters(),
     )
 
 

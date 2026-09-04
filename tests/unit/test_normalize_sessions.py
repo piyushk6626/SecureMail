@@ -393,3 +393,9 @@ def test_smtp_and_implicit_tls_ports_need_tshark_corroboration() -> None:
         [implicit_flow],
         {"ssl.log": [{"uid": "Ctls", "ssl_history": "C"}]},
     )
+    standalone_tls = _flow("Cplain", resp_port=4433)
+    assert needs_tshark_corroboration(
+        [],
+        [standalone_tls],
+        {"ssl.log": [{"uid": "Cplain", "ssl_history": "Cs"}]},
+    )

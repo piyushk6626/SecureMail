@@ -1,0 +1,14 @@
+{
+  "created_at": "2026-09-03T22:28:36Z",
+  "generator": "tests/fixtures/generators/lab_legacy_openssl_captures.py --case tls12_legacy_weak_suite --out tests/fixtures/tls12_legacy_weak_suite/capture.pcapng (docker network securemail-step4-tls12_legacy_weak_suite-net; dumpcap sidecar --network container:securemail-step4-tls12_legacy_weak_suite-srv)",
+  "notes": "Lab TLS 1.2 weak suite TLS_RSA_WITH_RC4_128_SHA via OpenSSL 1.0.2u. Extraction only; policy judgment is Step 7.",
+  "sha256": "4357425104940fce4b0a4123ee3dce06fc8c74c9c51a548b81ef54d87589c762",
+  "source": "lab",
+  "tool_versions": {
+    "dumpcap": "Dumpcap (Wireshark) 4.4.18.",
+    "legacy_image": "securemail/legacy-openssl:1.0.2u",
+    "openssl": "OpenSSL 1.0.2u  20 Dec 2019",
+    "python_image": "python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3",
+    "tshark_image": "securemail/tshark:step0"
+  }
+}

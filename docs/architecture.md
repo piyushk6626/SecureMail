@@ -41,8 +41,8 @@ Three import-linter contracts:
 3. Domain, application, adapters, and ports are independent of `api`.
 
 Canonical records that exist today: `AnalysisRun` (inside `EvidenceDocument`),
-`CapturePreflight`, `Flow`, `EmailSession`. The names `Case`, `Capture`,
-`TlsHandshake`, `CertificateEvidence`, `Finding`, `AnomalyResult`,
+`CapturePreflight`, `Flow`, `EmailSession`, `TlsHandshake`. The names `Case`,
+`Capture`, `CertificateEvidence`, `Finding`, `AnomalyResult`,
 `ReportManifest`, and `AuditEvent` are design vocabulary from
 [`plans/TECHNICAL_DESIGN.md`](../plans/TECHNICAL_DESIGN.md); they are not live
 models except where a placeholder file already occupies the scaffold path.
@@ -54,6 +54,7 @@ models except where a placeholder file already occupies the scaffold path.
 - `DockerZeekRunner`
 - `DockerCapinfosRunner`
 - `DockerTSharkRunner`
+- `load_iana_tls_parameters()`
 
 and closes them over `_analyze`, which calls `run_analysis`. `create_cli()`
 passes that function into `build_app` so the Typer layer never imports adapters.
@@ -76,9 +77,10 @@ Console script: `securemail = "securemail.api.cli.main:main"` in
 
 | Path | Role |
 |---|---|
-| `run_analysis.py` | Intake hash, PCAP magic check, capinfos, Zeek, optional TShark, assemble `EvidenceDocument` |
+| `run_analysis.py` | Intake hash, PCAP magic check, capinfos, Zeek, optional TShark, handshake normalize, assemble `EvidenceDocument` |
 | `normalize_flows.py` | Zeek `conn.log` / `weird.log` / `capture_loss.log` / `sm_tcp_recon.log` → `Flow` |
 | `normalize_sessions.py` | `sm_email.log` + optional TShark frames + `ssl.log` → `EmailSession` |
+| `normalize_handshakes.py` | `ssl.log` / ssl-log-ext + optional TShark frames → `TlsHandshake` |
 | `advisory_pipeline.py` | Step 10 placeholder |
 
 Domain models are constructed here. They do not parse raw Zeek/TShark output
@@ -95,7 +97,9 @@ themselves.
 | `policies/starttls/imap_upgrade.py` | IMAP STARTTLS machine |
 | `policies/starttls/pop3_upgrade.py` | POP3 STLS machine |
 | `policies/starttls/implicit_tls.py` | ALPN correlation; port is never proof |
-| `evidence/handshake.py`, `certificate.py`, `findings/`, `reports/`, TLS/PKI/rule packs | Placeholders for Steps 4–9 |
+| `evidence/handshake.py` | `TlsHandshake`, version/cipher/key-exchange evidence, visibility |
+| `policies/tls/key_exchange.py` | Pure version-aware key-exchange classifier (no weakness/FS judgment) |
+| `evidence/certificate.py`, `findings/`, `reports/`, remaining TLS/PKI/rule packs | Placeholders for Steps 5–9 |
 
 ### `ports/`
 
@@ -114,7 +118,8 @@ themselves.
 | `analyzers/zeek_runner.py` | Pinned `docker run` of `securemail/zeek:step0` |
 | `analyzers/tshark_runner.py` | Pinned bounded TShark field dump |
 | `analyzers/capinfos_runner.py` | capinfos inside the TShark image (same sandbox) |
-| PKI, reports, ML, reference data | Placeholders |
+| `reference_data/iana_tls_parameters.py` | Bounded load of the checked-in IANA TLS Parameters snapshot |
+| PKI, reports, ML | Placeholders |
 
 ## Toolchain (what the package actually pins)
 

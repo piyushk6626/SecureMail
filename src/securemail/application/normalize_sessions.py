@@ -43,8 +43,6 @@ _MERGE_WINDOW_SECONDS = 2.0
 SMTP_PORTS = frozenset({25, 465, 587})
 IMAP_PORTS = frozenset({143, 993})
 POP3_PORTS = frozenset({110, 995})
-MAIL_SERVICE_PORTS = SMTP_PORTS | IMAP_PORTS | POP3_PORTS
-
 _SECRET_COMMANDS = frozenset(
     {
         "AUTH",
@@ -508,18 +506,11 @@ def needs_tshark_corroboration(
         for session in sessions
     ):
         return True
-    ssl_uids: set[str] = set()
     if logs is not None:
         for row in _bounded_records(logs.get("ssl.log", [])):
-            uid = _as_str(row.get("uid"), max_len=_MAX_UID_LEN)
-            if uid is not None:
-                ssl_uids.add(uid)
-    for flow in flows:
-        if flow.resp.port in IMPLICIT_TLS_PORTS:
-            return True
-        if flow.uid in ssl_uids and flow.resp.port in MAIL_SERVICE_PORTS:
-            return True
-    return False
+            if _as_str(row.get("uid"), max_len=_MAX_UID_LEN) is not None:
+                return True
+    return any(flow.resp.port in IMPLICIT_TLS_PORTS for flow in flows)
 
 
 def needs_imap_pop_corroboration(sessions: Sequence[EmailSession]) -> bool:

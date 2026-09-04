@@ -15,6 +15,7 @@ flowchart TD
   gate{needs_tshark_corroboration}
   tshark[Docker_TShark]
   sess2[normalize_sessions_with_frames]
+  hs[normalize_handshakes]
   out[EvidenceDocument_v0]
   intake --> hash
   hash --> pre
@@ -24,12 +25,15 @@ flowchart TD
   zeek --> sess1
   flows --> sess1
   sess1 --> gate
-  gate -->|no| out
+  gate -->|no| hs
   gate -->|yes| tshark
   tshark --> sess2
   flows --> sess2
   zeek --> sess2
-  sess2 --> out
+  sess2 --> hs
+  zeek --> hs
+  flows --> hs
+  hs --> out
 ```
 
 Capinfos and Zeek both receive the original capture path. The capture is hashed
@@ -93,18 +97,27 @@ STARTTLS/implicit-TLS assessments are already attached on this pass.
 
 - any session has protocol or payload evidence in `{smtp, imap, pop3}`, or
 - any flow’s responder port is 465, 993, or 995, or
-- a flow UID appears in `ssl.log` **and** the responder port is a well-known
-  mail port (25, 465, 587, 143, 993, 110, 995)
+- any row in `ssl.log` has a UID (standalone TLS on a non-mail port included)
 
-Empty and non-mail captures (the Step 0 `empty` fixture) skip TShark.
+Empty and non-mail, non-TLS captures (the Step 0 `empty` fixture) skip TShark.
 
 When the gate fires, `DockerTSharkRunner` runs a fixed display filter and
 allowlisted `-e` fields. `normalize_sessions` is called **again** with those
 frames: events are merged by UID and a 2.0s timestamp window, ClientHello frame
-numbers are attached, and identity/upgrade are recomputed. See
+numbers are attached, and identity/upgrade are recomputed. Handshake
+normalization uses the same frames for message/HRR corroboration. See
 [analyzers.md](analyzers.md) and [protocol-identification.md](protocol-identification.md).
 
-## 7. Emit `EvidenceDocument`
+## 7. Normalize handshakes
+
+`normalize_handshakes(logs, flows, tls_parameters, tshark_frames)` builds
+top-level `TlsHandshake` records from Zeek `ssl.log` (including `ssl-log-ext`
+fields). TShark supplies frame numbers and HelloRetryRequest corroboration;
+Zeek remains the parameter source. Cipher identifiers are resolved through the
+checked-in IANA snapshot loaded in `bootstrap.py`. See
+[evidence-model.md](evidence-model.md).
+
+## 8. Emit `EvidenceDocument`
 
 ```text
 schema_version = "v0"
@@ -112,9 +125,10 @@ run_identity.capture_sha256            = intake hash
 run_identity.analyzer_bundle_digest    = SHA-256(lockfile)
 run_identity.normalization_schema_version = "v0"
 run_identity.configuration_digest      = SHA-256 of the frozen config dict
+                                         plus iana_tls_parameters_sha256
 run_identity.policy_pack_version       = null
 run_identity.trust_store_digest        = null
-capture_preflight, flows, sessions
+capture_preflight, flows, sessions, handshakes
 ```
 
 The CLI dumps `document.model_dump(mode="json")` with `json.dumps(..., indent=2,
@@ -132,14 +146,17 @@ sort_keys=True, ensure_ascii=False)` plus a trailing newline.
     "capinfos_entry": "capinfos",
     "flow_normalization": "v1",
     "session_normalization": "v2",
-    "tshark_corroboration": "smtp_imap_pop_tls_clienthello",
+    "handshake_normalization": "v1",
+    "tshark_corroboration": "smtp_imap_pop_tls_handshake",
     "starttls_evaluation": "v1",
+    "iana_tls_parameters_sha256": "<SHA-256 of iana-tls-parameters.json>",
 }
 ```
 
-Changing any of those strings changes every fixture’s `expected.json`
-`run_identity.configuration_digest`. Current fixtures pin
-`f60054b7f1ed181f41ea1fc696ee8b9d1c8b701ca2e5787201dabed63662e5a0`.
+Changing any of those strings, or the checked-in IANA snapshot bytes, changes
+every fixture’s `expected.json` `run_identity.configuration_digest`. Current
+fixtures pin
+`4166b2016e562efcc26e4e70ab1c5015106691dd557ff1ade0f3bbe4dd3d9c73`.
 
 ## Idempotency
 

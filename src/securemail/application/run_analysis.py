@@ -9,6 +9,7 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 
 from securemail.application.normalize_flows import normalize_flows
+from securemail.application.normalize_handshakes import normalize_handshakes
 from securemail.application.normalize_sessions import (
     needs_tshark_corroboration,
     normalize_sessions,
@@ -17,6 +18,10 @@ from securemail.domain.evidence.run import (
     NORMALIZATION_SCHEMA_VERSION,
     AnalysisRun,
     EvidenceDocument,
+)
+from securemail.domain.policies.tls.key_exchange import (
+    TlsParameterIndex,
+    empty_tls_parameter_index,
 )
 from securemail.ports.analyzers import (
     AnalyzerError,
@@ -40,7 +45,8 @@ _CONFIGURATION = {
     "capinfos_entry": "capinfos",
     "flow_normalization": "v1",
     "session_normalization": "v2",
-    "tshark_corroboration": "smtp_imap_pop_tls_clienthello",
+    "handshake_normalization": "v1",
+    "tshark_corroboration": "smtp_imap_pop_tls_handshake",
     "starttls_evaluation": "v1",
 }
 
@@ -59,8 +65,13 @@ class AnalyzeRequest(BaseModel):
     capture_path: Path = Field(...)
 
 
-def configuration_digest() -> str:
-    payload = json.dumps(_CONFIGURATION, sort_keys=True, separators=(",", ":")).encode("utf-8")
+def configuration_digest(*, iana_tls_parameters_sha256: str | None = None) -> str:
+    digest = iana_tls_parameters_sha256 or empty_tls_parameter_index().digest
+    payload = json.dumps(
+        {**_CONFIGURATION, "iana_tls_parameters_sha256": digest},
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
 
 
@@ -81,6 +92,7 @@ def run_analysis(
     zeek_runner: ZeekRunner,
     preflight_runner: CapturePreflightRunner,
     tshark_runner: TSharkRunner | None = None,
+    tls_parameters: TlsParameterIndex | None = None,
 ) -> EvidenceDocument:
     capture_path = request.capture_path
     if not capture_path.is_file():
@@ -90,6 +102,7 @@ def run_analysis(
     if header != PCAPNG_MAGIC and header not in PCAP_MAGICS:
         raise InvalidCaptureError(f"not a PCAP/PCAPNG file: {capture_path}")
 
+    identifiers = tls_parameters if tls_parameters is not None else empty_tls_parameter_index()
     capture_digest = sha256_file(capture_path)
     try:
         preflight = preflight_runner.run(capture_path)
@@ -98,23 +111,34 @@ def run_analysis(
         raise AnalysisError(str(exc)) from exc
     flows = normalize_flows(zeek_result.logs, preflight)
     sessions = normalize_sessions(zeek_result.logs, flows)
+    tshark_frames: list[dict[str, object]] | None = None
     if tshark_runner is not None and needs_tshark_corroboration(sessions, flows, zeek_result.logs):
         try:
             tshark_result = tshark_runner.run(capture_path)
         except AnalyzerError as exc:
             raise AnalysisError(str(exc)) from exc
-        sessions = normalize_sessions(zeek_result.logs, flows, tshark_frames=tshark_result.frames)
+        tshark_frames = tshark_result.frames
+        sessions = normalize_sessions(zeek_result.logs, flows, tshark_frames=tshark_frames)
+    handshakes = normalize_handshakes(
+        zeek_result.logs,
+        flows,
+        identifiers,
+        tshark_frames=tshark_frames,
+    )
     return EvidenceDocument(
         schema_version=NORMALIZATION_SCHEMA_VERSION,
         run_identity=AnalysisRun(
             capture_sha256=capture_digest,
             analyzer_bundle_digest=zeek_result.analyzer_bundle_digest,
             normalization_schema_version=NORMALIZATION_SCHEMA_VERSION,
-            configuration_digest=configuration_digest(),
+            configuration_digest=configuration_digest(
+                iana_tls_parameters_sha256=identifiers.digest
+            ),
             policy_pack_version=None,
             trust_store_digest=None,
         ),
         capture_preflight=preflight,
         flows=flows,
         sessions=sessions,
+        handshakes=handshakes,
     )

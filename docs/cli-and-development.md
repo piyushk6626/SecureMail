@@ -93,6 +93,7 @@ Docker Desktop-specific notes are skipped.
 | `tests/test_tcp_fixtures.py` | Step 1 cases + never-complete snaplen assertion |
 | `tests/test_protocol_fixtures.py` | Step 2 identity assertions |
 | `tests/test_starttls_fixtures.py` | Step 3 upgrade / implicit TLS assertions |
+| `tests/test_tls_fixtures.py` | Step 4 version/cipher/key-exchange assertions |
 | `tests/unit/test_reconstruction_quality.py` | Pure classifier |
 | `tests/unit/test_normalize_flows.py` | Log joining |
 | `tests/unit/test_normalize_sessions.py` | Identity, merge, corroboration gate |
@@ -100,6 +101,9 @@ Docker Desktop-specific notes are skipped.
 | `tests/unit/test_implicit_tls.py` | ALPN vs port |
 | `tests/unit/test_starttls_hypothesis.py` | Property tests |
 | `tests/unit/test_run_analysis.py` | Intake / orchestration with fakes |
+| `tests/unit/test_normalize_handshakes.py` | Version precedence, history, HRR frames |
+| `tests/unit/test_key_exchange.py` | TLS 1.2 grammar vs TLS 1.3 key_share/PSK |
+| `tests/unit/test_iana_tls_parameters.py` | Snapshot bounds and lookups |
 | `tests/unit/test_analyzer_argv.py` | No shell metacharacters |
 | `tests/unit/test_bundle_lock.py` | Lock hashing |
 | `tests/unit/test_capinfos_parse.py` | capinfos text |

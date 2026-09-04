@@ -1,0 +1,10 @@
+{
+  "created_at": "2026-09-03T00:00:00Z",
+  "generator": "tests/fixtures/generators/scapy_tls_edge_captures.py --case tls_supported_versions_precedence",
+  "notes": "Scapy TLS handshake with legacy record/hello version TLS 1.0 (0x0301) while supported_versions selects TLS 1.2 (0x0303).",
+  "sha256": "2a630292e058a48f631ddc907d5f74991f5332d73d0dc195659d5a133a36cc7a",
+  "source": "scapy",
+  "tool_versions": {
+    "scapy": "2.7.0"
+  }
+}

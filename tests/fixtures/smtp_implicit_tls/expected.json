@@ -35,10 +35,114 @@
       "uid": "CJKFoj4bpHEhTeaRoj"
     }
   ],
+  "handshakes": [
+    {
+      "certificate_verify_state": "not_observable",
+      "cipher_suite": {
+        "code": "0xC030",
+        "evidence_state": "observed",
+        "name": "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+      },
+      "established": true,
+      "evidence_state": "observed",
+      "hello_retry_request": false,
+      "key_exchange": {
+        "dh_param_size": null,
+        "evidence_state": "inferred",
+        "mechanism": "ECDHE",
+        "psk_key_exchange_modes": [],
+        "selected_group": "x25519",
+        "selected_group_code": 29,
+        "source_fields": [
+          "cipher",
+          "curve"
+        ]
+      },
+      "last_alert": null,
+      "messages": [
+        {
+          "direction": "orig",
+          "evidence_state": "observed",
+          "frame_number": 4,
+          "history_letter": "C",
+          "kind": "client_hello"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 6,
+          "history_letter": "s",
+          "kind": "server_hello"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "x",
+          "kind": "certificate"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "k",
+          "kind": "server_key_exchange"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "n",
+          "kind": "server_hello_done"
+        },
+        {
+          "direction": "orig",
+          "evidence_state": "observed",
+          "frame_number": 8,
+          "history_letter": "G",
+          "kind": "client_key_exchange"
+        },
+        {
+          "direction": "orig",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "I",
+          "kind": "change_cipher_spec"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 9,
+          "history_letter": "t",
+          "kind": "new_session_ticket"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "i",
+          "kind": "change_cipher_spec"
+        }
+      ],
+      "resumed": false,
+      "server_certificate_state": "observed",
+      "ssl_history": "CsxknGIti",
+      "uid": "CJKFoj4bpHEhTeaRoj",
+      "version": {
+        "client_supported_versions": [],
+        "evidence_state": "observed",
+        "legacy_record_version": "TLSv12",
+        "selected": "TLSv12",
+        "server_supported_version": null,
+        "source": "legacy_record"
+      },
+      "visibility": "full"
+    }
+  ],
   "run_identity": {
     "analyzer_bundle_digest": "73627a8875f130609b6513f715c6ae5b873c9484cb356bb14d0f9d9c38727594",
     "capture_sha256": "49d515ee5b6ee1df37b78d5e418210aa7fbea60090eb7e495cab9d30e0f3a944",
-    "configuration_digest": "f60054b7f1ed181f41ea1fc696ee8b9d1c8b701ca2e5787201dabed63662e5a0",
+    "configuration_digest": "4166b2016e562efcc26e4e70ab1c5015106691dd557ff1ade0f3bbe4dd3d9c73",
     "normalization_schema_version": "v0",
     "policy_pack_version": null,
     "trust_store_digest": null

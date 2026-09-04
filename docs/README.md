@@ -4,10 +4,10 @@ This directory describes **what the code does today**, not the full product
 vision. The live surface is a CLI that reads a PCAP/PCAPNG and writes a v0
 `EvidenceDocument` JSON file.
 
-Current implementation: **Steps 0–3** of
+Current implementation: **Steps 0–4** of
 [`plans/build_plan.md`](../plans/build_plan.md) (foundations, TCP reconstruction,
-SMTP/IMAP/POP3 identification, STARTTLS/STLS and implicit TLS). Steps 4–11 are
-named placeholders only.
+SMTP/IMAP/POP3 identification, STARTTLS/STLS and implicit TLS, TLS handshake
+version/cipher/key exchange). Steps 5–11 are named placeholders only.
 
 ## How these docs relate to the rest of the repo
 
@@ -32,13 +32,13 @@ source under `src/`, `zeek/`, and `tests/fixtures/` wins.
 | [current-state.md](current-state.md) | Done vs not done, proof commands, fixture count |
 | [architecture.md](architecture.md) | Layers, import-linter, composition root, live modules |
 | [pipeline.md](pipeline.md) | `securemail analyze` end to end, digests, idempotency |
-| [evidence-model.md](evidence-model.md) | v0 JSON envelope, `EvidenceState`, `Flow`, `EmailSession` |
+| [evidence-model.md](evidence-model.md) | v0 JSON envelope, `EvidenceState`, `Flow`, `EmailSession`, `TlsHandshake` |
 | [analyzers.md](analyzers.md) | Sandbox, lockfile, Zeek scripts, TShark allowlist, redaction |
 | [tcp-reconstruction.md](tcp-reconstruction.md) | Quality classifier, reason codes, `sm_tcp_recon.log` |
 | [protocol-identification.md](protocol-identification.md) | `port_hint` vs payload, DPD, corroboration, conflict |
 | [starttls.md](starttls.md) | STARTTLS/STLS machines, `downgrade_consistent`, implicit TLS |
 | [cli-and-development.md](cli-and-development.md) | CLI, Make targets, doctor, lint, CI |
-| [fixtures.md](fixtures.md) | Catalog of the 40 committed cases |
+| [fixtures.md](fixtures.md) | Catalog of the 51 committed cases |
 | [decisions/step2-imap-pop3-depth.md](decisions/step2-imap-pop3-depth.md) | ADR: Zeek vs TShark vs Spicy for IMAP/POP3 |
 
 ## Quick start

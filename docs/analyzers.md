@@ -2,7 +2,7 @@
 
 Packet ingest, TCP reassembly, protocol identification, and TLS record decoding
 happen in **Zeek**. TShark is a bounded second pass for mail command/status and
-ClientHello frame numbers. Python never shells out with a string command:
+TLS handshake message/frame corroboration. Python never shells out with a string command:
 runners build a `list[str]` and call `subprocess.run`.
 
 Decision record for IMAP/POP3 depth:
@@ -114,7 +114,10 @@ DPD signatures enable analyzers from payload (HELO/EHLO+220, `* OK`+IMAP verbs,
 `+OK`+POP3 verbs). Matching payload bytes are not logged.
 
 Standard Zeek logs used by Python: `conn.log`, `weird.log`, `capture_loss.log`,
-`ssl.log` (`ssl_history`, `next_protocol`, `uid`).
+`ssl.log` plus `ssl-log-ext` fields (`server_supported_version`,
+`server_key_share_group`, `psk_key_exchange_modes`, `ssl_history`, `cipher`,
+`curve`, `uid`, …). Python does not treat Zeek `x509.log` as TLS 1.3 certificate
+evidence.
 
 ## TShark
 
@@ -124,9 +127,10 @@ Standard Zeek logs used by Python: `conn.log`, `weird.log`, `capture_loss.log`,
 not the built image id.
 
 **When it runs:** `needs_tshark_corroboration` — see [pipeline.md](pipeline.md).
-Not started for the empty fixture or non-mail captures.
+Not started for the empty fixture or captures with neither mail nor TLS
+handshake evidence.
 
-**Display filter (literal):** `smtp or imap or pop or tls.handshake.type == 1`
+**Display filter (literal):** `smtp or imap or pop or tls.handshake`
 
 **Allowlisted `-e` fields only:**
 
@@ -137,11 +141,13 @@ Not started for the empty fixture or non-mail captures.
 - `pop.request.command`, `pop.response.indicator`
 - `smtp.req.command`, `smtp.response.code`
 - `tls.handshake.type`
+- `tls.handshake.extensions_key_share_selected_group`
 
-Explicitly excluded (secrets / full lines): `imap.line`,
-`imap.request.username`, `imap.request.password`, `pop.request.parameter`,
-`pop.request.data`, `pop.response.data`, `smtp.req.parameter`,
-`smtp.auth.password`, `smtp.auth.username`.
+Explicitly excluded (secrets / full lines / cert bytes / key material):
+`imap.line`, `imap.request.username`, `imap.request.password`,
+`pop.request.parameter`, `pop.request.data`, `pop.response.data`,
+`smtp.req.parameter`, `smtp.auth.password`, `smtp.auth.username`,
+`tls.handshake.certificate`, `tls.handshake.extensions_key_share_key_exchange`.
 
 Output is CSV (`-T fields`, header, quoted, first occurrence). Python parses
 rows into dicts; empty cells become `null`.
@@ -149,6 +155,15 @@ rows into dicts; empty cells become `null`.
 TShark’s mail dissectors bind **well-known ports**. Nonstandard-port identity
 stays on Zeek DPD (`imap_nonstandard_port`, `pop3_nonstandard_port` stay
 `corroboration=zeek`).
+
+## IANA TLS Parameters
+
+[`iana-tls-parameters.json`](../src/securemail/adapters/reference_data/iana-tls-parameters.json)
+is a checked-in snapshot (cipher suites and supported groups) with registry
+URLs and `retrieved_at` in `snapshot`.
+[`iana_tls_parameters.py`](../src/securemail/adapters/reference_data/iana_tls_parameters.py)
+loads it with file-size and entry bounds. Analysis workers never fetch IANA.
+The snapshot’s SHA-256 is part of `configuration_digest`.
 
 ## Capinfos
 

@@ -83,6 +83,7 @@ def test_run_analysis_hashes_before_returning_document(tmp_path: Path) -> None:
     assert len(document.flows) == 1
     assert document.flows[0].uid == "Ctest"
     assert document.sessions == []
+    assert document.handshakes == []
 
 
 def test_run_analysis_normalizes_email_sessions(tmp_path: Path) -> None:
@@ -180,3 +181,6 @@ def test_run_analysis_assesses_starttls_from_ssl_history(tmp_path: Path) -> None
     assert document.sessions[0].explicit_upgrade is not None
     assert document.sessions[0].explicit_upgrade.state is not None
     assert document.sessions[0].explicit_upgrade.state.value == "tls_established"
+    assert len(document.handshakes) == 1
+    assert document.handshakes[0].uid == "Ctest"
+    assert document.handshakes[0].ssl_history == "Csx"

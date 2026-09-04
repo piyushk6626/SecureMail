@@ -1,0 +1,10 @@
+{
+  "created_at": "2026-09-03T00:00:00Z",
+  "generator": "tests/fixtures/generators/scapy_tls_edge_captures.py --case tls_truncated_client_hello",
+  "notes": "Scapy TLS handshake that stops after a complete ClientHello; no ServerHello.",
+  "sha256": "feacae9cd8c6b5bc1f146239ff4dd1369af75435c2c03b9f7a69f5d9dab40cd2",
+  "source": "scapy",
+  "tool_versions": {
+    "scapy": "2.7.0"
+  }
+}

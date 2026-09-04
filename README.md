@@ -3,10 +3,11 @@
 Offline, deterministic-first cryptographic posture analysis for SMTP, IMAP, and
 POP3 traffic captured in PCAP/PCAPNG files.
 
-This repository has completed **Steps 0–3** of `plans/build_plan.md`: package
+This repository has completed **Steps 0–4** of `plans/build_plan.md`: package
 layout, sandboxed Zeek/TShark runners, TCP reconstruction quality, payload-driven
-protocol identification, and STARTTLS/STLS plus implicit-TLS assessment. The live
-command is `securemail analyze`. Steps 4–11 remain named placeholders.
+protocol identification, STARTTLS/STLS plus implicit-TLS assessment, and TLS
+version / cipher / key-exchange evidence. The live command is `securemail
+analyze`. Steps 5–11 remain named placeholders.
 
 **As-built documentation** (what the code does today) lives in
 [`docs/README.md`](docs/README.md). Plan contracts (what to build next) remain in
@@ -49,10 +50,14 @@ uv run securemail analyze tests/fixtures/pop3_nonstandard_port/capture.pcapng --
 
 # Step 3 — STARTTLS after stripped capability (`downgrade_consistent`)
 uv run securemail analyze tests/fixtures/imap_starttls_capability_stripped/capture.pcapng --out out/imap.json
+
+# Step 4 — TLS 1.3 HelloRetryRequest, version/cipher/key-exchange evidence
+uv run securemail analyze tests/fixtures/tls13_hello_retry_request/capture.pcapng --out out/tls13-hrr.json
 ```
 
-`--out` is required. Output is a v0 `EvidenceDocument` JSON file (flows +
-sessions). There is no `score`, `report`, or `evaluate-ml` command yet.
+`--out` is required. Output is a v0 `EvidenceDocument` JSON file (flows,
+sessions, and top-level `handshakes`). There is no `score`, `report`, or
+`evaluate-ml` command yet.
 
 ## Layout
 

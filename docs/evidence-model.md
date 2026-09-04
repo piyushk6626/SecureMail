@@ -17,9 +17,11 @@ EvidenceDocument
   capture_preflight: CapturePreflight
   flows: Flow[]
   sessions: EmailSession[]
+  handshakes: TlsHandshake[]
 ```
 
-There is no `handshakes`, `certificates`, or `findings` array.
+Standalone TLS (no mail session) is retained in `handshakes`. There is no
+`certificates` or `findings` array.
 
 ### `AnalysisRun`
 
@@ -28,7 +30,7 @@ There is no `handshakes`, `certificates`, or `findings` array.
 | `capture_sha256` | 64 hex chars | SHA-256 of the intake file |
 | `analyzer_bundle_digest` | 64 hex chars | SHA-256 of `tools/analyzer-bundle.lock` bytes |
 | `normalization_schema_version` | `"v0"` | constant |
-| `configuration_digest` | 64 hex chars | hash of the config dict in `run_analysis.py` |
+| `configuration_digest` | 64 hex chars | hash of the config dict plus the IANA snapshot digest |
 | `policy_pack_version` | `str \| null` | always `null` |
 | `trust_store_digest` | `str \| null` | always `null` |
 
@@ -62,8 +64,8 @@ evidence model imports this enum; nothing redefines it.
 |---|---|
 | `observed` | Directly seen (complete TCP stream, confirmed protocol, terminal upgrade state with evidence) |
 | `verified` | Reserved; not assigned by current classifiers |
-| `inferred` | Reserved; not assigned by current classifiers |
-| `incomplete` | Reconstruction missing bytes or boundaries |
+| `inferred` | TLS 1.2 key exchange taken from the IANA suite-name grammar (and TLS 1.3 PSK-only when key_share is absent) |
+| `incomplete` | Reconstruction missing bytes or boundaries; truncated ClientHello with no selected version |
 | `conflicting` | Overlapping retransmission conflict, or Zeek vs TShark protocol disagreement |
 | `not_observable` | Check does not apply (no upgrade attempt, implicit TLS not on 465/993/995) |
 | `indeterminate` | Ambiguous banner, TLS on a mail port without selected ALPN, unresolved identity |
@@ -155,6 +157,39 @@ Secret commands (arguments/text redacted): `AUTH`, `LOGIN`, `USER`, `PASS`,
 
 Port number never sets `correlated_protocol`. See [starttls.md](starttls.md).
 
+## `TlsHandshake`
+
+Top-level TLS handshake evidence, linked to a `Flow` by Zeek `uid`. Built by
+[`normalize_handshakes`](../src/securemail/application/normalize_handshakes.py)
+from `ssl.log` / `ssl-log-ext` plus optional TShark handshake frames. Cipher
+names and codes come from the checked-in IANA snapshot, not hardcoded suite
+literals.
+
+| Field | Notes |
+|---|---|
+| `uid` | Same Zeek UID as the `Flow` |
+| `ssl_history` | Zeek letter sequence; `messages` reconstruct it letter-for-letter |
+| `established` / `resumed` | From Zeek `ssl.log` |
+| `hello_retry_request` | True when history has `j` or a TShark ServerHello is classified as HRR |
+| `visibility` | `full`, `partial`, or `not_observable` |
+| `version.selected` | Negotiated version. `server_supported_version` wins over legacy `version` / `server_version`. Never inferred from ClientHello offers |
+| `version.source` | `supported_versions` or `legacy_record` |
+| `cipher_suite` | Canonical IANA `name` + `code` (e.g. `TLS_AES_256_GCM_SHA384` / `0x1302`) |
+| `key_exchange` | Version-aware classifier; see below |
+| `messages` | Ordered handshake/record kinds with optional `frame_number` |
+| `server_certificate_state` / `certificate_verify_state` | From history letters `x` / `y` only. TLS 1.3 post-ServerHello is `not_observable` unless those letters are present — never fabricated from `x509.log` |
+| `evidence_state` | Handshake-level visibility (`observed` / `incomplete` / `conflicting`) |
+
+TLS 1.2 key exchange is **inferred** from the IANA suite-name grammar (`ECDHE`,
+`RSA`, `ECDH`, …) plus observed `curve` / `dh_param_size`. TLS 1.3 key exchange
+comes from `key_share` / groups / PSK modes / `resumed` only — **never** from
+the cipher-suite name. PSK-only resumption is `PSK`; PSK with a selected
+key_share is `PSK-(EC)DHE`.
+
+TLS 1.3 visibility is `partial` unless both certificate and `CertificateVerify`
+are actually observed. A truncated handshake that stops after ClientHello has
+`version.selected=null` and `evidence_state=incomplete`.
+
 ## Example (shape, not a golden file)
 
 A nonstandard-port POP3 session looks like: `port_hint=none`,
@@ -170,6 +205,6 @@ requires byte-for-field equality with `expected.json`.
 
 ## Not in this build
 
-No `TlsHandshake` (version, cipher, key share, PSK modes). No
-`CertificateEvidence`. No `Finding`. `verified` / `inferred` are legal enum
-members but unused by current classifiers.
+No `CertificateEvidence` (subject, expiry, key size). No `Finding`. `verified`
+is a legal enum member but unused by current classifiers. Handshake records do
+not judge weak suites or forward secrecy.

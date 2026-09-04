@@ -10,9 +10,10 @@ tests/fixtures/<case_id>/
 ```
 
 `<case_id>` is `<protocol_or_area>_<condition>` as named in
-[`plans/build_plan.md`](../plans/build_plan.md). There are **40** committed
+[`plans/build_plan.md`](../plans/build_plan.md). There are **51** committed
 fixture directories. Some are reused as proof in more than one step
-(`tcp_smtp_clean_baseline` in Steps 1–2; `*_nonstandard_port` in Steps 2–3).
+(`tcp_smtp_clean_baseline` in Steps 1–2; `*_nonstandard_port` in Steps 2–3;
+`tls13_psk_only_resumption` is also named for Step 7 later).
 
 ## Harness
 
@@ -56,6 +57,10 @@ new fixture. Lab captures on macOS must use a dumpcap sidecar — see
 | `import_public_corpus.py` | Public SMTP/IMAP and STARTTLS/STLS slices (`editcap -F pcapng` only) |
 | `lab_starttls_captures.py` | Successful STARTTLS/STLS, implicit TLS, TLS-on-port without ALPN |
 | `scapy_starttls_captures.py` | Reject, strip, violation, plaintext credentials |
+| `lab_tls_handshake_captures.py` | TLS 1.2 ECDHE, TLS 1.3 full, HelloRetryRequest, PSK-only resumption |
+| `lab_legacy_openssl_captures.py` | TLS 1.2 static RSA, static ECDH, RC4 via OpenSSL 1.0.2u |
+| `scapy_tls_edge_captures.py` | `supported_versions` vs legacy record; truncated ClientHello |
+| `import_tls_public_corpus.py` | Independent TLS 1.2 / TLS 1.3 regression slices |
 
 SMTP on TCP/25 reuses the immutable Step 1 capture
 `tcp_smtp_clean_baseline`. Advertised-but-never-requested STARTTLS reuses the
@@ -124,17 +129,33 @@ Step 2 `*_nonstandard_port` Scapy fixtures.
 | `imap_starttls_public_corpus` | public_corpus | STARTTLS regression |
 | `pop3_stls_public_corpus` | public_corpus | STLS regression |
 
+### Step 4 — TLS version / cipher / key exchange
+
+| Case | Source | Asserts |
+|---|---|---|
+| `tls12_ecdhe` | lab | TLS 1.2, `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256`, KX `ECDHE` from suite grammar |
+| `tls12_static_rsa` | lab (OpenSSL 1.0.2u) | `TLS_RSA_WITH_AES_128_CBC_SHA`, KX `RSA` |
+| `tls12_static_ecdh` | lab (OpenSSL 1.0.2u) | `TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA`, KX `ECDH` |
+| `tls12_legacy_weak_suite` | lab (OpenSSL 1.0.2u) | `TLS_RSA_WITH_RC4_128_SHA` extracted; no policy finding |
+| `tls13_full_handshake` | lab | TLS 1.3 from `supported_versions`; KX from key_share, not cipher name; cert/`CertificateVerify` `not_observable` |
+| `tls13_hello_retry_request` | lab | `hello_retry_request=true`, history `j`, HRR frame-linked |
+| `tls13_psk_only_resumption` | lab | A resumed handshake with KX `PSK` (not from cipher name) |
+| `tls_supported_versions_precedence` | scapy | Selected TLS 1.2 from `supported_versions` while legacy record is TLS 1.0 |
+| `tls_truncated_client_hello` | scapy | `version.selected=null`, `incomplete`; no guessed version |
+| `tls12_public_corpus` | public_corpus | TLS 1.2 regression |
+| `tls13_public_corpus` | public_corpus | TLS 1.3 regression |
+
 Pytest parametrizes the unique directories above; overlapping Step 2/3
 directories are listed in both `STEP2_CASES` / `ADVERTISED_NOT_REQUESTED` as
 applicable.
 
 ## Directory count
 
-Unique fixture directories: **40**.
+Unique fixture directories: **51**.
 
 `empty` (1) + TCP including baseline (8) + remaining Step 2 (`smtp_submission_port`,
 `imap_standard_port`, `pop3_standard_port`, three nonstandard, ambiguous, two
-public) (9) + remaining Step 3 (22) = 40.
+public) (9) + remaining Step 3 (22) + Step 4 (11) = 51.
 
 ## Regenerating
 
@@ -146,6 +167,6 @@ change; do not edit `capture.pcapng`. Prefer `uv run pytest` on the named
 
 ## Not in this build
 
-No Step 4+ cases (`tls13_hello_retry_request`, `cert_expired_rsa1024`,
-`cert_chain_san_mismatch`, `tls13_psk_only_resumption`, …). No golden HTML/PDF
-under `tests/fixtures/reports/`.
+No Step 5+ cases (`cert_expired_rsa1024`, `cert_chain_san_mismatch`, …). No
+golden HTML/PDF under `tests/fixtures/reports/`. Step 4 records cipher and key
+exchange as facts; whether a weak suite is a *finding* is Step 7.

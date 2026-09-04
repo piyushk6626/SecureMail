@@ -5,8 +5,8 @@ POP3 traffic in PCAP/PCAPNG files. It does not yet score findings, render
 HTML/PDF, run ML, or expose an API.
 
 Python orchestrates. Zeek is the primary packet engine. A bounded TShark pass
-corroborates mail command/status and TLS ClientHello frame numbers when the
-first Zeek pass shows mail or implicit-TLS evidence.
+corroborates mail command/status and TLS handshake message frames when the first
+Zeek pass shows mail, implicit-TLS, or any `ssl.log` UID.
 
 ## What is live
 
@@ -21,8 +21,10 @@ It produces a frozen v0 JSON document with:
 - capinfos preflight
 - per-flow TCP reconstruction quality
 - per-session protocol identity and STARTTLS/STLS / implicit-TLS assessment
+- top-level TLS handshake evidence (version, IANA cipher, version-aware key
+  exchange, `ssl_history`, frame-linked messages)
 
-There are **40** committed fixtures under `tests/fixtures/<case_id>/`. The
+There are **51** committed fixtures under `tests/fixtures/<case_id>/`. The
 harness in [`tests/support/fixture_harness.py`](../tests/support/fixture_harness.py)
 runs the real CLI and diffs the entire output against `expected.json` (no
 ignored fields).
@@ -35,7 +37,7 @@ ignored fields).
 | 1 | TCP reconstruction quality | **Done** |
 | 2 | SMTP/IMAP/POP3 identification (`port_hint` ≠ `payload_evidence`) | **Done** |
 | 3 | STARTTLS/STLS state machines + implicit TLS | **Done** |
-| 4 | TLS version / cipher / key exchange | Placeholder (`domain/evidence/handshake.py`, `domain/policies/tls/key_exchange.py`, IANA snapshot loader) |
+| 4 | TLS version / cipher / key exchange | **Done** |
 | 5 | Certificate facts | Placeholder (`domain/evidence/certificate.py`, `pki/key_strength.py`, certificate store) |
 | 6 | Chain + identity (offline trust store) | Placeholder (PKI adapters and `trust-store-snapshot.pem`) |
 | 7 | Versioned rule packs + forward secrecy | Placeholder (`rule_engine.py`, YAML packs, `forward_secrecy.py`) |
@@ -65,6 +67,9 @@ uv run securemail analyze tests/fixtures/pop3_nonstandard_port/capture.pcapng --
 
 # Step 3 — IMAP STARTTLS accepted after stripped capability; downgrade_consistent
 uv run securemail analyze tests/fixtures/imap_starttls_capability_stripped/capture.pcapng --out out/imap.json
+
+# Step 4 — TLS 1.3 HelloRetryRequest; version/cipher/key-exchange evidence
+uv run securemail analyze tests/fixtures/tls13_hello_retry_request/capture.pcapng --out out/tls13-hrr.json
 ```
 
 `--out` is required. Output is JSON with sorted keys, 2-space indent, a trailing
@@ -85,11 +90,12 @@ commands.
 
 ## Not in this build
 
-The JSON does **not** contain `TlsHandshake`, `CertificateEvidence`, `Finding`,
-posture scores, or a report manifest. `run_identity.policy_pack_version` and
-`run_identity.trust_store_digest` are always `null`. No network calls happen
-during analysis (analyzer containers use `--network=none`). No dashboard, no
-Postgres, no queue.
+The JSON does **not** contain `CertificateEvidence`, `Finding`, posture scores,
+or a report manifest. Handshake records do not parse certificate bytes or
+judge forward secrecy / weak-suite policy (Steps 5 and 7).
+`run_identity.policy_pack_version` and `run_identity.trust_store_digest` are
+always `null`. No network calls happen during analysis (analyzer containers use
+`--network=none`). No dashboard, no Postgres, no queue.
 
 See [architecture.md](architecture.md) for the live module map and
 [fixtures.md](fixtures.md) for every committed case.

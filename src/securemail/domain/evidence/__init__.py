@@ -12,6 +12,16 @@ from securemail.domain.evidence.flow import (
     StreamDirection,
     classify_reconstruction,
 )
+from securemail.domain.evidence.handshake import (
+    CipherSuiteEvidence,
+    HandshakeMessage,
+    HandshakeMessageKind,
+    HandshakeVisibility,
+    KeyExchangeEvidence,
+    TlsHandshake,
+    TlsVersionEvidence,
+    VersionSource,
+)
 from securemail.domain.evidence.run import (
     NORMALIZATION_SCHEMA_VERSION,
     AnalysisRun,
@@ -32,13 +42,16 @@ from securemail.domain.evidence.session import (
     UpgradeState,
 )
 
-EvidenceDocument.model_rebuild(_types_namespace={"Flow": Flow, "EmailSession": EmailSession})
+EvidenceDocument.model_rebuild(
+    _types_namespace={"Flow": Flow, "EmailSession": EmailSession, "TlsHandshake": TlsHandshake}
+)
 
 __all__ = [
     "NORMALIZATION_SCHEMA_VERSION",
     "AnalysisRun",
     "ByteRange",
     "CapturePreflight",
+    "CipherSuiteEvidence",
     "EmailSession",
     "EventSource",
     "EvidenceDocument",
@@ -47,6 +60,10 @@ __all__ = [
     "ImplicitTls",
     "Flow",
     "FlowEndpoint",
+    "HandshakeMessage",
+    "HandshakeMessageKind",
+    "HandshakeVisibility",
+    "KeyExchangeEvidence",
     "MailProtocol",
     "ObservedCondition",
     "PayloadEvidence",
@@ -58,6 +75,9 @@ __all__ = [
     "ReconstructionVerdict",
     "SessionEventKind",
     "StreamDirection",
+    "TlsHandshake",
+    "TlsVersionEvidence",
     "UpgradeState",
+    "VersionSource",
     "classify_reconstruction",
 ]

@@ -1,0 +1,121 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.001490917,
+    "file_time_precision": "nanosecond",
+    "original_packet_bytes": 5188,
+    "packet_count": 11,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "RSTO",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShADadFR",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "172.18.0.3",
+        "port": 42918
+      },
+      "orig_bytes": 1564,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "172.18.0.2",
+        "port": 4433
+      },
+      "resp_bytes": 2894,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "handshakes": [
+    {
+      "certificate_verify_state": "not_observable",
+      "cipher_suite": {
+        "code": "0x1302",
+        "evidence_state": "observed",
+        "name": "TLS_AES_256_GCM_SHA384"
+      },
+      "established": true,
+      "evidence_state": "observed",
+      "hello_retry_request": false,
+      "key_exchange": {
+        "dh_param_size": null,
+        "evidence_state": "observed",
+        "mechanism": "(EC)DHE",
+        "psk_key_exchange_modes": [
+          "psk_dhe_ke"
+        ],
+        "selected_group": "X25519MLKEM768",
+        "selected_group_code": 4588,
+        "source_fields": [
+          "server_key_share_group",
+          "psk_key_exchange_modes"
+        ]
+      },
+      "last_alert": null,
+      "messages": [
+        {
+          "direction": "orig",
+          "evidence_state": "observed",
+          "frame_number": 4,
+          "history_letter": "C",
+          "kind": "client_hello"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 6,
+          "history_letter": "s",
+          "kind": "server_hello"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "i",
+          "kind": "change_cipher_spec"
+        },
+        {
+          "direction": "orig",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "I",
+          "kind": "change_cipher_spec"
+        }
+      ],
+      "resumed": false,
+      "server_certificate_state": "not_observable",
+      "ssl_history": "CsiI",
+      "uid": "CJKFoj4bpHEhTeaRoj",
+      "version": {
+        "client_supported_versions": [
+          "TLSv13"
+        ],
+        "evidence_state": "observed",
+        "legacy_record_version": "TLSv12",
+        "selected": "TLSv13",
+        "server_supported_version": "TLSv13",
+        "source": "supported_versions"
+      },
+      "visibility": "partial"
+    }
+  ],
+  "run_identity": {
+    "analyzer_bundle_digest": "73627a8875f130609b6513f715c6ae5b873c9484cb356bb14d0f9d9c38727594",
+    "capture_sha256": "b596da6ca82a2fdb00f3eb4d8371e365a98c0d2c53fb44172302ed2eb42309d9",
+    "configuration_digest": "4166b2016e562efcc26e4e70ab1c5015106691dd557ff1ade0f3bbe4dd3d9c73",
+    "normalization_schema_version": "v0",
+    "policy_pack_version": null,
+    "trust_store_digest": null
+  },
+  "schema_version": "v0",
+  "sessions": []
+}

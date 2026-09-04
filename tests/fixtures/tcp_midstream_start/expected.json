@@ -35,10 +35,11 @@
       "uid": "CJKFoj4bpHEhTeaRoj"
     }
   ],
+  "handshakes": [],
   "run_identity": {
     "analyzer_bundle_digest": "73627a8875f130609b6513f715c6ae5b873c9484cb356bb14d0f9d9c38727594",
     "capture_sha256": "e54ff6b2332c478364010077b65c77ba749fc74d31ef266a0ccaac6ffbb7ec69",
-    "configuration_digest": "f60054b7f1ed181f41ea1fc696ee8b9d1c8b701ca2e5787201dabed63662e5a0",
+    "configuration_digest": "4166b2016e562efcc26e4e70ab1c5015106691dd557ff1ade0f3bbe4dd3d9c73",
     "normalization_schema_version": "v0",
     "policy_pack_version": null,
     "trust_store_digest": null

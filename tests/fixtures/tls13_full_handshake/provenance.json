@@ -1,0 +1,13 @@
+{
+  "created_at": "2026-09-03T22:17:58Z",
+  "generator": "tests/fixtures/generators/lab_tls_handshake_captures.py --case tls13_full_handshake --out tests/fixtures/tls13_full_handshake/capture.pcapng (docker network securemail-step4-tls13_full_handshake-net; dumpcap sidecar --network container:securemail-step4-tls13_full_handshake-srv)",
+  "notes": "Lab TLS 1.3 full handshake (not a resumption) on TCP/4433.",
+  "sha256": "b596da6ca82a2fdb00f3eb4d8371e365a98c0d2c53fb44172302ed2eb42309d9",
+  "source": "lab",
+  "tool_versions": {
+    "dumpcap": "Dumpcap (Wireshark) 4.4.18.",
+    "openssl": "OpenSSL 3.5.6 7 Apr 2026 (Library: OpenSSL 3.5.6 7 Apr 2026)",
+    "python_image": "python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3",
+    "tshark_image": "securemail/tshark:step0"
+  }
+}
