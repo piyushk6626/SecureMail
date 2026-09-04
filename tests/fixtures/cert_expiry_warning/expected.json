@@ -1,6 +1,7 @@
 {
   "capture_preflight": {
     "capture_duration_seconds": 0.001379416,
+    "capture_start_time": "2026-09-04T08:23:20Z",
     "file_time_precision": "nanosecond",
     "original_packet_bytes": 2445,
     "packet_count": 12,
@@ -25,7 +26,9 @@
       "role": "server",
       "serial_number": "55dc17fdea2056ddd10c0907accb8d32594c60cf",
       "signature_algorithm": "sha256WithRSAEncryption",
-      "source_frames": [],
+      "source_frames": [
+        6
+      ],
       "subject": "CN=securemail.test",
       "syntax_error": null,
       "syntax_valid": true,
@@ -52,6 +55,51 @@
         "trust_profile_id": "offline_v1",
         "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
       }
+    }
+  ],
+  "findings": [
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "basis_state": "observed",
+      "code": "CERT_PATH_INVALID_AT_CAPTURE",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.chain_index",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:9d3e7c4260ef4246c74a530c265b51bcf3ac8c752715c63c413b7acb602e8d22",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.role",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:9d3e7c4260ef4246c74a530c265b51bcf3ac8c752715c63c413b7acb602e8d22",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.validation.path_valid_at_capture_time",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:9d3e7c4260ef4246c74a530c265b51bcf3ac8c752715c63c413b7acb602e8d22",
+          "record_type": "certificate"
+        }
+      ],
+      "finding_id": "f0aa3ce80f415edef71dbfb6af03e0667061490d8966b7c6bb75e926a204003d",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "Offline path validation against the imported trust store failed at capture time.",
+      "remediation_id": "pki.repair_chain",
+      "rule_effective_from": "2008-05-01",
+      "rule_effective_until": null,
+      "severity": "high",
+      "standards": [
+        "RFC 5280 §6"
+      ],
+      "title": "Certificate path invalid at capture time"
     }
   ],
   "flows": [
@@ -125,22 +173,22 @@
         },
         {
           "direction": "resp",
-          "evidence_state": "inferred",
-          "frame_number": null,
+          "evidence_state": "observed",
+          "frame_number": 6,
           "history_letter": "x",
           "kind": "certificate"
         },
         {
           "direction": "resp",
-          "evidence_state": "inferred",
-          "frame_number": null,
+          "evidence_state": "observed",
+          "frame_number": 6,
           "history_letter": "k",
           "kind": "server_key_exchange"
         },
         {
           "direction": "resp",
-          "evidence_state": "inferred",
-          "frame_number": null,
+          "evidence_state": "observed",
+          "frame_number": 6,
           "history_letter": "n",
           "kind": "server_hello_done"
         },
@@ -189,13 +237,15 @@
     }
   ],
   "run_identity": {
+    "analysis_time": "2026-09-04T12:00:00Z",
     "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
     "capture_sha256": "f0c4db0a22169cfba9a6f23bb2883a6bacc000ff94538da9f0ddccf88c7aaec2",
-    "configuration_digest": "b5da7e1eee127dde2ca64be0155142ef462a3baae1bc31df06363a9e8589f11e",
-    "normalization_schema_version": "v0",
-    "policy_pack_version": null,
+    "configuration_digest": "dac7231c9fc00ae0d79e9ee382ee67277613f1276c08e3e3e86cad33850250cd",
+    "normalization_schema_version": "v1",
+    "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+    "policy_profile": "ietf_current",
     "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
   },
-  "schema_version": "v0",
+  "schema_version": "v1",
   "sessions": []
 }

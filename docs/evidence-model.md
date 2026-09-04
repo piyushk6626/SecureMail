@@ -1,9 +1,9 @@
-# Evidence model (schema v0)
+# Evidence model (schema v1)
 
 The CLI writes one `EvidenceDocument`. Models live under
 [`src/securemail/domain/evidence/`](../src/securemail/domain/evidence/). They are
 frozen Pydantic v2 models (`extra="forbid"`). `NORMALIZATION_SCHEMA_VERSION` is
-the literal `"v0"`.
+the literal `"v1"`.
 
 Serialization: `model_dump(mode="json")` then `json.dumps` with sorted keys, so
 on-disk field order is alphabetical, not declaration order.
@@ -12,18 +12,19 @@ on-disk field order is alphabetical, not declaration order.
 
 ```text
 EvidenceDocument
-  schema_version: "v0"
+  schema_version: "v1"
   run_identity: AnalysisRun
   capture_preflight: CapturePreflight
   flows: Flow[]
   sessions: EmailSession[]
   handshakes: TlsHandshake[]
   certificates: CertificateEvidence[]
+  findings: Finding[]
 ```
 
 Standalone TLS (no mail session) is retained in `handshakes`. Certificates are
-a separate top-level array linked by Zeek `uid` and `chain_index`. There is no
-`findings` array.
+a separate top-level array linked by Zeek `uid` and `chain_index`. `findings`
+are policy judgments; they never mutate the evidence arrays.
 
 ### `AnalysisRun`
 
@@ -31,14 +32,15 @@ a separate top-level array linked by Zeek `uid` and `chain_index`. There is no
 |---|---|---|
 | `capture_sha256` | 64 hex chars | SHA-256 of the intake file |
 | `analyzer_bundle_digest` | 64 hex chars | SHA-256 of `tools/analyzer-bundle.lock` bytes |
-| `normalization_schema_version` | `"v0"` | constant |
+| `normalization_schema_version` | `"v1"` | constant |
 | `configuration_digest` | 64 hex chars | hash of the config dict plus the IANA snapshot digest and optional expected hostname |
-| `policy_pack_version` | `str \| null` | always `null` |
+| `analysis_time` | RFC 3339 UTC | `--analysis-time`, else now (seconds precision in JSON) |
+| `policy_profile` | enum | `ietf_current` (default), `nist_federal`, or `historical_at_capture` |
+| `policy_pack_version` | 64 hex chars | SHA-256 of canonical validated pack JSON |
 | `trust_store_digest` | 64 hex chars | SHA-256 of `adapters/pki/trust-store-snapshot.pem` |
 
 Idempotency key from the design (not a stored field) is the tuple of those
-digests. The policy-pack slot is reserved so Step 7 can fill it without
-renaming the record.
+digests. Policy is **not** folded into `configuration_digest`.
 
 ### `CapturePreflight`
 
@@ -53,9 +55,11 @@ From capinfos, recorded before Zeek:
 | `truncated_packets_present` | True when captured length &lt; original length on any packet |
 | `original_packet_bytes` | Sum of on-wire sizes when known |
 | `capture_duration_seconds` | Duration when known |
+| `capture_start_time` | Earliest packet time as UTC, or `null` |
 
 `truncated_packets_present` is a **capture-wide** flag. The flow classifier
 receives it as `truncated_packets` on every flow in that run.
+`historical_at_capture` evaluation requires `capture_start_time`.
 
 ## Evidence states
 
@@ -263,7 +267,37 @@ IMAP capability-stripped upgrade looks like `explicit_upgrade.state=accepted`,
 Committed examples: [`tests/fixtures/`](../tests/fixtures/) — the harness
 requires byte-for-field equality with `expected.json`.
 
+## `Finding`
+
+Produced by [`rule_engine.py`](../src/securemail/domain/policies/rule_engine.py)
+from YAML packs under [`domain/policies/rules/`](../src/securemail/domain/policies/rules/).
+Only **negative** and **indeterminate** outcomes are serialized. Pass/present
+results stay in unit and YAML inline tests.
+
+| Field | Notes |
+|---|---|
+| `finding_id` | SHA-256 of capture hash, profile, pack digest, rule id, outcome, target, record key |
+| `code` | Stable rule id (`TLS_NEGOTIATED_TLS10`, `TLS_FORWARD_SECRECY_ABSENT`, …) |
+| `outcome` | `negative` or `indeterminate` |
+| `severity` | `high` / `medium` / `informational` from the pack |
+| `policy_profile` / `policy_pack_version` | Pack that produced the finding |
+| `rule_effective_from` / `rule_effective_until` | Inclusive start; exclusive end when set |
+| `policy_evaluation_time` | Analysis time, or capture start for `historical_at_capture` |
+| `standards` | Cited RFC/NIST sections from YAML |
+| `rationale` | Why the rule fired |
+| `evidence_references` | Canonical pointers; no JSON array indexes |
+| `basis_state` | Weakest contributing evidence state |
+| `evaluation_state` | `verified` for negative, `indeterminate` for indeterminate |
+
+Forward secrecy is assessed in
+[`forward_secrecy.py`](../src/securemail/domain/policies/tls/forward_secrecy.py)
+and consumed by YAML: TLS 1.2 ECDHE/DHE present; static RSA/DH/ECDH absent;
+TLS 1.3 (EC)DHE present; PSK-only or missing handshake indeterminate. Present
+outcomes are not emitted as findings.
+
 ## Not in this build
 
-No `Finding`. `verified` is a legal enum member but unused by current classifiers.
-Handshake and certificate records do not judge weak suites or forward secrecy.
+No posture score or report manifest. `verified` is unused by evidence classifiers
+except as a finding `evaluation_state` for negative rules. Handshake and
+certificate records still store facts; YAML decides whether a fact is a finding.
+Scoring and dedup are Step 8.

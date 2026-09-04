@@ -45,13 +45,14 @@ or TLS record decoding. Zeek is the primary processing engine.
 
 ## 2. Current project state
 
-This repository has completed **Steps 0–6** of `build_plan.md`: package layout,
-sandboxed Zeek/TShark runners, the v0 evidence schema, TCP reconstruction
+This repository has completed **Steps 0–7** of `build_plan.md`: package layout,
+sandboxed Zeek/TShark runners, the v1 evidence schema, TCP reconstruction
 quality, payload-driven SMTP/IMAP/POP3 identification, STARTTLS/STLS plus
 implicit-TLS assessment, TLS version / cipher / key-exchange evidence,
-per-certificate extraction, and offline chain validation with RFC 9525 identity
-matching. The live CLI command is `securemail analyze`. The next step to
-implement is **Step 7** (versioned rule packs and forward secrecy).
+per-certificate extraction, offline chain validation with RFC 9525 identity
+matching, versioned IETF/NIST/historical rule packs, and forward-secrecy
+assessment. The live CLI command is `securemail analyze`. The next step to
+implement is **Step 8** (scoring, dedup, and coverage denominators).
 
 The tree in `PROJECT_SCAFFOLD.md` Section 3 is the layout Step 0 created;
 later steps **fill named files**, they do not invent new top-level layout.

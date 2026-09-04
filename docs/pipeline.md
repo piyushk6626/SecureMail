@@ -17,7 +17,8 @@ flowchart TD
   sess2[normalize_sessions_with_frames]
   hs[normalize_handshakes]
   certs[normalize_certificates]
-  out[EvidenceDocument_v0]
+  policy[evaluate_policy]
+  out[EvidenceDocument_v1]
   intake --> hash
   hash --> pre
   hash --> zeek
@@ -36,7 +37,8 @@ flowchart TD
   flows --> hs
   hs --> certs
   zeek --> certs
-  certs --> out
+  certs --> policy
+  policy --> out
 ```
 
 Capinfos and Zeek both receive the original capture path. The capture is hashed
@@ -57,10 +59,10 @@ file into `run_identity.capture_sha256`.
 ## 2. Preflight (capinfos)
 
 `DockerCapinfosRunner` runs capinfos inside `securemail/tshark:step0` with a
-fixed argv (`capinfos -M -c -l -d -u -F`). Parsed fields become
+fixed argv (`capinfos -M -c -l -d -u -a -F`). Parsed fields become
 `CapturePreflight` (packet count, time precision, snaplen / inferred limits,
-truncated-packet flag, original byte count, duration). See
-[evidence-model.md](evidence-model.md).
+truncated-packet flag, original byte count, duration, earliest packet time as
+UTC). See [evidence-model.md](evidence-model.md).
 
 ## 3. Zeek (always)
 
@@ -138,19 +140,33 @@ plus RFC 9525 SAN identity against `ssl.log` `server_name` or
 `--expected-hostname`. Intermediates keep `validation: null`. Revocation is
 `unknown`. The OpenSSL CLI adapter is not on this path.
 
-## 9. Emit `EvidenceDocument`
+## 9. Evaluate policy
+
+After Steps 3–6 normalization, `evaluate_policy` applies the selected YAML pack
+without mutating evidence. The default profile is `ietf_current`.
+`nist_federal` adds NIST-approved-suite/key rules without relabeling strong
+non-approved crypto as weak. `historical_at_capture` uses `capture_start_time`
+as the evaluation clock and fails closed if that timestamp is missing.
+
+Service role is inferred from payload-confirmed protocol plus responder port.
+Ambiguous or nonstandard SMTP stays unclassified so relay/submission policy is
+never guessed from a port alone.
+
+## 10. Emit `EvidenceDocument`
 
 ```text
-schema_version = "v0"
+schema_version = "v1"
 run_identity.capture_sha256            = intake hash
 run_identity.analyzer_bundle_digest    = SHA-256(lockfile)
-run_identity.normalization_schema_version = "v0"
+run_identity.normalization_schema_version = "v1"
 run_identity.configuration_digest      = SHA-256 of the frozen config dict
                                          plus iana_tls_parameters_sha256
                                          and expected_hostname
-run_identity.policy_pack_version       = null
+run_identity.analysis_time             = --analysis-time or now
+run_identity.policy_profile            = --policy-profile (default ietf_current)
+run_identity.policy_pack_version       = SHA-256 of canonical pack JSON
 run_identity.trust_store_digest        = SHA-256 of trust-store-snapshot.pem
-capture_preflight, flows, sessions, handshakes, certificates
+capture_preflight, flows, sessions, handshakes, certificates, findings
 ```
 
 The CLI dumps `document.model_dump(mode="json")` with `json.dumps(..., indent=2,
@@ -162,7 +178,7 @@ sort_keys=True, ensure_ascii=False)` plus a trailing newline.
 
 ```python
 {
-    "normalization_schema_version": "v0",
+    "normalization_schema_version": "v1",
     "zeek_entry": "zeek/site/__load__.zeek",
     "zeek_deterministic": True,
     "capinfos_entry": "capinfos",
@@ -180,9 +196,8 @@ sort_keys=True, ensure_ascii=False)` plus a trailing newline.
 ```
 
 Changing any of those strings, or the checked-in IANA snapshot bytes, changes
-every fixture’s `expected.json` `run_identity.configuration_digest`. Current
-fixtures pin
-`b5da7e1eee127dde2ca64be0155142ef462a3baae1bc31df06363a9e8589f11e`.
+every fixture’s `expected.json` `run_identity.configuration_digest`. Policy pack
+bytes are **not** in this digest; they appear as `policy_pack_version`.
 `run_identity.trust_store_digest` is
 `c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae`.
 
@@ -205,5 +220,5 @@ UIDs — it does not ignore any field.
 
 ## Not in this build
 
-No policy evaluation, scoring, report freeze, or ML step after JSON emission.
-The pipeline stops at evidence.
+No scoring, report freeze, or ML step after JSON emission. The pipeline stops
+after deterministic findings.

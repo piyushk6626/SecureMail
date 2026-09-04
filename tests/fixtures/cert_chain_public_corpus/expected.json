@@ -1,6 +1,7 @@
 {
   "capture_preflight": {
     "capture_duration_seconds": 0.047878,
+    "capture_start_time": "2020-06-18T06:45:00Z",
     "file_time_precision": "microsecond",
     "original_packet_bytes": 5343,
     "packet_count": 14,
@@ -25,7 +26,9 @@
       "role": "server",
       "serial_number": "a019448608546ff902711845dbad8abc",
       "signature_algorithm": "sha256WithRSAEncryption",
-      "source_frames": [],
+      "source_frames": [
+        6
+      ],
       "subject": "CN=www.heise.de",
       "syntax_error": null,
       "syntax_valid": true,
@@ -66,7 +69,9 @@
       "role": "server",
       "serial_number": "7d5b5126b476ba11db74160bbc530da7",
       "signature_algorithm": "sha384WithRSAEncryption",
-      "source_frames": [],
+      "source_frames": [
+        6
+      ],
       "subject": "CN=Sectigo RSA Domain Validation Secure Server CA,O=Sectigo Limited,L=Salford,ST=Greater Manchester,C=GB",
       "syntax_error": null,
       "syntax_valid": true,
@@ -74,6 +79,58 @@
       "valid_at_analysis_time": true,
       "valid_at_capture_time": true,
       "validation": null
+    }
+  ],
+  "findings": [
+    {
+      "affected_endpoint": "2a02:2e0:3fe:1001:7777:772e:2:85:443",
+      "basis_state": "observed",
+      "code": "CERT_BECAME_INVALID_AFTER_CAPTURE",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.chain_index",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a1a0ce42b5da24e6210fb4b27614bcfda36e4756296c6a9cd93105f1c76ed360",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.role",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a1a0ce42b5da24e6210fb4b27614bcfda36e4756296c6a9cd93105f1c76ed360",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.valid_at_analysis_time",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a1a0ce42b5da24e6210fb4b27614bcfda36e4756296c6a9cd93105f1c76ed360",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.valid_at_capture_time",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:a1a0ce42b5da24e6210fb4b27614bcfda36e4756296c6a9cd93105f1c76ed360",
+          "record_type": "certificate"
+        }
+      ],
+      "finding_id": "47fccf8a1aa15b0ce681db18a5c8262e968defa14c083abb864502119cc03d4a",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "The captured session used a then-valid certificate that is invalid at analysis time.",
+      "remediation_id": "pki.replace_now_expired_cert",
+      "rule_effective_from": "2008-05-01",
+      "rule_effective_until": null,
+      "severity": "informational",
+      "standards": [
+        "RFC 5280 §6.1.3"
+      ],
+      "title": "Certificate became invalid after capture"
     }
   ],
   "flows": [
@@ -149,22 +206,22 @@
         },
         {
           "direction": "resp",
-          "evidence_state": "inferred",
-          "frame_number": null,
+          "evidence_state": "observed",
+          "frame_number": 6,
           "history_letter": "x",
           "kind": "certificate"
         },
         {
           "direction": "resp",
-          "evidence_state": "inferred",
-          "frame_number": null,
+          "evidence_state": "observed",
+          "frame_number": 6,
           "history_letter": "k",
           "kind": "server_key_exchange"
         },
         {
           "direction": "resp",
-          "evidence_state": "inferred",
-          "frame_number": null,
+          "evidence_state": "observed",
+          "frame_number": 6,
           "history_letter": "n",
           "kind": "server_hello_done"
         },
@@ -211,13 +268,15 @@
     }
   ],
   "run_identity": {
+    "analysis_time": "2026-09-04T12:00:00Z",
     "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
     "capture_sha256": "723a6be05da8ee9ded7dfecaad15158297d5f854c92738b91e78767d8764eee9",
-    "configuration_digest": "b5da7e1eee127dde2ca64be0155142ef462a3baae1bc31df06363a9e8589f11e",
-    "normalization_schema_version": "v0",
-    "policy_pack_version": null,
+    "configuration_digest": "dac7231c9fc00ae0d79e9ee382ee67277613f1276c08e3e3e86cad33850250cd",
+    "normalization_schema_version": "v1",
+    "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+    "policy_profile": "ietf_current",
     "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
   },
-  "schema_version": "v0",
+  "schema_version": "v1",
   "sessions": []
 }

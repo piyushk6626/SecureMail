@@ -157,6 +157,7 @@ handshake evidence.
 - `smtp.req.command`, `smtp.response.code`
 - `tls.handshake.type`
 - `tls.handshake.extensions_key_share_selected_group`
+- `tls.handshake.sig_hash_alg`
 
 Explicitly excluded (secrets / full lines / cert bytes / key material):
 `imap.line`, `imap.request.username`, `imap.request.password`,
@@ -164,8 +165,9 @@ Explicitly excluded (secrets / full lines / cert bytes / key material):
 `smtp.req.parameter`, `smtp.auth.password`, `smtp.auth.username`,
 `tls.handshake.certificate`, `tls.handshake.extensions_key_share_key_exchange`.
 
-Output is CSV (`-T fields`, header, quoted, first occurrence). Python parses
-rows into dicts; empty cells become `null`.
+Output is CSV (`-T fields`, header, quoted, all occurrences). Python parses
+rows into dicts; empty cells become `null`. Comma-joined handshake types are
+split so CertificateVerify in the same frame as Certificate is still visible.
 
 TShark’s mail dissectors bind **well-known ports**. Nonstandard-port identity
 stays on Zeek DPD (`imap_nonstandard_port`, `pop3_nonstandard_port` stay
@@ -182,7 +184,7 @@ The snapshot’s SHA-256 is part of `configuration_digest`.
 
 ## Capinfos
 
-Same TShark image, same sandbox. Argv: `capinfos -M -c -l -d -u -F /data/capture.pcapng`.
+Same TShark image, same sandbox. Argv: `capinfos -M -c -l -d -u -a -F /data/capture.pcapng`.
 Stdout is parsed in
 [`capinfos_runner.py`](../src/securemail/adapters/analyzers/capinfos_runner.py)
 into `CapturePreflight`. The TShark Dockerfile digest is checked against the

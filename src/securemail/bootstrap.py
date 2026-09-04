@@ -13,12 +13,14 @@ from securemail.adapters.analyzers.zeek_runner import DockerZeekRunner
 from securemail.adapters.artifacts.certificate_store import CertificateStore
 from securemail.adapters.pki.trust_store import load_trust_store_snapshot
 from securemail.adapters.reference_data.iana_tls_parameters import load_iana_tls_parameters
+from securemail.adapters.reference_data.policy_packs import PolicyPackError, load_policy_pack
 from securemail.application.run_analysis import (
     DEFAULT_EXPIRY_WARNING_SECONDS,
+    AnalysisError,
     AnalyzeRequest,
     run_analysis,
 )
-from securemail.domain.evidence.run import EvidenceDocument
+from securemail.domain.evidence.run import EvidenceDocument, PolicyProfile
 
 
 def _analyze(
@@ -28,14 +30,20 @@ def _analyze(
     analysis_time: datetime | None = None,
     expiry_warning_seconds: int = DEFAULT_EXPIRY_WARNING_SECONDS,
     expected_hostname: str | None = None,
+    policy_profile: PolicyProfile = PolicyProfile.IETF_CURRENT,
 ) -> EvidenceDocument:
     store = CertificateStore(root=artifact_root)
+    try:
+        policy_pack, policy_pack_digest = load_policy_pack(policy_profile)
+    except PolicyPackError as exc:
+        raise AnalysisError(str(exc)) from exc
     return run_analysis(
         AnalyzeRequest(
             capture_path=capture,
             analysis_time=analysis_time,
             expiry_warning_seconds=expiry_warning_seconds,
             expected_hostname=expected_hostname,
+            policy_profile=policy_profile,
         ),
         zeek_runner=DockerZeekRunner(),
         preflight_runner=DockerCapinfosRunner(),
@@ -43,6 +51,8 @@ def _analyze(
         tls_parameters=load_iana_tls_parameters(),
         artifact_store=store,
         trust_snapshot=load_trust_store_snapshot(),
+        policy_pack=policy_pack,
+        policy_pack_digest=policy_pack_digest,
     )
 
 

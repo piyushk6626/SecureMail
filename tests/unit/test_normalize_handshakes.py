@@ -1,6 +1,7 @@
 """Handshake normalization: version precedence, history, frames, truncation."""
 
 from securemail.application.normalize_handshakes import (
+    decode_signature_scheme,
     decode_tls_version,
     messages_from_ssl_history,
     normalize_handshakes,
@@ -225,3 +226,56 @@ def test_tls12_static_rsa_inferred_from_suite_grammar() -> None:
     assert handshake.key_exchange.evidence_state is EvidenceState.INFERRED
     assert handshake.visibility is HandshakeVisibility.FULL
     assert handshake.server_certificate_state is EvidenceState.OBSERVED
+
+
+def test_decode_signature_scheme_maps_iana_codes() -> None:
+    assert decode_signature_scheme("0x0201") == "rsa_pkcs1_sha1"
+    assert decode_signature_scheme(0x0804) == "rsa_pss_rsae_sha256"
+    assert decode_signature_scheme("rsa_pkcs1_sha256") == "rsa_pkcs1_sha256"
+
+
+def test_certificate_verify_algorithm_is_independent_of_x509() -> None:
+    logs = {
+        "ssl.log": [
+            {
+                "uid": "Ctls",
+                "ssl_history": "Csxny",
+                "established": True,
+                "version": "TLSv12",
+                "server_version": 771,
+                "cipher": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+            }
+        ]
+    }
+    frames = [
+        {
+            "frame.number": "6",
+            "ip.src": "192.0.2.25",
+            "tcp.srcport": "4433",
+            "ip.dst": "192.0.2.10",
+            "tcp.dstport": "49152",
+            "tls.handshake.type": "11,16,15",
+            "tls.handshake.sig_hash_alg": "0x0201",
+        }
+    ]
+    handshake = normalize_handshakes(logs, [_flow()], _index(), tshark_frames=frames)[0]
+    assert handshake.certificate_verify_state is EvidenceState.OBSERVED
+    assert handshake.certificate_verify_signature.algorithm == "rsa_pkcs1_sha1"
+    assert handshake.certificate_verify_signature.evidence_state is EvidenceState.OBSERVED
+
+
+def test_certificate_verify_without_frames_stays_incomplete() -> None:
+    logs = {
+        "ssl.log": [
+            {
+                "uid": "Ctls",
+                "ssl_history": "Csxny",
+                "established": True,
+                "version": "TLSv12",
+                "cipher": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+            }
+        ]
+    }
+    handshake = normalize_handshakes(logs, [_flow()], _index())[0]
+    assert handshake.certificate_verify_signature.algorithm is None
+    assert handshake.certificate_verify_signature.evidence_state is EvidenceState.INCOMPLETE

@@ -1,0 +1,14 @@
+{
+  "created_at": "2026-09-04T12:02:46Z",
+  "generator": "tests/fixtures/generators/lab_policy_boundary_captures.py --case cert_rsa1536 --out tests/fixtures/cert_rsa1536/capture.pcapng (docker network securemail-step7-cert_rsa1536-net; dumpcap sidecar --network container:securemail-step7-cert_rsa1536-srv)",
+  "notes": "Lab TLS 1.2 handshake with an RSA-1536 server certificate. Boundary below the RFC 9325 2048-bit RSA authentication-key requirement.",
+  "sha256": "ad9f53ac6cb9d1e5a4590d40dda7eedc6a674b0576e1c1d032928fed729fca00",
+  "source": "lab",
+  "tool_versions": {
+    "dumpcap": "Dumpcap (Wireshark) 4.4.18.",
+    "legacy_image": "securemail/legacy-openssl:1.0.2u",
+    "openssl": "OpenSSL 1.0.2u  20 Dec 2019",
+    "python_image": "python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3",
+    "tshark_image": "securemail/tshark:step0"
+  }
+}

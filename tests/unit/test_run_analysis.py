@@ -1,15 +1,32 @@
 """Use-case hashes the capture before invoking preflight and Zeek."""
 
+from datetime import UTC, datetime
 from pathlib import Path
 
-from securemail.application.run_analysis import AnalyzeRequest, configuration_digest, run_analysis
-from securemail.domain.evidence.run import CapturePreflight
+import pytest
+
+from securemail.adapters.reference_data.policy_packs import load_policy_pack
+from securemail.application.run_analysis import (
+    AnalysisError,
+    AnalyzeRequest,
+    configuration_digest,
+    run_analysis,
+)
+from securemail.domain.evidence.run import CapturePreflight, PolicyProfile
+from securemail.domain.policies.rule_engine import PolicyPack
 from securemail.ports.analyzers import ZeekRunResult
+
+_PINNED_ANALYSIS_TIME = datetime(2026, 9, 4, 12, tzinfo=UTC)
+
+
+def _ietf_pack() -> tuple[PolicyPack, str]:
+    return load_policy_pack(PolicyProfile.IETF_CURRENT)
 
 
 class _FakePreflight:
-    def __init__(self, order: list[str]) -> None:
+    def __init__(self, order: list[str], *, capture_start_time: datetime | None = None) -> None:
         self.order = order
+        self._capture_start_time = capture_start_time
 
     def run(self, capture_path: Path) -> CapturePreflight:
         self.order.append("preflight")
@@ -20,6 +37,7 @@ class _FakePreflight:
             truncated_packets_present=False,
             original_packet_bytes=36,
             capture_duration_seconds=0.0,
+            capture_start_time=self._capture_start_time,
         )
 
 
@@ -65,21 +83,27 @@ def test_run_analysis_hashes_before_returning_document(tmp_path: Path) -> None:
     capture.write_bytes(payload)
     order: list[str] = []
     fake_zeek = _FakeZeek(order)
+    pack, digest = _ietf_pack()
     document = run_analysis(
-        AnalyzeRequest(capture_path=capture),
+        AnalyzeRequest(capture_path=capture, analysis_time=_PINNED_ANALYSIS_TIME),
         zeek_runner=fake_zeek,
         preflight_runner=_FakePreflight(order),
+        policy_pack=pack,
+        policy_pack_digest=digest,
     )
     assert order == ["preflight", "zeek"]
     assert fake_zeek.seen == capture
-    assert document.schema_version == "v0"
-    assert document.run_identity.normalization_schema_version == "v0"
+    assert document.schema_version == "v1"
+    assert document.run_identity.normalization_schema_version == "v1"
     assert document.run_identity.analyzer_bundle_digest == "b" * 64
     assert document.run_identity.capture_sha256 == __import__("hashlib").sha256(payload).hexdigest()
     assert document.run_identity.configuration_digest == configuration_digest()
-    assert document.run_identity.policy_pack_version is None
+    assert document.run_identity.policy_pack_version == digest
+    assert document.run_identity.policy_profile is PolicyProfile.IETF_CURRENT
+    assert document.run_identity.analysis_time == _PINNED_ANALYSIS_TIME
     assert document.run_identity.trust_store_digest is None
     assert document.capture_preflight.packet_count == 1
+    assert document.findings == []
     assert len(document.flows) == 1
     assert document.flows[0].uid == "Ctest"
     assert document.sessions == []
@@ -116,10 +140,13 @@ def test_run_analysis_normalizes_email_sessions(tmp_path: Path) -> None:
             }
         ],
     }
+    pack, digest = _ietf_pack()
     document = run_analysis(
-        AnalyzeRequest(capture_path=capture),
+        AnalyzeRequest(capture_path=capture, analysis_time=_PINNED_ANALYSIS_TIME),
         zeek_runner=_FakeZeek([], logs),
         preflight_runner=_FakePreflight([]),
+        policy_pack=pack,
+        policy_pack_digest=digest,
     )
     assert len(document.sessions) == 1
     assert document.sessions[0].uid == "Ctest"
@@ -174,10 +201,13 @@ def test_run_analysis_assesses_starttls_from_ssl_history(tmp_path: Path) -> None
         ],
         "ssl.log": [{"uid": "Ctest", "ssl_history": "Csx", "established": True}],
     }
+    pack, digest = _ietf_pack()
     document = run_analysis(
-        AnalyzeRequest(capture_path=capture),
+        AnalyzeRequest(capture_path=capture, analysis_time=_PINNED_ANALYSIS_TIME),
         zeek_runner=_FakeZeek([], logs),
         preflight_runner=_FakePreflight([]),
+        policy_pack=pack,
+        policy_pack_digest=digest,
     )
     assert document.sessions[0].explicit_upgrade is not None
     assert document.sessions[0].explicit_upgrade.state is not None
@@ -196,13 +226,38 @@ def test_run_analysis_records_trust_store_digest_when_snapshot_provided(
     capture.write_bytes(b"\x0a\x0d\x0d\x0a" + b"\x00" * 32)
     snapshot = load_trust_store_snapshot()
     hostname = "mail.example.test"
+    pack, digest = _ietf_pack()
     document = run_analysis(
-        AnalyzeRequest(capture_path=capture, expected_hostname=hostname),
+        AnalyzeRequest(
+            capture_path=capture,
+            expected_hostname=hostname,
+            analysis_time=_PINNED_ANALYSIS_TIME,
+        ),
         zeek_runner=_FakeZeek([]),
         preflight_runner=_FakePreflight([]),
         trust_snapshot=snapshot,
+        policy_pack=pack,
+        policy_pack_digest=digest,
     )
     assert document.run_identity.trust_store_digest == snapshot.digest
     assert document.run_identity.configuration_digest == configuration_digest(
         expected_hostname=hostname
     )
+
+
+def test_historical_profile_requires_capture_start_time(tmp_path: Path) -> None:
+    capture = tmp_path / "capture.pcapng"
+    capture.write_bytes(b"\x0a\x0d\x0d\x0a" + b"\x00" * 32)
+    pack, digest = load_policy_pack(PolicyProfile.HISTORICAL_AT_CAPTURE)
+    with pytest.raises(AnalysisError, match="capture start time unavailable"):
+        run_analysis(
+            AnalyzeRequest(
+                capture_path=capture,
+                analysis_time=_PINNED_ANALYSIS_TIME,
+                policy_profile=PolicyProfile.HISTORICAL_AT_CAPTURE,
+            ),
+            zeek_runner=_FakeZeek([]),
+            preflight_runner=_FakePreflight([]),
+            policy_pack=pack,
+            policy_pack_digest=digest,
+        )

@@ -1,6 +1,7 @@
 {
   "capture_preflight": {
     "capture_duration_seconds": 0.001490917,
+    "capture_start_time": "2026-09-03T22:17:56Z",
     "file_time_precision": "nanosecond",
     "original_packet_bytes": 5188,
     "packet_count": 11,
@@ -10,6 +11,7 @@
     "truncated_packets_present": false
   },
   "certificates": [],
+  "findings": [],
   "flows": [
     {
       "conflicting_byte_ranges": [],
@@ -114,13 +116,15 @@
     }
   ],
   "run_identity": {
+    "analysis_time": "2026-09-04T12:00:00Z",
     "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
     "capture_sha256": "b596da6ca82a2fdb00f3eb4d8371e365a98c0d2c53fb44172302ed2eb42309d9",
-    "configuration_digest": "b5da7e1eee127dde2ca64be0155142ef462a3baae1bc31df06363a9e8589f11e",
-    "normalization_schema_version": "v0",
-    "policy_pack_version": null,
+    "configuration_digest": "dac7231c9fc00ae0d79e9ee382ee67277613f1276c08e3e3e86cad33850250cd",
+    "normalization_schema_version": "v1",
+    "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+    "policy_profile": "ietf_current",
     "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
   },
-  "schema_version": "v0",
+  "schema_version": "v1",
   "sessions": []
 }

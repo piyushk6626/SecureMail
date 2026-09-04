@@ -7,13 +7,14 @@ tests/fixtures/<case_id>/
   capture.pcapng    # git-lfs; never edited after creation
   expected.json     # authored before code; harness requires exact match
   provenance.json   # source, generator, tool versions, sha256, created_at
+  analyze.json      # optional CLI flags (analysis time, hostname, policy profile)
 ```
 
 `<case_id>` is `<protocol_or_area>_<condition>` as named in
-[`plans/build_plan.md`](../plans/build_plan.md). There are **64** committed
+[`plans/build_plan.md`](../plans/build_plan.md). There are **71** committed
 fixture directories. Some are reused as proof in more than one step
 (`tcp_smtp_clean_baseline` in Steps 1–2; `*_nonstandard_port` in Steps 2–3;
-`tls13_psk_only_resumption` is also named for Step 7 later).
+`tls13_psk_only_resumption` is the Step 7 CLI proof).
 
 ## Harness
 
@@ -21,8 +22,9 @@ fixture directories. Some are reused as proof in more than one step
 `run_fixture(case_id)`:
 
 1. Invokes `create_cli()` with `analyze <capture> --out <tmp>/actual.json`
-   plus optional `--analysis-time` / `--expiry-warning-days` /
-   `--expected-hostname` from `analyze.json`
+   plus `--analysis-time` (pinned to `2026-09-04T12:00:00Z` when omitted) and
+   optional `--expiry-warning-days` / `--expected-hostname` / `--policy-profile`
+   from `analyze.json`
 2. Parses both JSON documents
 3. Recursively diffs keys, types, list lengths, and values
 4. Fails with field paths like `$.sessions[0].explicit_upgrade.state`
@@ -67,6 +69,8 @@ new fixture. Lab captures on macOS must use a dumpcap sidecar — see
 | `scapy_cert_malformed_captures.py` | Malformed Certificate message |
 | `import_cert_public_corpus.py` | Independent full-chain TLS 1.2 public-corpus slice |
 | `lab_chain_captures.py` | Step 6 lab CA chain, self-signed, missing intermediate, SAN match/mismatch |
+| `lab_policy_boundary_captures.py` | Step 7 lab TLS 1.0/1.1, NULL/export, SHA-1 CertificateVerify, RSA-1536 |
+| `scapy_policy_boundary_captures.py` | Step 7 Scapy TLS 1.2 static DH ServerHello |
 
 SMTP on TCP/25 reuses the immutable Step 1 capture
 `tcp_smtp_clean_baseline`. Advertised-but-never-requested STARTTLS reuses the
@@ -179,13 +183,30 @@ applicable.
 | `cert_chain_san_mismatch` | lab | Path valid, `identity_match: false`. CLI proof |
 | `cert_chain_public_corpus` | public_corpus | Path valid at capture, expired at analysis; SNI `www.heise.de` |
 
+### Step 7 — policy engine
+
+| Case | Source | Asserts |
+|---|---|---|
+| `tls10_negotiated` | lab | `TLS_NEGOTIATED_TLS10` |
+| `tls11_negotiated` | lab | `TLS_NEGOTIATED_TLS11` |
+| `tls12_null_cipher` | lab | `TLS_CIPHER_NULL` |
+| `tls12_export_cipher` | lab | `TLS_CIPHER_EXPORT` |
+| `tls12_static_dh` | scapy | `TLS12_STATIC_DH_NEGOTIATED`, forward secrecy absent |
+| `tls12_sha1_certificate_verify` | lab | Handshake SHA-1 CertificateVerify, not the X.509 signature |
+| `cert_rsa1536` | lab | `CERT_RSA_KEY_LT2048` (RSA-2048 still passes the same rule) |
+
+Reused: RC4 (`tls12_legacy_weak_suite`), static RSA/ECDH, ECDHE, TLS 1.3 PSK-only,
+truncated ClientHello. Profile switch uses `tls12_static_rsa` under `ietf_current`
+and `nist_federal` without duplicating the PCAP.
+
 ## Directory count
 
-Unique fixture directories: **64**.
+Unique fixture directories: **71**.
 
 `empty` (1) + TCP including baseline (8) + remaining Step 2 (`smtp_submission_port`,
 `imap_standard_port`, `pop3_standard_port`, three nonstandard, ambiguous, two
-public) (9) + remaining Step 3 (22) + Step 4 (11) + Step 5 (8) + Step 6 lab (5) = 64.
+public) (9) + remaining Step 3 (22) + Step 4 (11) + Step 5 (8) + Step 6 lab (5)
++ Step 7 new (7) = 71.
 
 ## Regenerating
 
@@ -198,5 +219,5 @@ to change; do not edit `capture.pcapng`. Prefer `uv run pytest` on the named
 
 ## Not in this build
 
-No golden HTML/PDF under `tests/fixtures/reports/`. Step 6 records path and
-identity facts; whether RSA-1024 or SHA-1 is a *finding* is Step 7.
+No golden HTML/PDF under `tests/fixtures/reports/`. Step 7 emits findings;
+Step 8 will score and dedup them.

@@ -1,6 +1,7 @@
 {
   "capture_preflight": {
     "capture_duration_seconds": 0.24,
+    "capture_start_time": "2024-01-01T00:00:00Z",
     "file_time_precision": "microsecond",
     "original_packet_bytes": 1484,
     "packet_count": 25,
@@ -10,6 +11,119 @@
     "truncated_packets_present": false
   },
   "certificates": [],
+  "findings": [
+    {
+      "affected_endpoint": "192.0.2.25:110",
+      "basis_state": "observed",
+      "code": "MAIL_ACCESS_CLEARTEXT",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "derived.service_role",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "session"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "derived.transport_tls_established",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "session"
+        }
+      ],
+      "finding_id": "ca2bd7aa22b9e2b85a1b66a272800465809966fe753294c9c49be9358b423db0",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "Cleartext IMAP/POP3 access is deprecated.",
+      "remediation_id": "mail.require_access_tls",
+      "rule_effective_from": "2018-01-01",
+      "rule_effective_until": null,
+      "severity": "medium",
+      "standards": [
+        "RFC 8314 §3",
+        "RFC 8997"
+      ],
+      "title": "Mail access without TLS"
+    },
+    {
+      "affected_endpoint": "192.0.2.25:110",
+      "basis_state": "observed",
+      "code": "POP3_PASS_WITHOUT_TLS",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "derived.observed_commands",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "session"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "derived.transport_tls_established",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "session"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "session.protocol",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "session"
+        }
+      ],
+      "finding_id": "a11a9950eb6d660baa3c7fb8b2eca46dfcd79cbb185828bb82f95513befbc1c0",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "POP3 PASS transmits a password in the clear unless STLS or implicit TLS is established.",
+      "remediation_id": "pop3.disable_cleartext_pass",
+      "rule_effective_from": "1999-06-01",
+      "rule_effective_until": null,
+      "severity": "high",
+      "standards": [
+        "RFC 2595 §2"
+      ],
+      "title": "POP3 PASS without TLS"
+    },
+    {
+      "affected_endpoint": "192.0.2.25:110",
+      "basis_state": "observed",
+      "code": "UPGRADE_ACCEPTED_WITHOUT_TLS_TRANSITION",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "session.explicit_upgrade.state",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "session"
+        }
+      ],
+      "finding_id": "968375b04244004ac76d9edf085a66a853f4778d64f5bb9ff390a3b3946e54f9",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "Application commands after an accepted upgrade and before TLS is a protocol-state violation.",
+      "remediation_id": "mail.fix_starttls_transition",
+      "rule_effective_from": "2002-02-01",
+      "rule_effective_until": null,
+      "severity": "high",
+      "standards": [
+        "RFC 3207 §4",
+        "RFC 9051 §6.2.1",
+        "RFC 2595"
+      ],
+      "title": "STARTTLS/STLS accepted without TLS transition"
+    }
+  ],
   "flows": [
     {
       "conflicting_byte_ranges": [],
@@ -38,14 +152,16 @@
   ],
   "handshakes": [],
   "run_identity": {
+    "analysis_time": "2026-09-04T12:00:00Z",
     "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
     "capture_sha256": "e659278065a43cbba7e3a7534206610eb31dfa1d1cd2bd13a2056e0188a89bbf",
-    "configuration_digest": "b5da7e1eee127dde2ca64be0155142ef462a3baae1bc31df06363a9e8589f11e",
-    "normalization_schema_version": "v0",
-    "policy_pack_version": null,
+    "configuration_digest": "dac7231c9fc00ae0d79e9ee382ee67277613f1276c08e3e3e86cad33850250cd",
+    "normalization_schema_version": "v1",
+    "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+    "policy_profile": "ietf_current",
     "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
   },
-  "schema_version": "v0",
+  "schema_version": "v1",
   "sessions": [
     {
       "corroboration": "zeek+tshark",

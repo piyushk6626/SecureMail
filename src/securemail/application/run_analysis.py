@@ -20,8 +20,15 @@ from securemail.domain.evidence.run import (
     NORMALIZATION_SCHEMA_VERSION,
     AnalysisRun,
     EvidenceDocument,
+    PolicyProfile,
 )
 from securemail.domain.policies.pki.chain_validation import TrustStoreSnapshot
+from securemail.domain.policies.rule_engine import (
+    PolicyEngineError,
+    PolicyPack,
+    evaluate_policy,
+    resolve_evaluation_clock,
+)
 from securemail.domain.policies.tls.key_exchange import (
     TlsParameterIndex,
     empty_tls_parameter_index,
@@ -75,6 +82,7 @@ class AnalyzeRequest(BaseModel):
     analysis_time: datetime | None = None
     expiry_warning_seconds: int = Field(default=DEFAULT_EXPIRY_WARNING_SECONDS, ge=1)
     expected_hostname: str | None = Field(default=None, max_length=253)
+    policy_profile: PolicyProfile = PolicyProfile.IETF_CURRENT
 
     @field_validator("expected_hostname")
     @classmethod
@@ -138,6 +146,8 @@ def run_analysis(
     tls_parameters: TlsParameterIndex | None = None,
     artifact_store: ArtifactStore | None = None,
     trust_snapshot: TrustStoreSnapshot | None = None,
+    policy_pack: PolicyPack,
+    policy_pack_digest: str,
 ) -> EvidenceDocument:
     capture_path = request.capture_path
     if not capture_path.is_file():
@@ -190,6 +200,24 @@ def run_analysis(
         trust_snapshot=trust_snapshot,
         expected_hostname=request.expected_hostname,
     )
+    try:
+        evaluation_time = resolve_evaluation_clock(
+            policy_pack,
+            analysis_time=analysis_time,
+            capture_start_time=preflight.capture_start_time,
+        )
+    except PolicyEngineError as exc:
+        raise AnalysisError(str(exc)) from exc
+    findings = evaluate_policy(
+        pack=policy_pack,
+        pack_digest=policy_pack_digest,
+        capture_sha256=capture_digest,
+        evaluation_time=evaluation_time,
+        flows=flows,
+        sessions=sessions,
+        handshakes=handshakes,
+        certificates=certificates,
+    )
     return EvidenceDocument(
         schema_version=NORMALIZATION_SCHEMA_VERSION,
         run_identity=AnalysisRun(
@@ -201,7 +229,9 @@ def run_analysis(
                 expiry_warning_seconds=request.expiry_warning_seconds,
                 expected_hostname=request.expected_hostname,
             ),
-            policy_pack_version=None,
+            analysis_time=analysis_time,
+            policy_profile=request.policy_profile,
+            policy_pack_version=policy_pack_digest,
             trust_store_digest=None if trust_snapshot is None else trust_snapshot.digest,
         ),
         capture_preflight=preflight,
@@ -209,4 +239,5 @@ def run_analysis(
         sessions=sessions,
         handshakes=handshakes,
         certificates=certificates,
+        findings=findings,
     )

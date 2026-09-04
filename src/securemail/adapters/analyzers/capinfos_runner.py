@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+from datetime import UTC, datetime
 from pathlib import Path
 
 from securemail.adapters.analyzers.bundle_lock import (
@@ -41,8 +42,12 @@ CAPINFOS_ARGV: tuple[str, ...] = (
     "-l",
     "-d",
     "-u",
+    "-a",
     "-F",
     "/data/capture.pcapng",
+)
+_START_TIME_RE = re.compile(
+    r"(?P<stamp>\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2})(?:\.(?P<frac>\d+))?"
 )
 
 
@@ -74,6 +79,26 @@ def _normalize_precision(text: str) -> str:
     return token or "unknown"
 
 
+def _parse_timestamp(text: str) -> datetime | None:
+    stripped = text.strip()
+    if not stripped or stripped.lower() in {"n/a", "unknown"}:
+        return None
+    token = stripped.split()[0]
+    try:
+        epoch = float(token)
+    except ValueError:
+        epoch = None
+    if epoch is not None and epoch > 1_000_000_000:
+        return datetime.fromtimestamp(epoch, tz=UTC)
+    match = _START_TIME_RE.search(stripped.replace("T", " ", 1))
+    if match is None:
+        return None
+    stamp = match.group("stamp").replace("T", " ")
+    fraction = (match.group("frac") or "0")[:6].ljust(6, "0")
+    parsed = datetime.strptime(f"{stamp}.{fraction}", "%Y-%m-%d %H:%M:%S.%f")
+    return parsed.replace(tzinfo=UTC)
+
+
 def parse_capinfos_text(text: str) -> CapturePreflight:
     """Parse long-form `capinfos -M` output into typed preflight evidence."""
 
@@ -97,6 +122,7 @@ def parse_capinfos_text(text: str) -> CapturePreflight:
     snaplen_raw = fields.get("packet size limit", "")
     data_raw = fields.get("data size", "")
     duration_raw = fields.get("capture duration", "")
+    start_raw = fields.get("first packet time") or fields.get("earliest packet time") or ""
 
     packet_size_limit: int | None = None
     min_inferred: int | None = None
@@ -130,6 +156,7 @@ def parse_capinfos_text(text: str) -> CapturePreflight:
         truncated_packets_present=truncated,
         original_packet_bytes=_parse_int(data_raw),
         capture_duration_seconds=_parse_float(duration_raw),
+        capture_start_time=_parse_timestamp(start_raw),
     )
 
 

@@ -1,6 +1,7 @@
 {
   "capture_preflight": {
     "capture_duration_seconds": 0.05,
+    "capture_start_time": "2024-01-01T00:00:00Z",
     "file_time_precision": "microsecond",
     "original_packet_bytes": 447,
     "packet_count": 6,
@@ -10,6 +11,130 @@
     "truncated_packets_present": false
   },
   "certificates": [],
+  "findings": [
+    {
+      "affected_endpoint": "192.0.2.25:4433",
+      "basis_state": "inferred",
+      "code": "TLS12_STATIC_RSA_NEGOTIATED",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "inferred",
+          "field_path": "handshake.key_exchange.evidence_state",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "inferred",
+          "field_path": "handshake.key_exchange.mechanism",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.version.evidence_state",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.version.selected",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        }
+      ],
+      "finding_id": "25314de591348ddad3aecab3de9834c96e15009c2b1f797cdca07cbc17f3bad1",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "Clients MUST NOT offer and servers MUST NOT select RSA key-exchange cipher suites in TLS 1.2.",
+      "remediation_id": "tls.disable_static_rsa",
+      "rule_effective_from": "2026-07-01",
+      "rule_effective_until": null,
+      "severity": "high",
+      "standards": [
+        "RFC 10015 §4"
+      ],
+      "title": "TLS 1.2 static RSA key exchange"
+    },
+    {
+      "affected_endpoint": "192.0.2.25:4433",
+      "basis_state": "observed",
+      "code": "TLS_CIPHER_CBC",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.cipher_suite.evidence_state",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.cipher_suite.name",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.version.selected",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        }
+      ],
+      "finding_id": "f049843ba47265a2b3dcb7de9f29293bf9d847b662df20fb3a833691a8a96bb0",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "CBC cipher suites in TLS 1.2 and earlier SHOULD NOT be negotiated.",
+      "remediation_id": "tls.prefer_aead",
+      "rule_effective_from": "2022-11-01",
+      "rule_effective_until": null,
+      "severity": "medium",
+      "standards": [
+        "RFC 9325 §4.2"
+      ],
+      "title": "TLS CBC cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "192.0.2.25:4433",
+      "basis_state": "inferred",
+      "code": "TLS_FORWARD_SECRECY_ABSENT",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "inferred",
+          "field_path": "derived.forward_secrecy.outcome",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        }
+      ],
+      "finding_id": "a49db7092ddf34b9feb0d628d396972fb62299f9e9288c3ef559ad15aa926210",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "Static RSA, DH, or ECDH key exchange does not provide forward secrecy.",
+      "remediation_id": "tls.require_ephemeral_kx",
+      "rule_effective_from": "2015-05-01",
+      "rule_effective_until": null,
+      "severity": "medium",
+      "standards": [
+        "RFC 9325 §4.2"
+      ],
+      "title": "Forward secrecy absent"
+    }
+  ],
   "flows": [
     {
       "conflicting_byte_ranges": [],
@@ -80,8 +205,8 @@
         },
         {
           "direction": "resp",
-          "evidence_state": "inferred",
-          "frame_number": null,
+          "evidence_state": "observed",
+          "frame_number": 5,
           "history_letter": "n",
           "kind": "server_hello_done"
         }
@@ -104,13 +229,15 @@
     }
   ],
   "run_identity": {
+    "analysis_time": "2026-09-04T12:00:00Z",
     "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
     "capture_sha256": "2a630292e058a48f631ddc907d5f74991f5332d73d0dc195659d5a133a36cc7a",
-    "configuration_digest": "b5da7e1eee127dde2ca64be0155142ef462a3baae1bc31df06363a9e8589f11e",
-    "normalization_schema_version": "v0",
-    "policy_pack_version": null,
+    "configuration_digest": "dac7231c9fc00ae0d79e9ee382ee67277613f1276c08e3e3e86cad33850250cd",
+    "normalization_schema_version": "v1",
+    "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+    "policy_profile": "ietf_current",
     "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
   },
-  "schema_version": "v0",
+  "schema_version": "v1",
   "sessions": []
 }

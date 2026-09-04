@@ -3,12 +3,13 @@
 Offline, deterministic-first cryptographic posture analysis for SMTP, IMAP, and
 POP3 traffic captured in PCAP/PCAPNG files.
 
-This repository has completed **Steps 0–6** of `plans/build_plan.md`: package
+This repository has completed **Steps 0–7** of `plans/build_plan.md`: package
 layout, sandboxed Zeek/TShark runners, TCP reconstruction quality, payload-driven
 protocol identification, STARTTLS/STLS plus implicit-TLS assessment, TLS
-version / cipher / key-exchange evidence, per-certificate facts, and offline
-chain validation with RFC 9525 identity matching. The live command is
-`securemail analyze`. Steps 7–11 remain named placeholders.
+version / cipher / key-exchange evidence, per-certificate facts, offline
+chain validation with RFC 9525 identity matching, versioned rule packs, and
+forward-secrecy assessment. The live command is
+`securemail analyze`. Steps 8–11 remain named placeholders.
 
 **As-built documentation** (what the code does today) lives in
 [`docs/README.md`](docs/README.md). Plan contracts (what to build next) remain in
@@ -57,10 +58,16 @@ uv run securemail analyze tests/fixtures/tls13_hello_retry_request/capture.pcapn
 
 # Step 5 — expired RSA-1024 certificate facts (not a finding)
 uv run securemail analyze tests/fixtures/cert_expired_rsa1024/capture.pcapng --out out/cert.json
+
+# Step 6 — SAN mismatch with a still-valid path
+uv run securemail analyze tests/fixtures/cert_chain_san_mismatch/capture.pcapng --out out/chain.json
+
+# Step 7 — TLS 1.3 PSK-only resumption; forward secrecy is indeterminate
+uv run securemail analyze tests/fixtures/tls13_psk_only_resumption/capture.pcapng --policy-profile ietf_current --out out/policy.json
 ```
 
-`--out` is required. Output is a v0 `EvidenceDocument` JSON file (flows,
-sessions, top-level `handshakes`, and `certificates`). There is no `score`, `report`, or
+`--out` is required. Output is a v1 `EvidenceDocument` JSON file (flows,
+sessions, top-level `handshakes`, `certificates`, and `findings`). There is no `score`, `report`, or
 `evaluate-ml` command yet.
 
 ## Layout

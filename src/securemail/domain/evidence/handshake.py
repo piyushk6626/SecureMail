@@ -1,4 +1,4 @@
-"""Canonical TLS handshake evidence (schema v0, Step 4)."""
+"""Canonical TLS handshake evidence (v1 envelope, Step 4)."""
 
 from __future__ import annotations
 
@@ -142,6 +142,7 @@ def _rebuild_evidence_document() -> None:
     from securemail.domain.evidence.flow import Flow
     from securemail.domain.evidence.run import EvidenceDocument
     from securemail.domain.evidence.session import EmailSession
+    from securemail.domain.findings.finding import Finding
 
     EvidenceDocument.model_rebuild(
         _types_namespace={
@@ -149,6 +150,7 @@ def _rebuild_evidence_document() -> None:
             "EmailSession": EmailSession,
             "TlsHandshake": TlsHandshake,
             "CertificateEvidence": CertificateEvidence,
+            "Finding": Finding,
         }
     )
 

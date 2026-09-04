@@ -12,6 +12,9 @@ from typer.testing import CliRunner
 
 JSONValue = dict[str, Any] | list[Any] | str | int | float | bool | None
 
+# Pinned so goldens stay stable; live CLI still defaults analysis time to now.
+DEFAULT_FIXTURE_ANALYSIS_TIME = "2026-09-04T12:00:00Z"
+
 
 def repo_root() -> Path:
     start = Path(__file__).resolve()
@@ -30,21 +33,25 @@ def fixture_dir(case_id: str, root: Path | None = None) -> Path:
 
 def _analyze_args(base: Path) -> list[str]:
     config_path = base / "analyze.json"
-    if not config_path.is_file():
-        return []
-    payload = json.loads(config_path.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict):
-        raise AssertionError(f"analyze.json must be an object: {config_path}")
-    args: list[str] = []
-    analysis_time = payload.get("analysis_time")
-    if analysis_time is not None:
-        args.extend(["--analysis-time", str(analysis_time)])
+    payload: dict[str, Any] = {}
+    if config_path.is_file():
+        loaded = json.loads(config_path.read_text(encoding="utf-8"))
+        if not isinstance(loaded, dict):
+            raise AssertionError(f"analyze.json must be an object: {config_path}")
+        payload = loaded
+    args: list[str] = [
+        "--analysis-time",
+        str(payload.get("analysis_time") or DEFAULT_FIXTURE_ANALYSIS_TIME),
+    ]
     warning_days = payload.get("expiry_warning_days")
     if warning_days is not None:
         args.extend(["--expiry-warning-days", str(warning_days)])
     expected_hostname = payload.get("expected_hostname")
     if expected_hostname is not None:
         args.extend(["--expected-hostname", str(expected_hostname)])
+    policy_profile = payload.get("policy_profile")
+    if policy_profile is not None:
+        args.extend(["--policy-profile", str(policy_profile)])
     return args
 
 

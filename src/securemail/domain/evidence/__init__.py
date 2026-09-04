@@ -36,6 +36,7 @@ from securemail.domain.evidence.run import (
     CapturePreflight,
     EvidenceDocument,
     EvidenceState,
+    PolicyProfile,
 )
 from securemail.domain.evidence.session import (
     EmailSession,
@@ -49,6 +50,7 @@ from securemail.domain.evidence.session import (
     SessionEventKind,
     UpgradeState,
 )
+from securemail.domain.findings.finding import Finding
 
 EvidenceDocument.model_rebuild(
     _types_namespace={
@@ -56,6 +58,7 @@ EvidenceDocument.model_rebuild(
         "EmailSession": EmailSession,
         "TlsHandshake": TlsHandshake,
         "CertificateEvidence": CertificateEvidence,
+        "Finding": Finding,
     }
 )
 
@@ -75,6 +78,7 @@ __all__ = [
     "EvidenceDocument",
     "EvidenceState",
     "ExplicitUpgrade",
+    "Finding",
     "ImplicitTls",
     "Flow",
     "FlowEndpoint",
@@ -86,6 +90,7 @@ __all__ = [
     "MailProtocol",
     "ObservedCondition",
     "PayloadEvidence",
+    "PolicyProfile",
     "PortHint",
     "ProtocolEvent",
     "ReconstructionFacts",

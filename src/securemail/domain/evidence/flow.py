@@ -300,6 +300,7 @@ def _rebuild_evidence_document() -> None:
     from securemail.domain.evidence.handshake import TlsHandshake
     from securemail.domain.evidence.run import EvidenceDocument
     from securemail.domain.evidence.session import EmailSession
+    from securemail.domain.findings.finding import Finding
 
     EvidenceDocument.model_rebuild(
         _types_namespace={
@@ -307,6 +308,7 @@ def _rebuild_evidence_document() -> None:
             "EmailSession": EmailSession,
             "TlsHandshake": TlsHandshake,
             "CertificateEvidence": CertificateEvidence,
+            "Finding": Finding,
         }
     )
 

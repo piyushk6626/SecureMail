@@ -15,39 +15,43 @@ The one use case is `run_analysis` in
 wired through [`src/securemail/bootstrap.py`](../src/securemail/bootstrap.py) to
 the Typer command `securemail analyze`.
 
-It produces a frozen v0 JSON document with:
+It produces a frozen v1 JSON document with:
 
-- run identity (capture hash, analyzer-bundle digest, configuration digest)
-- capinfos preflight
+- run identity (capture hash, analyzer-bundle digest, configuration digest,
+  analysis time, policy profile, policy-pack SHA-256)
+- capinfos preflight, including canonical UTC `capture_start_time`
 - per-flow TCP reconstruction quality
 - per-session protocol identity and STARTTLS/STLS / implicit-TLS assessment
 - top-level TLS handshake evidence (version, IANA cipher, version-aware key
-  exchange, `ssl_history`, frame-linked messages)
+  exchange, `ssl_history`, frame-linked messages, CertificateVerify algorithm)
 - top-level certificate facts (DER SHA-256, subject/issuer, validity window,
   public-key algorithm and effective strength, certificate signature algorithm)
 - leaf-only chain validation and RFC 9525 identity matching against a pinned
   offline trust snapshot
+- deterministic `Finding` records from a versioned YAML rule pack (negative and
+  indeterminate outcomes only)
 
-There are **64** committed fixtures under `tests/fixtures/<case_id>/`. The
+There are **71** committed fixtures under `tests/fixtures/<case_id>/`. The
 harness in [`tests/support/fixture_harness.py`](../tests/support/fixture_harness.py)
 runs the real CLI and diffs the entire output against `expected.json` (no
 ignored fields). Optional `analyze.json` supplies `--analysis-time`,
-`--expiry-warning-days`, and `--expected-hostname` for time-dependent or
-identity-configured certificate goldens.
+`--expiry-warning-days`, `--expected-hostname`, and `--policy-profile`. When
+`analysis_time` is omitted, the harness pins `2026-09-04T12:00:00Z` so goldens
+stay stable; the live CLI still defaults analysis time to now.
 
 ## Step map
 
 | Step | Owns | Status |
 |---|---|---|
-| 0 | Layout, sandbox runners, v0 schema, fixture harness, analyzer lockfile | **Done** |
+| 0 | Layout, sandbox runners, schema, fixture harness, analyzer lockfile | **Done** |
 | 1 | TCP reconstruction quality | **Done** |
 | 2 | SMTP/IMAP/POP3 identification (`port_hint` ≠ `payload_evidence`) | **Done** |
 | 3 | STARTTLS/STLS state machines + implicit TLS | **Done** |
 | 4 | TLS version / cipher / key exchange | **Done** |
 | 5 | Certificate facts | **Done** |
 | 6 | Chain + identity (offline trust store) | **Done** |
-| 7 | Versioned rule packs + forward secrecy | Placeholder (`rule_engine.py`, YAML packs, `forward_secrecy.py`) |
-| 8 | Scoring, dedup, coverage denominators | Placeholder (`domain/findings/*`, `api/cli/commands/score.py`) |
+| 7 | Versioned rule packs + forward secrecy | **Done** |
+| 8 | Scoring, dedup, coverage denominators | Placeholder (`domain/findings` scoring modules, `api/cli/commands/score.py`) |
 | 9 | Canonical JSON → HTML/PDF | Placeholder (report adapters/templates, `report.py`) |
 | 10 | Advisory ML | Placeholder (`advisory_pipeline.py`, `evaluate_ml.py`, baselines) |
 | 11 | FastAPI + React | Placeholder (`api/main.py`, routers, `frontend/` README only) |
@@ -82,10 +86,15 @@ uv run securemail analyze tests/fixtures/cert_expired_rsa1024/capture.pcapng --o
 
 # Step 6 — SAN mismatch with a still-valid path
 uv run securemail analyze tests/fixtures/cert_chain_san_mismatch/capture.pcapng --out out/chain.json
+
+# Step 7 — TLS 1.3 PSK-only resumption; forward secrecy is indeterminate
+uv run securemail analyze tests/fixtures/tls13_psk_only_resumption/capture.pcapng --policy-profile ietf_current --out out/policy.json
 ```
 
 `--out` is required. Output is JSON with sorted keys, 2-space indent, a trailing
-newline, and `ensure_ascii=False`.
+newline, and `ensure_ascii=False`. `--policy-profile` defaults to `ietf_current`.
+Unknown profiles exit 2. A malformed pack or missing capture start time for
+`historical_at_capture` exits 1.
 
 ## CLI that exists vs files that do not run
 
@@ -102,15 +111,14 @@ commands.
 
 ## Not in this build
 
-The JSON does **not** contain `Finding`, posture scores, or a report manifest.
-Handshake records do not judge forward secrecy or weak-suite policy (Step 7).
-Certificate records store facts plus independent path/identity outcomes: RSA-1024
-and SHA-1 signatures are stored without becoming findings. Revocation without
-imported OCSP/CRL is `unknown`. `run_identity.policy_pack_version` is always
-`null`. `run_identity.trust_store_digest` is the SHA-256 of the pinned PEM
-snapshot. No network calls happen during analysis (analyzer containers use
-`--network=none`; chain validation does not fetch AIA/OCSP/CRL/CT/DNS). No
-dashboard, no Postgres, no queue.
+The JSON does **not** contain posture scores or a report manifest. Pass/present
+policy outcomes are not serialized as findings. Scoring and dedup are Step 8.
+Revocation without imported OCSP/CRL is `unknown`. `run_identity.policy_pack_version`
+is the SHA-256 of the canonical validated pack JSON.
+`run_identity.trust_store_digest` is the SHA-256 of the pinned PEM snapshot. No
+network calls happen during analysis (analyzer containers use `--network=none`;
+chain validation does not fetch AIA/OCSP/CRL/CT/DNS). No dashboard, no Postgres,
+no queue.
 
 See [architecture.md](architecture.md) for the live module map and
 [fixtures.md](fixtures.md) for every committed case.

@@ -80,7 +80,7 @@ Console script: `securemail = "securemail.api.cli.main:main"` in
 
 | Path | Role |
 |---|---|
-| `run_analysis.py` | Intake hash, PCAP magic check, capinfos, Zeek, optional TShark, handshake/certificate normalize, chain validation, assemble `EvidenceDocument` |
+| `run_analysis.py` | Intake, hash, preflight, Zeek, optional TShark, normalize, policy, assemble `EvidenceDocument` |
 | `normalize_flows.py` | Zeek `conn.log` / `weird.log` / `capture_loss.log` / `sm_tcp_recon.log` → `Flow` |
 | `normalize_sessions.py` | `sm_email.log` + optional TShark frames + `ssl.log` → `EmailSession` |
 | `normalize_handshakes.py` | `ssl.log` / ssl-log-ext + optional TShark frames → `TlsHandshake` |
@@ -94,20 +94,24 @@ themselves.
 
 | Path | Role |
 |---|---|
-| `evidence/run.py` | `EvidenceState`, `AnalysisRun`, `CapturePreflight`, `EvidenceDocument`, schema version `v0` |
+| `evidence/run.py` | `EvidenceState`, `PolicyProfile`, `AnalysisRun`, `CapturePreflight`, `EvidenceDocument`, schema version `v1` |
 | `evidence/flow.py` | `Flow` + pure `classify_reconstruction` |
 | `evidence/session.py` | `EmailSession`, protocol/port/payload enums, upgrade and implicit-TLS models |
 | `policies/starttls/smtp_upgrade.py` | SMTP STARTTLS machine |
 | `policies/starttls/imap_upgrade.py` | IMAP STARTTLS machine |
 | `policies/starttls/pop3_upgrade.py` | POP3 STLS machine |
 | `policies/starttls/implicit_tls.py` | ALPN correlation; port is never proof |
-| `evidence/handshake.py` | `TlsHandshake`, version/cipher/key-exchange evidence, visibility, CertificateVerify signature slot |
+| `evidence/handshake.py` | `TlsHandshake`, version/cipher/key-exchange evidence, visibility, CertificateVerify signature |
 | `policies/tls/key_exchange.py` | Pure version-aware key-exchange classifier (no weakness/FS judgment) |
+| `policies/tls/forward_secrecy.py` | Version-aware FS table; never infers reuse or ticket rotation |
+| `policies/rule_engine.py` | Pure tri-state evaluator over typed evidence |
+| `policies/rules/*.yaml` | `ietf_current`, `nist_federal`, `historical_at_capture` |
 | `evidence/certificate.py` | `CertificateEvidence` facts plus leaf-only `CertificateValidation` |
 | `policies/pki/key_strength.py` | Data-driven effective-strength table |
 | `policies/pki/chain_validation.py` | Path validation at an explicit verification time |
 | `policies/pki/identity.py` | RFC 9525 SAN matching; no CN fallback |
-| `findings/`, `reports/`, remaining TLS/rule packs | Placeholders for Steps 7–9 |
+| `findings/finding.py` | Canonical `Finding` (scoring/dedup remain Step 8) |
+| `reports/` | Placeholder for Step 9 |
 
 ### `ports/`
 
@@ -127,6 +131,7 @@ themselves.
 | `analyzers/tshark_runner.py` | Pinned bounded TShark field dump |
 | `analyzers/capinfos_runner.py` | capinfos inside the TShark image (same sandbox) |
 | `reference_data/iana_tls_parameters.py` | Bounded load of the checked-in IANA TLS Parameters snapshot |
+| `reference_data/policy_packs.py` | Bounded YAML load of built-in rule packs; no user path |
 | `artifacts/certificate_store.py` | Content-addressed DER store (SHA-256 filenames under a caller root) |
 | `pki/trust_store.py` | Bounded load of the pinned offline PEM trust snapshot |
 | `pki/trust-store-snapshot.pem` | Lab root + USERTrust RSA; SHA-256 is `trust_store_digest` |

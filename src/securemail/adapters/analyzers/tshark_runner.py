@@ -50,6 +50,7 @@ TSHARK_FIELDS: tuple[str, ...] = (
     "smtp.response.code",
     "tls.handshake.type",
     "tls.handshake.extensions_key_share_selected_group",
+    "tls.handshake.sig_hash_alg",
 )
 TSHARK_DISPLAY_FILTER = "smtp or imap or pop or tls.handshake"
 
@@ -87,7 +88,7 @@ class DockerTSharkRunner:
             "-E",
             "quote=d",
             "-E",
-            "occurrence=f",
+            "occurrence=a",
         ]
         for field in TSHARK_FIELDS:
             tshark_command.extend(["-e", field])

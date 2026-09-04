@@ -86,6 +86,25 @@ _TSHARK_TYPE_TO_KIND: dict[int, HandshakeMessageKind] = {
     24: HandshakeMessageKind.KEY_UPDATE,
 }
 
+# RFC 8446 / IANA TLS SignatureScheme values used for CertificateVerify.
+_SIGNATURE_SCHEMES: dict[int, str] = {
+    0x0101: "rsa_pkcs1_md5",
+    0x0201: "rsa_pkcs1_sha1",
+    0x0202: "dsa_sha1",
+    0x0203: "ecdsa_sha1",
+    0x0401: "rsa_pkcs1_sha256",
+    0x0501: "rsa_pkcs1_sha384",
+    0x0601: "rsa_pkcs1_sha512",
+    0x0403: "ecdsa_secp256r1_sha256",
+    0x0503: "ecdsa_secp384r1_sha384",
+    0x0603: "ecdsa_secp521r1_sha512",
+    0x0804: "rsa_pss_rsae_sha256",
+    0x0805: "rsa_pss_rsae_sha384",
+    0x0806: "rsa_pss_rsae_sha512",
+    0x0807: "ed25519",
+    0x0808: "ed448",
+}
+
 
 def _as_mapping(value: object) -> Mapping[str, object] | None:
     if isinstance(value, Mapping):
@@ -445,12 +464,53 @@ def _certificate_states(
     return cert_state, verify_state
 
 
-def _certificate_verify_signature(ssl_history: str) -> HandshakeSignatureEvidence:
+def decode_signature_scheme(value: object) -> str | None:
+    """Map a TShark SignatureScheme / sig_hash_alg value to a stable token."""
+
+    if isinstance(value, str):
+        text = value.strip()
+        if not text or len(text) > _MAX_NAME_LEN:
+            return None
+        lowered = text.lower().replace("-", "_")
+        if lowered.startswith("0x"):
+            try:
+                parsed_hex = int(lowered, 16)
+            except ValueError:
+                return lowered
+            return _SIGNATURE_SCHEMES.get(parsed_hex, lowered)
+        if lowered.isdigit():
+            parsed_dec = int(lowered)
+            return _SIGNATURE_SCHEMES.get(parsed_dec, lowered)
+        return lowered
+    parsed = _as_int(value)
+    if parsed is None:
+        return None
+    return _SIGNATURE_SCHEMES.get(parsed, f"0x{parsed:04x}")
+
+
+def _certificate_verify_signature(
+    ssl_history: str,
+    frames: Sequence[Mapping[str, object]],
+) -> HandshakeSignatureEvidence:
     if "y" not in ssl_history and "Y" not in ssl_history:
         return HandshakeSignatureEvidence(
             algorithm=None,
             evidence_state=EvidenceState.NOT_OBSERVABLE,
         )
+    for frame in frames:
+        if 15 not in _tshark_handshake_types(frame):
+            continue
+        raw = frame.get("tls.handshake.sig_hash_alg")
+        if raw is None:
+            raw = frame.get("tls.handshake.signature_scheme")
+        if isinstance(raw, str) and "," in raw:
+            raw = raw.split(",")[-1].strip()
+        algorithm = decode_signature_scheme(raw)
+        if algorithm is not None:
+            return HandshakeSignatureEvidence(
+                algorithm=algorithm,
+                evidence_state=EvidenceState.OBSERVED,
+            )
     return HandshakeSignatureEvidence(
         algorithm=None,
         evidence_state=EvidenceState.INCOMPLETE,
@@ -562,7 +622,7 @@ def _handshake_from_row(
         messages=messages,
         server_certificate_state=cert_state,
         certificate_verify_state=verify_state,
-        certificate_verify_signature=_certificate_verify_signature(history),
+        certificate_verify_signature=_certificate_verify_signature(history, frames),
         evidence_state=_handshake_evidence_state(
             flow=flow,
             version=version,

@@ -61,6 +61,7 @@ def test_tshark_argv_uses_allowlisted_fields_only(tmp_path: Path) -> None:
     assert "smtp.auth.password" not in argv
     assert "tls.handshake.type" in asserted_fields
     assert "tls.handshake.extensions_key_share_selected_group" in asserted_fields
+    assert "tls.handshake.sig_hash_alg" in asserted_fields
     assert "smtp.req.command" in asserted_fields
     assert "tls.handshake.certificate" not in asserted_fields
     assert "tls.handshake.extensions_key_share_key_exchange" not in asserted_fields

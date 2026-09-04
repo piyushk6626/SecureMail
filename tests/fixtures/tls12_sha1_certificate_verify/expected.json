@@ -1,0 +1,431 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.006189167,
+    "capture_start_time": "2026-09-04T12:02:38Z",
+    "file_time_precision": "nanosecond",
+    "original_packet_bytes": 10251,
+    "packet_count": 15,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "certificates": [
+    {
+      "chain_index": 0,
+      "der_sha256": "c4922a6bd58850f535dd1f76f262cc0a79ce8ec6c66db0091e1a488355bb9990",
+      "effective_strength_bits": 112,
+      "evidence_state": "observed",
+      "expires_within_warning_window": false,
+      "issuer": "CN=securemail.test",
+      "not_after": "2027-09-04T12:02:35Z",
+      "not_before": "2026-09-04T12:01:35Z",
+      "public_key_algorithm": "RSA",
+      "public_key_curve": null,
+      "public_key_size": 2048,
+      "role": "client",
+      "serial_number": "3292cd406da2130f569b00258c412a279c6b41ad",
+      "signature_algorithm": "sha256WithRSAEncryption",
+      "source_frames": [
+        6,
+        8
+      ],
+      "subject": "CN=securemail.test",
+      "syntax_error": null,
+      "syntax_valid": true,
+      "uid": "CJKFoj4bpHEhTeaRoj",
+      "valid_at_analysis_time": false,
+      "valid_at_capture_time": true,
+      "validation": null
+    },
+    {
+      "chain_index": 0,
+      "der_sha256": "c4922a6bd58850f535dd1f76f262cc0a79ce8ec6c66db0091e1a488355bb9990",
+      "effective_strength_bits": 112,
+      "evidence_state": "observed",
+      "expires_within_warning_window": false,
+      "issuer": "CN=securemail.test",
+      "not_after": "2027-09-04T12:02:35Z",
+      "not_before": "2026-09-04T12:01:35Z",
+      "public_key_algorithm": "RSA",
+      "public_key_curve": null,
+      "public_key_size": 2048,
+      "role": "server",
+      "serial_number": "3292cd406da2130f569b00258c412a279c6b41ad",
+      "signature_algorithm": "sha256WithRSAEncryption",
+      "source_frames": [
+        6,
+        8
+      ],
+      "subject": "CN=securemail.test",
+      "syntax_error": null,
+      "syntax_valid": true,
+      "uid": "CJKFoj4bpHEhTeaRoj",
+      "valid_at_analysis_time": false,
+      "valid_at_capture_time": true,
+      "validation": {
+        "certificate_observed": true,
+        "identity_match": null,
+        "identity_mismatch_reasons": [],
+        "indeterminate_reasons": [
+          "reference_identity_unavailable"
+        ],
+        "path_invalid_reasons_at_analysis_time": [
+          "not_yet_valid_at_verification_time"
+        ],
+        "path_invalid_reasons_at_capture_time": [
+          "self_signed"
+        ],
+        "path_valid_at_analysis_time": false,
+        "path_valid_at_capture_time": false,
+        "reference_identity": null,
+        "reference_identity_source": null,
+        "revocation_status": "unknown",
+        "syntax_valid": true,
+        "trust_profile_id": "offline_v1",
+        "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "basis_state": "observed",
+      "code": "TLS_CIPHER_CBC",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.cipher_suite.evidence_state",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.cipher_suite.name",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.version.selected",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        }
+      ],
+      "finding_id": "114d93d772483fe056ef672d5956f4a0bba2a4816851c3ca6be6069f54ff5bf9",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "CBC cipher suites in TLS 1.2 and earlier SHOULD NOT be negotiated.",
+      "remediation_id": "tls.prefer_aead",
+      "rule_effective_from": "2022-11-01",
+      "rule_effective_until": null,
+      "severity": "medium",
+      "standards": [
+        "RFC 9325 §4.2"
+      ],
+      "title": "TLS CBC cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "basis_state": "observed",
+      "code": "TLS_HANDSHAKE_SIGNATURE_SHA1",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.certificate_verify_signature.algorithm",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.certificate_verify_signature.evidence_state",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        }
+      ],
+      "finding_id": "7a5b35a561fcaf664056fe559bd4f797473ffba4802a3297bc338d9b5bf5a6cf",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "SHA-1 MUST NOT be used for TLS digital signatures. This is not the X.509 certificate signature.",
+      "remediation_id": "tls.disable_sha1_handshake_signatures",
+      "rule_effective_from": "2021-12-01",
+      "rule_effective_until": null,
+      "severity": "high",
+      "standards": [
+        "RFC 9155 §3"
+      ],
+      "title": "SHA-1 handshake CertificateVerify"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "basis_state": "observed",
+      "code": "CERT_BECAME_INVALID_AFTER_CAPTURE",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.chain_index",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:c4922a6bd58850f535dd1f76f262cc0a79ce8ec6c66db0091e1a488355bb9990",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.role",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:c4922a6bd58850f535dd1f76f262cc0a79ce8ec6c66db0091e1a488355bb9990",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.valid_at_analysis_time",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:c4922a6bd58850f535dd1f76f262cc0a79ce8ec6c66db0091e1a488355bb9990",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.valid_at_capture_time",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:c4922a6bd58850f535dd1f76f262cc0a79ce8ec6c66db0091e1a488355bb9990",
+          "record_type": "certificate"
+        }
+      ],
+      "finding_id": "01eb21823ef8a68f245d393546c08869473a49b686c40f4228c4d8f7d5ad460c",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "The captured session used a then-valid certificate that is invalid at analysis time.",
+      "remediation_id": "pki.replace_now_expired_cert",
+      "rule_effective_from": "2008-05-01",
+      "rule_effective_until": null,
+      "severity": "informational",
+      "standards": [
+        "RFC 5280 §6.1.3"
+      ],
+      "title": "Certificate became invalid after capture"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "basis_state": "observed",
+      "code": "CERT_PATH_INVALID_AT_CAPTURE",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.chain_index",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:c4922a6bd58850f535dd1f76f262cc0a79ce8ec6c66db0091e1a488355bb9990",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.role",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:c4922a6bd58850f535dd1f76f262cc0a79ce8ec6c66db0091e1a488355bb9990",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.validation.path_valid_at_capture_time",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:c4922a6bd58850f535dd1f76f262cc0a79ce8ec6c66db0091e1a488355bb9990",
+          "record_type": "certificate"
+        }
+      ],
+      "finding_id": "d5c0966130d734a405b7ceae44511375a8e04bfb2ab29d87f92987d047cdcfb5",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "Offline path validation against the imported trust store failed at capture time.",
+      "remediation_id": "pki.repair_chain",
+      "rule_effective_from": "2008-05-01",
+      "rule_effective_until": null,
+      "severity": "high",
+      "standards": [
+        "RFC 5280 §6"
+      ],
+      "title": "Certificate path invalid at capture time"
+    }
+  ],
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "RSTR",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShADadfr",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "172.18.0.3",
+        "port": 34596
+      },
+      "orig_bytes": 1407,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "172.18.0.2",
+        "port": 4433
+      },
+      "resp_bytes": 7820,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "handshakes": [
+    {
+      "certificate_verify_signature": {
+        "algorithm": "rsa_pkcs1_sha1",
+        "evidence_state": "observed"
+      },
+      "certificate_verify_state": "not_observable",
+      "cipher_suite": {
+        "code": "0xC013",
+        "evidence_state": "observed",
+        "name": "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA"
+      },
+      "established": true,
+      "evidence_state": "observed",
+      "hello_retry_request": false,
+      "key_exchange": {
+        "dh_param_size": null,
+        "evidence_state": "inferred",
+        "mechanism": "ECDHE",
+        "psk_key_exchange_modes": [],
+        "selected_group": "secp256r1",
+        "selected_group_code": 23,
+        "source_fields": [
+          "cipher",
+          "curve"
+        ]
+      },
+      "last_alert": null,
+      "messages": [
+        {
+          "direction": "orig",
+          "evidence_state": "observed",
+          "frame_number": 4,
+          "history_letter": "C",
+          "kind": "client_hello"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 6,
+          "history_letter": "s",
+          "kind": "server_hello"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 6,
+          "history_letter": "x",
+          "kind": "certificate"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 6,
+          "history_letter": "k",
+          "kind": "server_key_exchange"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 6,
+          "history_letter": "r",
+          "kind": "certificate_request"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 6,
+          "history_letter": "n",
+          "kind": "server_hello_done"
+        },
+        {
+          "direction": "orig",
+          "evidence_state": "observed",
+          "frame_number": 8,
+          "history_letter": "X",
+          "kind": "certificate"
+        },
+        {
+          "direction": "orig",
+          "evidence_state": "observed",
+          "frame_number": 8,
+          "history_letter": "G",
+          "kind": "client_key_exchange"
+        },
+        {
+          "direction": "orig",
+          "evidence_state": "observed",
+          "frame_number": 8,
+          "history_letter": "Y",
+          "kind": "certificate_verify"
+        },
+        {
+          "direction": "orig",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "I",
+          "kind": "change_cipher_spec"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 9,
+          "history_letter": "t",
+          "kind": "new_session_ticket"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "i",
+          "kind": "change_cipher_spec"
+        }
+      ],
+      "resumed": false,
+      "server_certificate_state": "observed",
+      "ssl_history": "CsxkrnXGYIti",
+      "uid": "CJKFoj4bpHEhTeaRoj",
+      "version": {
+        "client_supported_versions": [],
+        "evidence_state": "observed",
+        "legacy_record_version": "TLSv12",
+        "selected": "TLSv12",
+        "server_supported_version": null,
+        "source": "legacy_record"
+      },
+      "visibility": "full"
+    }
+  ],
+  "run_identity": {
+    "analysis_time": "2026-09-04T12:00:00Z",
+    "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
+    "capture_sha256": "23fa2f074f930fa5df264deb0c8bb0c92d6d2f69689654e31ae81edecbfa9009",
+    "configuration_digest": "dac7231c9fc00ae0d79e9ee382ee67277613f1276c08e3e3e86cad33850250cd",
+    "normalization_schema_version": "v1",
+    "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+    "policy_profile": "ietf_current",
+    "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
+  },
+  "schema_version": "v1",
+  "sessions": []
+}

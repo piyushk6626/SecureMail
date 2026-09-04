@@ -1,6 +1,7 @@
 {
   "capture_preflight": {
     "capture_duration_seconds": 0.003608208,
+    "capture_start_time": "2026-09-03T22:28:34Z",
     "file_time_precision": "nanosecond",
     "original_packet_bytes": 4212,
     "packet_count": 15,
@@ -25,7 +26,9 @@
       "role": "server",
       "serial_number": "16148b6a73e7df54b57b328982b86a644ea5a498",
       "signature_algorithm": "sha256WithRSAEncryption",
-      "source_frames": [],
+      "source_frames": [
+        6
+      ],
       "subject": "CN=securemail.test",
       "syntax_error": null,
       "syntax_valid": true,
@@ -54,6 +57,167 @@
         "trust_profile_id": "offline_v1",
         "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
       }
+    }
+  ],
+  "findings": [
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "basis_state": "inferred",
+      "code": "TLS12_STATIC_RSA_NEGOTIATED",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "inferred",
+          "field_path": "handshake.key_exchange.evidence_state",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "inferred",
+          "field_path": "handshake.key_exchange.mechanism",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.version.evidence_state",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.version.selected",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        }
+      ],
+      "finding_id": "afce942a13bd35eb51c94de394118eb7e95d144f84f52c26cc4dab83cadd5cc3",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "Clients MUST NOT offer and servers MUST NOT select RSA key-exchange cipher suites in TLS 1.2.",
+      "remediation_id": "tls.disable_static_rsa",
+      "rule_effective_from": "2026-07-01",
+      "rule_effective_until": null,
+      "severity": "high",
+      "standards": [
+        "RFC 10015 §4"
+      ],
+      "title": "TLS 1.2 static RSA key exchange"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "basis_state": "observed",
+      "code": "TLS_CIPHER_RC4",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.cipher_suite.evidence_state",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.cipher_suite.name",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        }
+      ],
+      "finding_id": "a9cac146b9e30ea7e8ff14a0f7efe3ec829d6db4702ad969b4f0c2cdbee76544",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "RC4 cipher suites MUST NOT be negotiated.",
+      "remediation_id": "tls.disable_rc4",
+      "rule_effective_from": "2015-02-01",
+      "rule_effective_until": null,
+      "severity": "high",
+      "standards": [
+        "RFC 7465 §2",
+        "RFC 9325 §4.1"
+      ],
+      "title": "RC4 cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "basis_state": "inferred",
+      "code": "TLS_FORWARD_SECRECY_ABSENT",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "inferred",
+          "field_path": "derived.forward_secrecy.outcome",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        }
+      ],
+      "finding_id": "b38853377cbf027e647a80a6da74da59675bb4b20f2fccb6115bb66565023129",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "Static RSA, DH, or ECDH key exchange does not provide forward secrecy.",
+      "remediation_id": "tls.require_ephemeral_kx",
+      "rule_effective_from": "2015-05-01",
+      "rule_effective_until": null,
+      "severity": "medium",
+      "standards": [
+        "RFC 9325 §4.2"
+      ],
+      "title": "Forward secrecy absent"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "basis_state": "observed",
+      "code": "CERT_PATH_INVALID_AT_CAPTURE",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.chain_index",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:3823a9c72c5fed380157a698cfd11576dae059bb72140e7526301d356d260b24",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.role",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:3823a9c72c5fed380157a698cfd11576dae059bb72140e7526301d356d260b24",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.validation.path_valid_at_capture_time",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:3823a9c72c5fed380157a698cfd11576dae059bb72140e7526301d356d260b24",
+          "record_type": "certificate"
+        }
+      ],
+      "finding_id": "a2a04ed3a2347b81e37707c6482295f50efe16d7a92f1de2ebc4b884eba90b28",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "Offline path validation against the imported trust store failed at capture time.",
+      "remediation_id": "pki.repair_chain",
+      "rule_effective_from": "2008-05-01",
+      "rule_effective_until": null,
+      "severity": "high",
+      "standards": [
+        "RFC 5280 §6"
+      ],
+      "title": "Certificate path invalid at capture time"
     }
   ],
   "flows": [
@@ -126,15 +290,15 @@
         },
         {
           "direction": "resp",
-          "evidence_state": "inferred",
-          "frame_number": null,
+          "evidence_state": "observed",
+          "frame_number": 6,
           "history_letter": "x",
           "kind": "certificate"
         },
         {
           "direction": "resp",
-          "evidence_state": "inferred",
-          "frame_number": null,
+          "evidence_state": "observed",
+          "frame_number": 6,
           "history_letter": "n",
           "kind": "server_hello_done"
         },
@@ -183,13 +347,15 @@
     }
   ],
   "run_identity": {
+    "analysis_time": "2026-09-04T12:00:00Z",
     "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
     "capture_sha256": "4357425104940fce4b0a4123ee3dce06fc8c74c9c51a548b81ef54d87589c762",
-    "configuration_digest": "b5da7e1eee127dde2ca64be0155142ef462a3baae1bc31df06363a9e8589f11e",
-    "normalization_schema_version": "v0",
-    "policy_pack_version": null,
+    "configuration_digest": "dac7231c9fc00ae0d79e9ee382ee67277613f1276c08e3e3e86cad33850250cd",
+    "normalization_schema_version": "v1",
+    "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+    "policy_profile": "ietf_current",
     "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
   },
-  "schema_version": "v0",
+  "schema_version": "v1",
   "sessions": []
 }

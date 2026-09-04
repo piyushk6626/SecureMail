@@ -1,0 +1,14 @@
+{
+  "created_at": "2026-09-04T12:02:40Z",
+  "generator": "tests/fixtures/generators/lab_policy_boundary_captures.py --case tls12_sha1_certificate_verify --out tests/fixtures/tls12_sha1_certificate_verify/capture.pcapng (docker network securemail-step7-tls12_sha1_certificate_verify-net; dumpcap sidecar --network container:securemail-step7-tls12_sha1_certificate_verify-srv)",
+  "notes": "Lab TLS 1.2 mutual auth with SHA-1 handshake CertificateVerify (OpenSSL 1.0.2u -sigalgs RSA+SHA1).",
+  "sha256": "23fa2f074f930fa5df264deb0c8bb0c92d6d2f69689654e31ae81edecbfa9009",
+  "source": "lab",
+  "tool_versions": {
+    "dumpcap": "Dumpcap (Wireshark) 4.4.18.",
+    "legacy_image": "securemail/legacy-openssl:1.0.2u",
+    "openssl": "OpenSSL 1.0.2u  20 Dec 2019",
+    "python_image": "python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3",
+    "tshark_image": "securemail/tshark:step0"
+  }
+}

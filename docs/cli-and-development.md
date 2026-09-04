@@ -11,7 +11,10 @@ uv run securemail analyze <capture.pcap|capture.pcapng> --out <path.json>
 ```
 
 - `--out` is required.
-- Optional `--analysis-time` (RFC 3339 UTC) freezes `valid_at_analysis_time`.
+- Optional `--policy-profile` (`ietf_current`, `nist_federal`,
+  `historical_at_capture`). Default: `ietf_current`. Unknown values exit 2.
+- Optional `--analysis-time` (RFC 3339 UTC) freezes `valid_at_analysis_time`
+  and is the evaluation clock for current IETF/NIST packs.
 - Optional `--expiry-warning-days` (default 30) sets the expiry warning window.
 - Optional `--expected-hostname` sets the RFC 9525 reference identity
   (`reference_identity_source=configured`). Default: observed SNI.
@@ -20,7 +23,8 @@ uv run securemail analyze <capture.pcap|capture.pcapng> --out <path.json>
 - JSON: `indent=2`, `sort_keys=True`, `ensure_ascii=False`, trailing newline.
 - Extracted certificate DER is written under `<out-parent>/certificates/<sha256>.der`.
 - Success: exit 0. `AnalysisError`, `InvalidCaptureError`, `FileNotFoundError`,
-  `OSError`: message on stderr, exit 1.
+  `OSError`: message on stderr, exit 1. Historical evaluation without capture
+  start time is an `AnalysisError`.
 
 No other subcommands are registered. `api/cli/commands/analyze.py` is an unused
 Step 0 stub; the live command is `register_analyze` in

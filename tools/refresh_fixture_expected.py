@@ -6,24 +6,35 @@ import json
 import sys
 import tempfile
 from pathlib import Path
+from typing import Any
 
 from typer.testing import CliRunner
 
 ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_FIXTURE_ANALYSIS_TIME = "2026-09-04T12:00:00Z"
 
 
 def _analyze_args(base: Path) -> list[str]:
     config_path = base / "analyze.json"
-    if not config_path.is_file():
-        return []
-    payload = json.loads(config_path.read_text(encoding="utf-8"))
-    args: list[str] = []
-    if payload.get("analysis_time"):
-        args.extend(["--analysis-time", str(payload["analysis_time"])])
-    if payload.get("expiry_warning_days") is not None:
-        args.extend(["--expiry-warning-days", str(payload["expiry_warning_days"])])
-    if payload.get("expected_hostname") is not None:
-        args.extend(["--expected-hostname", str(payload["expected_hostname"])])
+    payload: dict[str, Any] = {}
+    if config_path.is_file():
+        loaded = json.loads(config_path.read_text(encoding="utf-8"))
+        if not isinstance(loaded, dict):
+            raise SystemExit(f"analyze.json must be an object: {config_path}")
+        payload = loaded
+    args: list[str] = [
+        "--analysis-time",
+        str(payload.get("analysis_time") or DEFAULT_FIXTURE_ANALYSIS_TIME),
+    ]
+    warning_days = payload.get("expiry_warning_days")
+    if warning_days is not None:
+        args.extend(["--expiry-warning-days", str(warning_days)])
+    expected_hostname = payload.get("expected_hostname")
+    if expected_hostname is not None:
+        args.extend(["--expected-hostname", str(expected_hostname)])
+    policy_profile = payload.get("policy_profile")
+    if policy_profile is not None:
+        args.extend(["--policy-profile", str(policy_profile)])
     return args
 
 

@@ -1,0 +1,241 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.05,
+    "capture_start_time": "2024-01-01T00:00:00Z",
+    "file_time_precision": "microsecond",
+    "original_packet_bytes": 436,
+    "packet_count": 6,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "certificates": [],
+  "findings": [
+    {
+      "affected_endpoint": "192.0.2.25:4433",
+      "basis_state": "inferred",
+      "code": "TLS12_STATIC_DH_NEGOTIATED",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "inferred",
+          "field_path": "handshake.key_exchange.evidence_state",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "inferred",
+          "field_path": "handshake.key_exchange.mechanism",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.version.evidence_state",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.version.selected",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        }
+      ],
+      "finding_id": "51c43066405d805f571329b92c046a3f93c6a028657f071efd2247e0e8591657",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "Non-ephemeral FFDH cipher suites MUST NOT be selected in TLS 1.2.",
+      "remediation_id": "tls.disable_static_dh",
+      "rule_effective_from": "2026-07-01",
+      "rule_effective_until": null,
+      "severity": "high",
+      "standards": [
+        "RFC 10015 §2"
+      ],
+      "title": "TLS 1.2 static finite-field DH"
+    },
+    {
+      "affected_endpoint": "192.0.2.25:4433",
+      "basis_state": "observed",
+      "code": "TLS_CIPHER_CBC",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.cipher_suite.evidence_state",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.cipher_suite.name",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.version.selected",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        }
+      ],
+      "finding_id": "e00ebc763c16cb1b422c4220e11abe8f39ab4008a0f319d4c1789fa85f80f9f3",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "CBC cipher suites in TLS 1.2 and earlier SHOULD NOT be negotiated.",
+      "remediation_id": "tls.prefer_aead",
+      "rule_effective_from": "2022-11-01",
+      "rule_effective_until": null,
+      "severity": "medium",
+      "standards": [
+        "RFC 9325 §4.2"
+      ],
+      "title": "TLS CBC cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "192.0.2.25:4433",
+      "basis_state": "inferred",
+      "code": "TLS_FORWARD_SECRECY_ABSENT",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "inferred",
+          "field_path": "derived.forward_secrecy.outcome",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        }
+      ],
+      "finding_id": "0858e5cc5763fb0ae2258051c21873e0906e6f392327a4397354cc4ed4730179",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "Static RSA, DH, or ECDH key exchange does not provide forward secrecy.",
+      "remediation_id": "tls.require_ephemeral_kx",
+      "rule_effective_from": "2015-05-01",
+      "rule_effective_until": null,
+      "severity": "medium",
+      "standards": [
+        "RFC 9325 §4.2"
+      ],
+      "title": "Forward secrecy absent"
+    }
+  ],
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "S2",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShADdF",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "192.0.2.10",
+        "port": 49152
+      },
+      "orig_bytes": 54,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "192.0.2.25",
+        "port": 4433
+      },
+      "resp_bytes": 58,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "handshakes": [
+    {
+      "certificate_verify_signature": {
+        "algorithm": null,
+        "evidence_state": "not_observable"
+      },
+      "certificate_verify_state": "not_observable",
+      "cipher_suite": {
+        "code": "0x0031",
+        "evidence_state": "observed",
+        "name": "TLS_DH_RSA_WITH_AES_128_CBC_SHA"
+      },
+      "established": false,
+      "evidence_state": "observed",
+      "hello_retry_request": false,
+      "key_exchange": {
+        "dh_param_size": null,
+        "evidence_state": "inferred",
+        "mechanism": "DH",
+        "psk_key_exchange_modes": [],
+        "selected_group": null,
+        "selected_group_code": null,
+        "source_fields": [
+          "cipher"
+        ]
+      },
+      "last_alert": null,
+      "messages": [
+        {
+          "direction": "orig",
+          "evidence_state": "observed",
+          "frame_number": 4,
+          "history_letter": "C",
+          "kind": "client_hello"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 5,
+          "history_letter": "s",
+          "kind": "server_hello"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 5,
+          "history_letter": "n",
+          "kind": "server_hello_done"
+        }
+      ],
+      "resumed": false,
+      "server_certificate_state": "not_observable",
+      "ssl_history": "Csn",
+      "uid": "CJKFoj4bpHEhTeaRoj",
+      "version": {
+        "client_supported_versions": [],
+        "evidence_state": "observed",
+        "legacy_record_version": "TLSv12",
+        "selected": "TLSv12",
+        "server_supported_version": null,
+        "source": "legacy_record"
+      },
+      "visibility": "partial"
+    }
+  ],
+  "run_identity": {
+    "analysis_time": "2026-09-04T12:00:00Z",
+    "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
+    "capture_sha256": "daca1351aa0dbab0242bf845b56e9bc3997701f55a3e8d42130a75262c1c0ebb",
+    "configuration_digest": "dac7231c9fc00ae0d79e9ee382ee67277613f1276c08e3e3e86cad33850250cd",
+    "normalization_schema_version": "v1",
+    "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+    "policy_profile": "ietf_current",
+    "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
+  },
+  "schema_version": "v1",
+  "sessions": []
+}

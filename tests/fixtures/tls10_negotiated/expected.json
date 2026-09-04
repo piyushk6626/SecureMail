@@ -1,0 +1,404 @@
+{
+  "capture_preflight": {
+    "capture_duration_seconds": 0.005373167,
+    "capture_start_time": "2026-09-04T12:02:16Z",
+    "file_time_precision": "nanosecond",
+    "original_packet_bytes": 3991,
+    "packet_count": 16,
+    "packet_size_limit": null,
+    "packet_size_limit_max_inferred": null,
+    "packet_size_limit_min_inferred": null,
+    "truncated_packets_present": false
+  },
+  "certificates": [
+    {
+      "chain_index": 0,
+      "der_sha256": "727c5ee2d4f6a9c338263d166381942eff0f70625906ca0154bcf8b7464ef6c7",
+      "effective_strength_bits": 112,
+      "evidence_state": "observed",
+      "expires_within_warning_window": false,
+      "issuer": "CN=securemail.test",
+      "not_after": "2027-09-04T12:02:12Z",
+      "not_before": "2026-09-04T12:01:12Z",
+      "public_key_algorithm": "RSA",
+      "public_key_curve": null,
+      "public_key_size": 2048,
+      "role": "server",
+      "serial_number": "164c82f0a084d21330ed150583f9d1e591a45472",
+      "signature_algorithm": "sha256WithRSAEncryption",
+      "source_frames": [
+        6
+      ],
+      "subject": "CN=securemail.test",
+      "syntax_error": null,
+      "syntax_valid": true,
+      "uid": "CJKFoj4bpHEhTeaRoj",
+      "valid_at_analysis_time": false,
+      "valid_at_capture_time": true,
+      "validation": {
+        "certificate_observed": true,
+        "identity_match": null,
+        "identity_mismatch_reasons": [],
+        "indeterminate_reasons": [
+          "reference_identity_unavailable"
+        ],
+        "path_invalid_reasons_at_analysis_time": [
+          "not_yet_valid_at_verification_time"
+        ],
+        "path_invalid_reasons_at_capture_time": [
+          "self_signed"
+        ],
+        "path_valid_at_analysis_time": false,
+        "path_valid_at_capture_time": false,
+        "reference_identity": null,
+        "reference_identity_source": null,
+        "revocation_status": "unknown",
+        "syntax_valid": true,
+        "trust_profile_id": "offline_v1",
+        "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "basis_state": "observed",
+      "code": "TLS_CIPHER_CBC",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.cipher_suite.evidence_state",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.cipher_suite.name",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.version.selected",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        }
+      ],
+      "finding_id": "f6d7cc1a66ccaccc5732ecfc2551e73486bbb800d2b24eebece88b16c42b84c5",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "CBC cipher suites in TLS 1.2 and earlier SHOULD NOT be negotiated.",
+      "remediation_id": "tls.prefer_aead",
+      "rule_effective_from": "2022-11-01",
+      "rule_effective_until": null,
+      "severity": "medium",
+      "standards": [
+        "RFC 9325 §4.2"
+      ],
+      "title": "TLS CBC cipher suite negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "basis_state": "inferred",
+      "code": "TLS_FORWARD_SECRECY_ABSENT",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "inferred",
+          "field_path": "derived.forward_secrecy.outcome",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        }
+      ],
+      "finding_id": "7e8c5e20c797e83b37ebcf50a744f508c7479ab66060d9d2e540c31a8978f769",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "Static RSA, DH, or ECDH key exchange does not provide forward secrecy.",
+      "remediation_id": "tls.require_ephemeral_kx",
+      "rule_effective_from": "2015-05-01",
+      "rule_effective_until": null,
+      "severity": "medium",
+      "standards": [
+        "RFC 9325 §4.2"
+      ],
+      "title": "Forward secrecy absent"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "basis_state": "observed",
+      "code": "TLS_NEGOTIATED_TLS10",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.version.evidence_state",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "handshake.version.selected",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj",
+          "record_type": "handshake"
+        }
+      ],
+      "finding_id": "0d5079560c03231a89b9b3cfe0aeeea84fd2bc717deb99986e1ed883e1e520b9",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "TLS 1.0 is formally deprecated. Implementations MUST NOT negotiate TLS 1.0.",
+      "remediation_id": "tls.minimum_version",
+      "rule_effective_from": "2021-03-01",
+      "rule_effective_until": null,
+      "severity": "high",
+      "standards": [
+        "RFC 8996 §4",
+        "RFC 9325 §3.1.1"
+      ],
+      "title": "TLS 1.0 negotiated"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "basis_state": "observed",
+      "code": "CERT_BECAME_INVALID_AFTER_CAPTURE",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.chain_index",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:727c5ee2d4f6a9c338263d166381942eff0f70625906ca0154bcf8b7464ef6c7",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.role",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:727c5ee2d4f6a9c338263d166381942eff0f70625906ca0154bcf8b7464ef6c7",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.valid_at_analysis_time",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:727c5ee2d4f6a9c338263d166381942eff0f70625906ca0154bcf8b7464ef6c7",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.valid_at_capture_time",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:727c5ee2d4f6a9c338263d166381942eff0f70625906ca0154bcf8b7464ef6c7",
+          "record_type": "certificate"
+        }
+      ],
+      "finding_id": "d780b395fe4bba94d1997d5e9a0a23112c468d72112d023d4f7dc71c7dff1c49",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "The captured session used a then-valid certificate that is invalid at analysis time.",
+      "remediation_id": "pki.replace_now_expired_cert",
+      "rule_effective_from": "2008-05-01",
+      "rule_effective_until": null,
+      "severity": "informational",
+      "standards": [
+        "RFC 5280 §6.1.3"
+      ],
+      "title": "Certificate became invalid after capture"
+    },
+    {
+      "affected_endpoint": "172.18.0.2:4433",
+      "basis_state": "observed",
+      "code": "CERT_PATH_INVALID_AT_CAPTURE",
+      "evaluation_state": "verified",
+      "evidence_references": [
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.chain_index",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:727c5ee2d4f6a9c338263d166381942eff0f70625906ca0154bcf8b7464ef6c7",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.role",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:727c5ee2d4f6a9c338263d166381942eff0f70625906ca0154bcf8b7464ef6c7",
+          "record_type": "certificate"
+        },
+        {
+          "evidence_state": "observed",
+          "field_path": "certificate.validation.path_valid_at_capture_time",
+          "frame_number": null,
+          "record_key": "CJKFoj4bpHEhTeaRoj:server:0:727c5ee2d4f6a9c338263d166381942eff0f70625906ca0154bcf8b7464ef6c7",
+          "record_type": "certificate"
+        }
+      ],
+      "finding_id": "ac9bc7fcf640bf6307459211d6ae81080edfa213971e70b3cb08c39e868d5ae4",
+      "outcome": "negative",
+      "policy_evaluation_time": "2026-09-04T12:00:00Z",
+      "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+      "policy_profile": "ietf_current",
+      "rationale": "Offline path validation against the imported trust store failed at capture time.",
+      "remediation_id": "pki.repair_chain",
+      "rule_effective_from": "2008-05-01",
+      "rule_effective_until": null,
+      "severity": "high",
+      "standards": [
+        "RFC 5280 §6"
+      ],
+      "title": "Certificate path invalid at capture time"
+    }
+  ],
+  "flows": [
+    {
+      "conflicting_byte_ranges": [],
+      "conn_state": "SF",
+      "evidence_state": "observed",
+      "gap_bytes": 0,
+      "gap_bytes_exact": true,
+      "history": "ShADadfFr",
+      "missed_bytes": 0,
+      "observed_conditions": [],
+      "orig": {
+        "host": "172.18.0.3",
+        "port": 40248
+      },
+      "orig_bytes": 516,
+      "proto": "tcp",
+      "reason_code": null,
+      "reconstruction_quality": "complete",
+      "resp": {
+        "host": "172.18.0.2",
+        "port": 4433
+      },
+      "resp_bytes": 2383,
+      "uid": "CJKFoj4bpHEhTeaRoj"
+    }
+  ],
+  "handshakes": [
+    {
+      "certificate_verify_signature": {
+        "algorithm": null,
+        "evidence_state": "not_observable"
+      },
+      "certificate_verify_state": "not_observable",
+      "cipher_suite": {
+        "code": "0x002F",
+        "evidence_state": "observed",
+        "name": "TLS_RSA_WITH_AES_128_CBC_SHA"
+      },
+      "established": true,
+      "evidence_state": "observed",
+      "hello_retry_request": false,
+      "key_exchange": {
+        "dh_param_size": null,
+        "evidence_state": "inferred",
+        "mechanism": "RSA",
+        "psk_key_exchange_modes": [],
+        "selected_group": null,
+        "selected_group_code": null,
+        "source_fields": [
+          "cipher"
+        ]
+      },
+      "last_alert": null,
+      "messages": [
+        {
+          "direction": "orig",
+          "evidence_state": "observed",
+          "frame_number": 4,
+          "history_letter": "C",
+          "kind": "client_hello"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 6,
+          "history_letter": "s",
+          "kind": "server_hello"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 6,
+          "history_letter": "x",
+          "kind": "certificate"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 6,
+          "history_letter": "n",
+          "kind": "server_hello_done"
+        },
+        {
+          "direction": "orig",
+          "evidence_state": "observed",
+          "frame_number": 8,
+          "history_letter": "G",
+          "kind": "client_key_exchange"
+        },
+        {
+          "direction": "orig",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "I",
+          "kind": "change_cipher_spec"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "observed",
+          "frame_number": 9,
+          "history_letter": "t",
+          "kind": "new_session_ticket"
+        },
+        {
+          "direction": "resp",
+          "evidence_state": "inferred",
+          "frame_number": null,
+          "history_letter": "i",
+          "kind": "change_cipher_spec"
+        }
+      ],
+      "resumed": false,
+      "server_certificate_state": "observed",
+      "ssl_history": "CsxnGIti",
+      "uid": "CJKFoj4bpHEhTeaRoj",
+      "version": {
+        "client_supported_versions": [],
+        "evidence_state": "observed",
+        "legacy_record_version": "TLSv10",
+        "selected": "TLSv10",
+        "server_supported_version": null,
+        "source": "legacy_record"
+      },
+      "visibility": "full"
+    }
+  ],
+  "run_identity": {
+    "analysis_time": "2026-09-04T12:00:00Z",
+    "analyzer_bundle_digest": "792b7a67fe8b6fe326fb9235567359d5b2d56c81ce25f4527ec8078a6f7c94c9",
+    "capture_sha256": "170d7d20ceca3b06d3e4815dc69049995703abb46868d13edbde9ca9148f5ed5",
+    "configuration_digest": "dac7231c9fc00ae0d79e9ee382ee67277613f1276c08e3e3e86cad33850250cd",
+    "normalization_schema_version": "v1",
+    "policy_pack_version": "9b934ed11b792bc34f4d803d73b0098448d99cfa376074ef6560ad035cb2e9ae",
+    "policy_profile": "ietf_current",
+    "trust_store_digest": "c70bcece37ba0fe76b983cb9d1ce6111656d9a87e1311b5a6ace493a17c9d7ae"
+  },
+  "schema_version": "v1",
+  "sessions": []
+}

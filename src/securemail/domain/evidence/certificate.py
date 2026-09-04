@@ -1,4 +1,4 @@
-"""Canonical per-certificate facts (schema v0, Steps 5–6). Path and identity are nested."""
+"""Canonical per-certificate facts (v1 envelope, Steps 5–6). Path and identity are nested."""
 
 from __future__ import annotations
 
@@ -102,6 +102,7 @@ def _rebuild_evidence_document() -> None:
     from securemail.domain.evidence.handshake import TlsHandshake
     from securemail.domain.evidence.run import EvidenceDocument
     from securemail.domain.evidence.session import EmailSession
+    from securemail.domain.findings.finding import Finding
 
     EvidenceDocument.model_rebuild(
         _types_namespace={
@@ -109,6 +110,7 @@ def _rebuild_evidence_document() -> None:
             "EmailSession": EmailSession,
             "TlsHandshake": TlsHandshake,
             "CertificateEvidence": CertificateEvidence,
+            "Finding": Finding,
         }
     )
 

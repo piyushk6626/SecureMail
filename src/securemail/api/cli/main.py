@@ -14,7 +14,7 @@ from securemail.application.run_analysis import (
     AnalysisError,
     InvalidCaptureError,
 )
-from securemail.domain.evidence.run import EvidenceDocument
+from securemail.domain.evidence.run import EvidenceDocument, PolicyProfile
 
 
 class AnalyzeFn(Protocol):
@@ -26,6 +26,7 @@ class AnalyzeFn(Protocol):
         analysis_time: datetime | None = None,
         expiry_warning_seconds: int = DEFAULT_EXPIRY_WARNING_SECONDS,
         expected_hostname: str | None = None,
+        policy_profile: PolicyProfile = PolicyProfile.IETF_CURRENT,
     ) -> EvidenceDocument: ...
 
 
@@ -71,6 +72,11 @@ def register_analyze(app: typer.Typer, analyze: AnalyzeFn) -> None:
             "--expected-hostname",
             help="Configured reference identity for SAN matching. Default: observed SNI.",
         ),
+        policy_profile: PolicyProfile = typer.Option(
+            PolicyProfile.IETF_CURRENT,
+            "--policy-profile",
+            help="Built-in rule pack. Default: ietf_current.",
+        ),
     ) -> None:
         try:
             parsed_time = parse_analysis_time(analysis_time) if analysis_time else None
@@ -80,6 +86,7 @@ def register_analyze(app: typer.Typer, analyze: AnalyzeFn) -> None:
                 analysis_time=parsed_time,
                 expiry_warning_seconds=expiry_warning_days * 24 * 60 * 60,
                 expected_hostname=expected_hostname,
+                policy_profile=policy_profile,
             )
         except (AnalysisError, InvalidCaptureError, FileNotFoundError, OSError, ValueError) as exc:
             typer.secho(str(exc), err=True)

@@ -1,0 +1,14 @@
+{
+  "created_at": "2026-09-04T12:02:34Z",
+  "generator": "tests/fixtures/generators/lab_policy_boundary_captures.py --case tls12_export_cipher --out tests/fixtures/tls12_export_cipher/capture.pcapng (docker network securemail-step7-tls12_export_cipher-net; dumpcap sidecar --network container:securemail-step7-tls12_export_cipher-srv)",
+  "notes": "Lab TLS 1.2 export cipher TLS_RSA_EXPORT_WITH_RC4_40_MD5 via OpenSSL 1.0.2u.",
+  "sha256": "54eb2a93c40deaad5f16d4c45b42071eb75b4a7ac30b21aad8c14e1c59a73668",
+  "source": "lab",
+  "tool_versions": {
+    "dumpcap": "Dumpcap (Wireshark) 4.4.18.",
+    "legacy_image": "securemail/legacy-openssl:1.0.2u",
+    "openssl": "OpenSSL 1.0.2u  20 Dec 2019",
+    "python_image": "python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3",
+    "tshark_image": "securemail/tshark:step0"
+  }
+}
