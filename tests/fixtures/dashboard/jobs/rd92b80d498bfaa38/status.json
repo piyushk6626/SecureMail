@@ -1,0 +1,20 @@
+{
+  "artifacts": {
+    "html": true,
+    "json": true,
+    "pdf": true
+  },
+  "cancel_requested": false,
+  "capture_format": "pcapng",
+  "capture_sha256": "ad9f53ac6cb9d1e5a4590d40dda7eedc6a674b0576e1c1d032928fed729fca00",
+  "case_id": "capture-ad9f53ac",
+  "created_at": "2026-09-05T20:04:36Z",
+  "error_message": null,
+  "expected_hostname": null,
+  "original_filename": "capture.pcapng",
+  "policy_profile": "ietf_current",
+  "run_id": "rd92b80d498bfaa38",
+  "stage": "publication",
+  "status": "completed",
+  "updated_at": "2026-09-05T20:04:38Z"
+}

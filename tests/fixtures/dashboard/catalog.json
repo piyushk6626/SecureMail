@@ -1,8 +1,16 @@
 {
   "reports": [
     {
-      "case_id": "dashboard_critical",
-      "report": "dashboard_critical.report.json"
+      "case_id": "capture-4d698e06",
+      "report": "capture-4d698e06.report.json"
+    },
+    {
+      "case_id": "capture-ad9f53ac",
+      "report": "capture-ad9f53ac.report.json"
+    },
+    {
+      "case_id": "capture-b175e880",
+      "report": "capture-b175e880.report.json"
     },
     {
       "case_id": "dashboard_attention",
@@ -11,6 +19,10 @@
     {
       "case_id": "dashboard_clear",
       "report": "dashboard_clear.report.json"
+    },
+    {
+      "case_id": "dashboard_critical",
+      "report": "dashboard_critical.report.json"
     }
   ],
   "schema_version": "securemail.report-catalog/v1"
