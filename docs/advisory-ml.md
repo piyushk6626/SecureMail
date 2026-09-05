@@ -58,6 +58,10 @@ Off by default on `securemail report`. When set, the pipeline scores the reportâ
 findings stay byte-identical. A single capture usually has no trailing history,
 so the section may contain `ADVISORY_NONE` rather than invented anomalies.
 
+The dashboard worker uses local endpoint-window history. Until 14 windows exist,
+it publishes `ADVISORY_INSUFFICIENT_HISTORY` instead of `ADVISORY_NONE`. Isolation
+Forest stays silent until 40 windows. See [dashboard.md](dashboard.md).
+
 ## Reasons
 
 Every shipped anomaly cites at least one canonical evidence field

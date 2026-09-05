@@ -1,15 +1,13 @@
 # SecureMail as-built documentation
 
 This directory describes **what the code does today**, not the full product
-vision. The live surface includes the deterministic CLI plus a read-only
-FastAPI and React dashboard over the canonical report object.
+vision. The live surface includes the deterministic CLI plus FastAPI and a React
+dashboard that can analyze PCAP/PCAPNG captures offline.
 
 Current implementation: **Steps 0–11** of
-[`plans/build_plan.md`](../plans/build_plan.md) (foundations, TCP reconstruction,
-SMTP/IMAP/POP3 identification, STARTTLS/STLS and implicit TLS, TLS handshake
-version/cipher/key exchange, certificate facts, chain validation and identity,
-versioned rule packs and forward secrecy, posture scoring and coverage, reports,
-advisory ML, and the interactive dashboard).
+[`plans/build_plan.md`](../plans/build_plan.md) plus the approved
+[`plans/post_step_11_capture_dashboard.md`](../plans/post_step_11_capture_dashboard.md)
+capture-upload workflow.
 
 ## How these docs relate to the rest of the repo
 
@@ -42,7 +40,7 @@ source under `src/`, `zeek/`, and `tests/fixtures/` wins.
 | [protocol-identification.md](protocol-identification.md) | `port_hint` vs payload, DPD, corroboration, conflict |
 | [starttls.md](starttls.md) | STARTTLS/STLS machines, `downgrade_consistent`, implicit TLS |
 | [advisory-ml.md](advisory-ml.md) | Baseline + Isolation Forest, `evaluate-ml`, `--advisory` |
-| [dashboard.md](dashboard.md) | FastAPI report API, React analyst UI, case isolation, Playwright |
+| [dashboard.md](dashboard.md) | FastAPI, PCAP upload, React console, HTML/PDF downloads |
 | [cli-and-development.md](cli-and-development.md) | CLI, Make targets, doctor, lint, CI |
 | [fixtures.md](fixtures.md) | Catalog of the 71 PCAP cases plus synthetic finding sets |
 | [decisions/step2-imap-pop3-depth.md](decisions/step2-imap-pop3-depth.md) | ADR: Zeek vs TShark vs Spicy for IMAP/POP3 |
@@ -54,7 +52,9 @@ uv run securemail analyze tests/fixtures/empty/capture.pcapng --out out/empty.js
 uv run securemail score tests/fixtures/synthetic_findings/mixed_severity.json
 uv run securemail report tests/fixtures/reports/golden_report.json --format json,html,pdf --out out/
 uv run securemail evaluate-ml tests/support/synthetic_cohorts/cohort_seeded_v1/
-SECUREMAIL_REPORT_ROOT=tests/fixtures/dashboard uv run uvicorn securemail.api.main:app
+SECUREMAIL_DATA_ROOT=out/data SECUREMAIL_REPORT_ROOT=out/data \
+  SECUREMAIL_START_WORKER=1 \
+  uv run uvicorn securemail.api.main:app
 npm --prefix frontend run dev
 ```
 

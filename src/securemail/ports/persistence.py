@@ -31,3 +31,11 @@ class ReportRepository(Protocol):
 
     def get_report(self, case_id: str) -> bytes | None:
         """Return raw report bytes for an explicit case ID, or ``None``."""
+
+
+@runtime_checkable
+class CatalogPublisher(Protocol):
+    """Atomically publish a canonical report into the Step 11 catalog."""
+
+    def publish_report(self, case_id: str, canonical_bytes: bytes) -> None:
+        """Replace or insert ``case_id`` and fsync the catalog + report file."""

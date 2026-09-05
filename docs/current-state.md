@@ -3,8 +3,8 @@
 SecureMail is an offline, deterministic-first analyzer of SMTP, IMAP, and POP3
 traffic in PCAP/PCAPNG files. It scores and deduplicates findings, publishes
 coverage denominators, exports forensic reports in JSON, HTML, and PDF, can run
-a shadow-mode advisory ML stage, and exposes canonical reports through a
-read-only FastAPI and React dashboard.
+a shadow-mode advisory ML stage, and exposes canonical reports through FastAPI
+and a React dashboard that can analyze PCAP/PCAPNG captures offline.
 
 Python orchestrates. Zeek is the primary packet engine. A bounded TShark pass
 corroborates mail command/status and TLS handshake message frames when the first
@@ -20,7 +20,7 @@ wired through [`src/securemail/bootstrap.py`](../src/securemail/bootstrap.py):
 - `securemail score` — synthetic finding JSON → `PostureAssessment` on stdout
 - `securemail report` — canonical report JSON → RFC 8785 JSON, HTML, and PDF
 - `securemail evaluate-ml` — seeded cohort directory → detection-delay / precision@K gates
-- FastAPI + React — canonical report preview/catalog → interactive analyst views
+- FastAPI + React — catalog preview, PCAP/PCAPNG upload, HTML/PDF download
 
 Analyze produces a frozen v2 JSON document with:
 
@@ -67,6 +67,7 @@ stay stable; the live CLI still defaults analysis time to now.
 | 9 | Canonical JSON → HTML/PDF | **Done** |
 | 10 | Advisory ML | **Done** (`evaluate-ml`, `--advisory`, baseline + gated Isolation Forest) |
 | 11 | FastAPI + React | **Done** (byte-identical API, case isolation, Playwright dashboard) |
+| Post-11 | Offline capture upload dashboard | **Done** (PCAP intake, worker, HTML/PDF, ML history) |
 
 The *why* and the remaining contracts live in
 [`plans/build_plan.md`](../plans/build_plan.md). This page only records what the
@@ -112,7 +113,9 @@ uv run securemail report tests/fixtures/reports/golden_report.json --format json
 uv run securemail evaluate-ml tests/support/synthetic_cohorts/cohort_seeded_v1/
 
 # Step 11 — API/CLI contract plus browser workflows
-SECUREMAIL_REPORT_ROOT=tests/fixtures/dashboard uv run uvicorn securemail.api.main:app
+SECUREMAIL_DATA_ROOT=out/data SECUREMAIL_REPORT_ROOT=out/data \
+  SECUREMAIL_START_WORKER=1 \
+  uv run uvicorn securemail.api.main:app
 npm --prefix frontend run test:e2e
 ```
 
@@ -122,6 +125,10 @@ trailing newline, and `ensure_ascii=False`. `--policy-profile` defaults to
 start time for `historical_at_capture` exits 1. `score` writes that same JSON
 style to stdout; invalid/oversized input exits 1.
 
+The dashboard can assemble a canonical report from analyze output automatically
+after a capture upload; `securemail report` still accepts an already assembled
+`securemail.report/v1` object.
+
 ## CLI that exists vs files that do not run
 
 [`src/securemail/api/cli/main.py`](../src/securemail/api/cli/main.py) registers
@@ -130,15 +137,17 @@ is a leftover Step 0 stub; the live analyze command is in `main.py`.
 
 ## Not in this build
 
-The analyze JSON does **not** embed a report manifest; `securemail report`
-accepts an already assembled `securemail.report/v1` object. Pass/present policy
-outcomes are serialized as `policy_checks`, not as `Finding` records. Revocation without
+The analyze JSON does **not** embed a report manifest when emitted by
+`securemail analyze`. The dashboard worker and `assemble_report` wrap that
+document for HTML/PDF. Pass/present policy outcomes are serialized as
+`policy_checks`, not as `Finding` records. Revocation without
 imported OCSP/CRL is `unknown`. `run_identity.policy_pack_version` is the
 SHA-256 of the canonical validated pack JSON.
 `run_identity.trust_store_digest` is the SHA-256 of the pinned PEM snapshot. No
 network calls happen during analysis (analyzer containers use `--network=none`;
 chain validation does not fetch AIA/OCSP/CRL/CT/DNS). There is no PostgreSQL
-control plane or queue in this step.
+control plane or queue in this step. Capture jobs use a bounded filesystem
+store and a local worker process.
 
 See [architecture.md](architecture.md) for the live module map,
 [scoring.md](scoring.md) for the v1 formula, [reports.md](reports.md) for

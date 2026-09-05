@@ -15,6 +15,8 @@ from securemail.domain.evidence.run import EvidenceDocument, EvidenceState
 from securemail.domain.evidence.session import EmailSession, MailProtocol, UpgradeState
 from securemail.domain.ml.evaluation import (
     INCOMPLETE_RATE_GATE,
+    ISOLATION_FOREST_MIN_TRAIN_WINDOWS,
+    MIN_HISTORY_WINDOWS,
     compare_detectors,
 )
 from securemail.domain.ml.models import (
@@ -35,6 +37,7 @@ from securemail.domain.reports.schema import AdvisoryItem, AdvisorySection, Cano
 from securemail.ports.ml import AnomalyScorer, MlDependencyError
 
 _ADVISORY_NONE_CODE = "ADVISORY_NONE"
+_ADVISORY_INSUFFICIENT_HISTORY_CODE = "ADVISORY_INSUFFICIENT_HISTORY"
 _CODE_FOR_FEATURE = {
     "tls10_share": "ADVISORY_TLS_VERSION_SHIFT",
     "tls12_share": "ADVISORY_TLS_VERSION_SHIFT",
@@ -295,6 +298,96 @@ def advisory_section_from_results(results: Sequence[AnomalyResult]) -> AdvisoryS
         )
     items = [AdvisoryItem(code=item.code, reason=item.reason) for item in results[:256]]
     return AdvisorySection(present=True, items=items)
+
+
+def _assign_day_index(
+    windows: Sequence[EndpointWindow],
+    *,
+    day_index: int,
+) -> list[EndpointWindow]:
+    return [
+        window.model_copy(
+            update={
+                "day_index": day_index,
+                "site_id": "local",
+                "is_new_endpoint": day_index == 0,
+            }
+        )
+        for window in windows
+    ]
+
+
+def advisory_section_for_history(
+    *,
+    history_count: int,
+    current_scores: Sequence[WindowScore],
+    cohort: str,
+) -> AdvisorySection:
+    items: list[AdvisoryItem] = []
+    if history_count < MIN_HISTORY_WINDOWS:
+        items.append(
+            AdvisoryItem(
+                code=_ADVISORY_INSUFFICIENT_HISTORY_CODE,
+                reason=(
+                    f"Local ML history has {history_count} endpoint-windows; "
+                    f"baseline needs {MIN_HISTORY_WINDOWS} and Isolation Forest needs "
+                    f"{ISOLATION_FOREST_MIN_TRAIN_WINDOWS}. Deterministic findings are "
+                    "unchanged. field session.uid."
+                ),
+            )
+        )
+        return AdvisorySection(present=True, items=items)
+    if history_count < ISOLATION_FOREST_MIN_TRAIN_WINDOWS:
+        items.append(
+            AdvisoryItem(
+                code=_ADVISORY_INSUFFICIENT_HISTORY_CODE,
+                reason=(
+                    f"Isolation Forest needs {ISOLATION_FOREST_MIN_TRAIN_WINDOWS} training "
+                    f"windows; {history_count} are stored. Baseline scoring ran. "
+                    "Deterministic findings are unchanged. field session.uid."
+                ),
+            )
+        )
+    anomalies = anomalies_from_scores(current_scores, cohort=cohort)
+    if anomalies:
+        items.extend(AdvisoryItem(code=item.code, reason=item.reason) for item in anomalies)
+    elif not items:
+        return advisory_section_from_results(())
+    return AdvisorySection(present=True, items=items[:256])
+
+
+def attach_advisories_with_history(
+    report: CanonicalReport,
+    *,
+    scorers: Sequence[AnomalyScorer],
+    history: Sequence[EndpointWindow],
+    cohort: str = "local",
+) -> tuple[CanonicalReport, list[EndpointWindow]]:
+    """Score current windows against persisted history. Never edits findings."""
+
+    evidence = report.evidence
+    extracted = extract_endpoint_windows(evidence)
+    next_day = 0
+    if history:
+        next_day = max(item.day_index for item in history) + 1
+    current = _assign_day_index(extracted, day_index=next_day)
+    combined = [*history, *current]
+    scores = score_windows(combined, scorers)
+    current_scores = [item for item in scores if item.day_index == next_day]
+    updated = report.model_copy(
+        update={
+            "advisory": advisory_section_for_history(
+                history_count=len(history),
+                current_scores=current_scores,
+                cohort=cohort,
+            )
+        }
+    )
+    if updated.evidence is not evidence:
+        raise AdvisoryPipelineError("advisory pipeline mutated canonical evidence")
+    if updated.evidence.findings is not evidence.findings:
+        raise AdvisoryPipelineError("advisory pipeline mutated deterministic findings")
+    return updated, current
 
 
 def score_windows(

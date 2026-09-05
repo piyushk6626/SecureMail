@@ -61,18 +61,28 @@ uv run securemail evaluate-ml tests/support/synthetic_cohorts/cohort_seeded_v1/
 
 ## Dashboard development
 
-The FastAPI app is `securemail.api.main:app`. The optional report catalog is a
-directory of validated `securemail.report/v1` JSON files:
+The FastAPI app is `securemail.api.main:app`. Capture jobs, ML history, and
+published reports share a writable data root. A dedicated worker process
+(`python -m securemail.worker`) runs Zeek/TShark and never executes inside a
+FastAPI request:
 
 ```bash
-SECUREMAIL_REPORT_ROOT=tests/fixtures/dashboard \
+SECUREMAIL_DATA_ROOT=out/data SECUREMAIL_REPORT_ROOT=out/data \
+  SECUREMAIL_START_WORKER=1 \
   uv run uvicorn securemail.api.main:app --reload
 npm --prefix frontend run dev
 ```
 
-The React development server proxies `/api` to Uvicorn. Browser uploads are
-canonical JSON previews retained in memory; they are not PCAP intake and are
-not persisted. See [dashboard.md](dashboard.md).
+To browse committed catalog fixtures without analysis:
+
+```bash
+SECUREMAIL_REPORT_ROOT=tests/fixtures/dashboard \
+  uv run uvicorn securemail.api.main:app --reload
+```
+
+The React development server proxies `/api` to Uvicorn. Browser intake is
+`.pcap` / `.pcapng`; completed runs publish canonical JSON plus HTML/PDF.
+See [dashboard.md](dashboard.md).
 
 ## Make targets
 

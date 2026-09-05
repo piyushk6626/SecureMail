@@ -79,9 +79,10 @@ FastAPI app. Neither API adapter imports a concrete I/O adapter.
 | `api/cli/commands/report.py` | Thin `report` command: bounded JSON in, JSON/HTML/PDF out; `--advisory` |
 | `api/cli/commands/analyze.py` | Unused Step 0 stub; live `analyze` lives in `main.py` |
 | `api/cli/commands/evaluate_ml.py` | Thin `evaluate-ml` command over a seeded cohort directory |
-| `api/main.py` | FastAPI app factory, security headers, optional built frontend |
-| `api/dependencies.py` | Shared bounded request/report dependencies |
+| `api/main.py` | FastAPI app factory, security headers, optional worker lifespan |
+| `api/dependencies.py` | Shared report and capture-analysis dependencies |
 | `api/routers/reports.py` | Thin health, case catalog, report, and preview routes |
+| `api/routers/analyses.py` | PCAP upload, job status, cancel, HTML/PDF downloads |
 
 Console script: `securemail = "securemail.api.cli.main:main"` in
 `pyproject.toml`. `main()` imports `create_cli` from bootstrap (lazy, to keep
@@ -92,6 +93,10 @@ Console script: `securemail = "securemail.api.cli.main:main"` in
 | Path | Role |
 |---|---|
 | `run_analysis.py` | Intake, hash, preflight, Zeek, optional TShark, normalize, policy, score, assemble `EvidenceDocument`; `score_findings` RORO use case |
+| `assemble_report.py` | Wrap an `EvidenceDocument` in `securemail.report/v1` |
+| `capture_intake.py` | Bounded PCAP/PCAPNG streaming intake and duplicate reuse |
+| `analysis_workflow.py` | Worker stages: analyze, assemble, advise, render, publish |
+| `analysis_queries.py` | Job status, cancel, artifact reads, catalog HTML/PDF |
 | `render_report.py` | Dump one `CanonicalReport` to JSON-compatible payload; derive JCS/HTML/PDF from that dump |
 | `report_queries.py` | Bounded report parsing, summaries, catalog lookup, canonical response bytes |
 | `normalize_flows.py` | Zeek `conn.log` / `weird.log` / `capture_loss.log` / `sm_tcp_recon.log` → `Flow` |
@@ -128,6 +133,7 @@ themselves.
 | `findings/dedup.py` | Session findings → endpoint clusters |
 | `findings/posture.py` | Coverage matrix, prioritized findings, assessment state |
 | `reports/schema.py` | `CanonicalReport` / `ReportManifest`; JSON Schema snapshot |
+| `jobs/models.py` | Analysis job status, stages, artifact flags, intake limits |
 | `ml/models.py` | `EndpointWindow`, `AnomalyResult`, cohort labels, evaluation report |
 | `ml/evaluation.py` | Detection delay, precision@K, stratified lift CI, declared thresholds |
 
@@ -138,7 +144,9 @@ themselves.
 | `analyzers.py` | `ZeekRunner`, `TSharkRunner`, `CapturePreflightRunner` protocols and result models |
 | `artifacts.py` | `ArtifactStore` protocol (`put`/`get` by SHA-256) |
 | `ml.py` | `AnomalyScorer` protocol; sklearn stays in adapters |
-| `persistence.py` | Read-only canonical report catalog protocol |
+| `persistence.py` | Read-only catalog plus `CatalogPublisher` |
+| `jobs.py` | Capture-analysis job store |
+| `ml_history.py` | Bounded local endpoint-window history |
 
 ### `adapters/`
 
@@ -163,6 +171,9 @@ themselves.
 | `ml/baselines.py` | Median/MAD, categorical rarity, Page-Hinkley |
 | `ml/isolation_forest.py` | Isolation Forest challenger; gated by the evaluation harness |
 | `persistence/report_repository.py` | Bounded, symlink-safe filesystem report catalog |
+| `persistence/job_store.py` | Quarantine, job status, captures, artifacts |
+| `persistence/ml_history_store.py` | JSONL endpoint-window history |
+| `persistence/writable_catalog.py` | Atomic catalog publication |
 
 ## Toolchain (what the package actually pins)
 
@@ -171,7 +182,7 @@ themselves.
 - Extra `reports` (WeasyPrint==69.0) is required for PDF; JSON/HTML report rendering
   uses core deps. Extra `ml` (scikit-learn, numpy, scipy) is required for
   `securemail evaluate-ml` and `--advisory`. Extra `api` provides FastAPI and
-  Uvicorn for Step 11.
+  Uvicorn for the dashboard (`python-multipart` for capture uploads).
 - Dev extra: pytest, hypothesis, import-linter, ruff, mypy, pre-commit,
   playwright, scapy, jsonschema, pypdf
 - Frontend: Node 22, React, TypeScript, Vite, TanStack Query/Table, ECharts,
@@ -180,6 +191,7 @@ themselves.
 
 ## Deliberately deferred
 
-The dashboard catalog is filesystem-backed and read-only. PostgreSQL,
-SQLAlchemy repositories, OIDC/RBAC, Celery/RabbitMQ workers, packet upload, and
-analysis inside API request processes remain outside Step 11.
+The published catalog is filesystem-backed. PostgreSQL, SQLAlchemy
+repositories, OIDC/RBAC, Celery/RabbitMQ workers, and analysis inside API
+request processes remain outside this phase. Capture analysis runs in a
+dedicated local worker process, not in FastAPI request handlers.

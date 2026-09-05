@@ -167,3 +167,61 @@ export function CoverageChart({ report }: { report: CanonicalReport }) {
     </Card>
   );
 }
+
+export function InventoryChart({
+  title,
+  label,
+  test_id,
+  counts,
+}: {
+  title: string;
+  label: string;
+  test_id: string;
+  counts: Record<string, number>;
+}) {
+  const entries = Object.entries(counts);
+  const labels = entries.map(([name]) => name.replaceAll("_", " "));
+  const values = entries.map(([, value]) => value);
+  const palette = ["#22d3ee", "#34d399", "#f59e0b", "#818cf8", "#f43f5e", "#94a3b8"];
+  const option: EChartsCoreOption = {
+    aria: { enabled: true, decal: { show: true } },
+    grid: { left: 6, right: 12, top: 18, bottom: 4, containLabel: true },
+    xAxis: {
+      type: "category",
+      data: labels,
+      axisLine: { lineStyle: { color: "#475569" } },
+      axisLabel: { color: "#94a3b8", fontSize: 11 },
+      axisTick: { show: false },
+    },
+    yAxis: {
+      type: "value",
+      minInterval: 1,
+      axisLabel: { color: "#94a3b8" },
+      splitLine: { lineStyle: { color: "rgba(100,116,139,.16)" } },
+    },
+    series: [
+      {
+        type: "bar",
+        data: values.map((value, index) => ({
+          value,
+          itemStyle: { color: palette[index % palette.length], borderRadius: [5, 5, 0, 0] },
+        })),
+        barMaxWidth: 28,
+      },
+    ],
+  };
+  return (
+    <Card className="p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">{title}</p>
+      {entries.length === 0 ? (
+        <p className="mt-6 text-sm text-[var(--muted)]">No observations in this capture.</p>
+      ) : (
+        <Chart
+          label={`${label}: ${labels.map((name, index) => `${name} ${values[index]}`).join(", ")}`}
+          option={option}
+          test_id={test_id}
+        />
+      )}
+    </Card>
+  );
+}

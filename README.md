@@ -12,7 +12,9 @@ forward-secrecy assessment, posture scoring with coverage denominators,
 canonical JSON → HTML/PDF reports, and advisory ML after the deterministic
 baseline. The live commands are `securemail analyze`, `securemail score`,
 `securemail report`, and `securemail evaluate-ml`; FastAPI and the React
-dashboard present the same canonical report contract.
+dashboard present the same canonical report contract. After Step 11, the
+dashboard also accepts PCAP/PCAPNG uploads, runs the sandboxed pipeline on
+this host, and offers HTML/PDF downloads.
 
 **As-built documentation** (what the code does today) lives in
 [`docs/README.md`](docs/README.md). Plan contracts (what to build next) remain in
@@ -79,8 +81,10 @@ uv run securemail report tests/fixtures/reports/golden_report.json --format json
 # Step 10 — advisory ML evaluation harness
 uv run securemail evaluate-ml tests/support/synthetic_cohorts/cohort_seeded_v1/
 
-# Step 11 — FastAPI + React dashboard
-SECUREMAIL_REPORT_ROOT=tests/fixtures/dashboard uv run uvicorn securemail.api.main:app
+# Step 11 — FastAPI + React dashboard (catalog + capture upload)
+SECUREMAIL_DATA_ROOT=out/data SECUREMAIL_REPORT_ROOT=out/data \
+  SECUREMAIL_START_WORKER=1 \
+  uv run uvicorn securemail.api.main:app
 # In another terminal:
 npm --prefix frontend run dev
 npm --prefix frontend run test:e2e
@@ -98,7 +102,7 @@ fills the Advisory / ML section without changing deterministic findings.
 
 Clean architecture, enforced by import-linter:
 
-- `src/securemail/api/` — Typer CLI plus thin FastAPI report routes
+- `src/securemail/api/` — Typer CLI plus thin FastAPI report and analysis routes
 - `src/securemail/application/` — use cases
 - `src/securemail/domain/` — pure Pydantic models and rules
 - `src/securemail/ports/` — `typing.Protocol` interfaces

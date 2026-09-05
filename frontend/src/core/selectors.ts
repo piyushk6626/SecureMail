@@ -94,3 +94,53 @@ export function coverage_percent(input: CoverageCounts): number | null {
   if (input.applicable_count === 0) return null;
   return Math.round((input.passed_count / input.applicable_count) * 100);
 }
+
+export function select_protocol_counts(report: CanonicalReport): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const session of report.evidence.sessions ?? []) {
+    const protocol = session.protocol ?? "unclassified";
+    counts[protocol] = (counts[protocol] ?? 0) + 1;
+  }
+  return counts;
+}
+
+export function select_tls_versions(report: CanonicalReport): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const handshake of report.evidence.handshakes ?? []) {
+    const version = handshake.version.selected ?? "not_observable";
+    counts[version] = (counts[version] ?? 0) + 1;
+  }
+  return counts;
+}
+
+export function select_starttls_states(report: CanonicalReport): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const session of report.evidence.sessions ?? []) {
+    const state = session.explicit_upgrade?.state ?? "none";
+    counts[state] = (counts[state] ?? 0) + 1;
+  }
+  return counts;
+}
+
+export function select_certificate_posture(report: CanonicalReport): {
+  observed: number;
+  valid_at_capture: number;
+  expired_at_capture: number;
+  identity_match: number;
+  identity_mismatch: number;
+  not_observable_handshakes: number;
+} {
+  const certificates = report.evidence.certificates ?? [];
+  const handshakes = report.evidence.handshakes ?? [];
+  return {
+    observed: certificates.length,
+    valid_at_capture: certificates.filter((item) => item.valid_at_capture_time === true).length,
+    expired_at_capture: certificates.filter((item) => item.valid_at_capture_time === false).length,
+    identity_match: certificates.filter((item) => item.validation?.identity_match === true).length,
+    identity_mismatch: certificates.filter((item) => item.validation?.identity_match === false)
+      .length,
+    not_observable_handshakes: handshakes.filter(
+      (item) => item.server_certificate_state === "not_observable",
+    ).length,
+  };
+}

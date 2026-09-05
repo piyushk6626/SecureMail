@@ -1,3 +1,5 @@
+import { cleanup } from "@testing-library/react";
+import { afterEach } from "vitest";
 import "@testing-library/jest-dom/vitest";
 
 class ResizeObserverStub implements ResizeObserver {
@@ -29,4 +31,8 @@ Object.defineProperty(window, "matchMedia", {
     removeListener: () => undefined,
     dispatchEvent: () => false,
   }),
+});
+
+afterEach(() => {
+  cleanup();
 });

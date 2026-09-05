@@ -2,29 +2,31 @@ import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
+const empty_capture = path.resolve(
+  process.cwd(),
+  "../tests/fixtures/empty/capture.pcapng",
+);
 const golden_report = path.resolve(
   process.cwd(),
   "../tests/fixtures/reports/golden_report.json",
 );
 
-async function upload_golden_report(page: Page): Promise<void> {
+async function open_catalog_case(page: Page, case_id = "dashboard_critical"): Promise<void> {
   await page.goto("/");
   await page.getByLabel("Select a case").waitFor();
-  await page.locator('input[type="file"]').setInputFiles(golden_report);
-  await expect(page.getByRole("heading", { name: "reports_golden" })).toBeVisible();
+  await page.getByLabel("Select a case").selectOption(case_id);
+  await expect(page.getByRole("heading", { name: case_id })).toBeVisible();
 }
 
-test("uploads a report and preserves all four authority regions", async ({ page }) => {
-  await upload_golden_report(page);
+test("preserves all four authority regions for a catalog case", async ({ page }) => {
+  await open_catalog_case(page);
 
   await expect(page.getByRole("region", { name: "Observed Facts" })).toBeVisible();
-  await expect(
-    page.getByRole("region", { name: "Deterministic Conclusions" }),
-  ).toBeVisible();
+  await expect(page.getByRole("region", { name: "Deterministic Conclusions" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Advisory / ML" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Analyst Notes" })).toBeVisible();
-  await expect(page.getByText("No advisory analysis is present")).toBeVisible();
-  await expect(page.getByText("No analyst notes were published")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Download HTML" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Download PDF" })).toBeVisible();
 });
 
 test("filters portfolio summaries and selects a catalog case", async ({ page }) => {
@@ -48,7 +50,7 @@ test("filters portfolio summaries and selects a catalog case", async ({ page }) 
 });
 
 test("drills from a finding to the exact evidence frame", async ({ page }) => {
-  await upload_golden_report(page);
+  await open_catalog_case(page);
   await page.getByRole("button", { name: /TLS 1\.0 negotiated/ }).click();
 
   const dialog = page.getByRole("dialog", { name: "TLS 1.0 negotiated" });
@@ -60,7 +62,7 @@ test("drills from a finding to the exact evidence frame", async ({ page }) => {
 });
 
 test("renders hostile strings as visible inert forensic text", async ({ page }) => {
-  await upload_golden_report(page);
+  await open_catalog_case(page, "dashboard_attention");
   const facts = page.getByRole("region", { name: "Observed Facts" });
 
   await expect(facts.getByText(/<script>alert\(1\)<\/script>/)).toBeVisible();
@@ -111,7 +113,7 @@ test("clears and switches cases without stale evidence", async ({ page }) => {
 
 test("honors reduced motion and keeps charts accessible", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "dark" });
-  await upload_golden_report(page);
+  await open_catalog_case(page);
 
   const severity_chart = page.getByTestId("severity-chart");
   const coverage_chart = page.getByTestId("coverage-chart");
@@ -126,4 +128,46 @@ test("honors reduced motion and keeps charts accessible", async ({ page }) => {
   expect(motion_duration === "" || Number.parseFloat(motion_duration) <= 0.001).toBe(true);
   const screenshot = await page.screenshot({ animations: "disabled", fullPage: true });
   expect(screenshot.byteLength).toBeGreaterThan(10_000);
+});
+
+test("uploads a pcapng capture and can download reports", async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.goto("/");
+  await page.getByLabel("Select a case").waitFor();
+  await page.locator('input[type="file"]').setInputFiles(empty_capture);
+  await expect(page.getByRole("link", { name: "Download HTML" })).toBeVisible({ timeout: 120_000 });
+  await expect(page.getByRole("link", { name: "Download PDF" })).toBeVisible();
+  const html = page.getByRole("link", { name: "Download HTML" });
+  await expect(html).toHaveAttribute("href", /\/api\/v1\/analyses\/.+\/report\.html/);
+});
+
+test("keeps download actions keyboard-focusable", async ({ page }) => {
+  await open_catalog_case(page);
+  const html = page.getByRole("link", { name: "Download HTML" });
+  await html.focus();
+  await expect(html).toBeFocused();
+});
+
+test("opens navigation on a mobile viewport without leaking cases", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await expect(page.getByTestId("no-case-selected")).toBeVisible();
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  await expect(page.getByLabel("Select a case")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByLabel("Select a case")).toBeHidden();
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  await page.getByLabel("Select a case").selectOption("dashboard_clear");
+  await expect(page.getByRole("heading", { name: "dashboard_clear" })).toBeVisible();
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  await page.getByRole("button", { name: "Clear case" }).click();
+  await expect(page.getByTestId("no-case-selected")).toBeVisible();
+});
+
+test("supports a light theme without leaking a previous case", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: /Use (light|dark) theme/ }).click();
+  await open_catalog_case(page, "dashboard_clear");
+  await page.getByRole("button", { name: "Clear case" }).click();
+  await expect(page.getByTestId("no-case-selected")).toBeVisible();
 });

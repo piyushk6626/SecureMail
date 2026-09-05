@@ -1,9 +1,4 @@
-import type {
-  ButtonHTMLAttributes,
-  HTMLAttributes,
-  InputHTMLAttributes,
-  ReactNode,
-} from "react";
+import { useEffect, type ButtonHTMLAttributes, type HTMLAttributes, type InputHTMLAttributes, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -103,6 +98,19 @@ export function Sheet({
   on_close: () => void;
   children: ReactNode;
 }) {
+  useEffect(() => {
+    if (!is_open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    function on_key(event: KeyboardEvent): void {
+      if (event.key === "Escape") on_close();
+    }
+    window.addEventListener("keydown", on_key);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", on_key);
+    };
+  }, [is_open, on_close]);
   if (!is_open) return null;
   return (
     <div className="fixed inset-0 z-50" role="presentation">

@@ -24,6 +24,29 @@ export interface CaseCatalog {
 
 export type ViewMode = "portfolio" | "case";
 
+export type AnalysisStatus =
+  | "queued"
+  | "running"
+  | "completed"
+  | "failed"
+  | "cancelled";
+
+export interface AnalysisJob {
+  run_id: string;
+  case_id: string;
+  status: AnalysisStatus;
+  stage: string;
+  capture_sha256?: string | null;
+  original_filename: string;
+  policy_profile: string;
+  expected_hostname?: string | null;
+  created_at: string;
+  updated_at: string;
+  error_message?: string | null;
+  artifacts: { json: boolean; html: boolean; pdf: boolean };
+  cancel_requested: boolean;
+}
+
 export const severity_order: Record<FindingSeverity, number> = {
   high: 4,
   medium: 3,

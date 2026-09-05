@@ -1,8 +1,9 @@
 # Interactive dashboard
 
-Step 11 adds a read-only FastAPI control plane and a React analyst dashboard
-over the existing `securemail.report/v1` contract. The API and UI do not run
-packet analysis, change findings, or persist browser uploads.
+The dashboard is a FastAPI + React analyst console over `securemail.report/v1`.
+It can preview cataloged reports and run **offline PCAP/PCAPNG analysis** on a
+single trusted workstation. Packet decoding still happens in sandboxed Zeek and
+TShark, never in the browser.
 
 ## Development
 
@@ -17,47 +18,71 @@ npm ci
 cd ..
 ```
 
-Start the API with an optional directory of canonical reports:
+Start the API with a writable data root (jobs, ML history, published reports)
+and a worker process:
+
+```bash
+SECUREMAIL_DATA_ROOT=out/data SECUREMAIL_REPORT_ROOT=out/data \
+  SECUREMAIL_START_WORKER=1 \
+  uv run uvicorn securemail.api.main:app --reload
+```
+
+To browse committed catalog fixtures without analysis:
 
 ```bash
 SECUREMAIL_REPORT_ROOT=tests/fixtures/dashboard \
   uv run uvicorn securemail.api.main:app --reload
 ```
 
-In another terminal, start Vite:
+In another terminal:
 
 ```bash
 npm --prefix frontend run dev
 ```
 
 Vite proxies `/api` to `http://127.0.0.1:8000`. After
-`npm --prefix frontend run build`, FastAPI serves the built single-page
-application from `frontend/dist`.
+`npm --prefix frontend run build`, FastAPI serves `frontend/dist`.
+
+## Capture upload
+
+Primary intake is `.pcap` / `.pcapng` (magic bytes must match the extension).
+The API streams the file to quarantine, hashes it, and enqueues a job. A
+dedicated worker process runs `run_analysis`, assembles a canonical report,
+runs advisory ML against bounded local history, and publishes JSON/HTML/PDF.
+
+Until 14 (baseline) / 40 (Isolation Forest) endpoint-windows exist locally,
+the Advisory / ML region shows `ADVISORY_INSUFFICIENT_HISTORY` rather than
+implying that no anomaly was found. ML never edits deterministic findings.
 
 ## Inputs and case isolation
 
-The dashboard accepts only canonical report JSON, not PCAP/PCAPNG captures.
-There are two sources:
+Sources:
 
-- the server catalog configured by `SECUREMAIL_REPORT_ROOT`;
-- a JSON file previewed through the API and retained only in browser memory.
+- the server catalog (`SECUREMAIL_REPORT_ROOT`);
+- captures analyzed on this host (`SECUREMAIL_DATA_ROOT`).
 
-Every report fetch names a case explicitly. There is no implicit current or
-latest report, report queries are disabled until a selection is made, and
-clearing a selection removes the prior report from the rendered view. Full
-OIDC/RBAC is Phase 2; deploy this MVP behind the organization's trusted
-same-origin access boundary.
+Every report fetch names a case or analysis run explicitly. There is no
+implicit current/latest report. Clearing a selection removes prior evidence
+from the view.
 
 ## API
 
 - `GET /api/v1/health`
 - `GET /api/v1/cases`
 - `GET /api/v1/cases/{case_id}/report`
+- `GET /api/v1/cases/{case_id}/report.html`
+- `GET /api/v1/cases/{case_id}/report.pdf`
 - `POST /api/v1/reports/preview`
+- `POST /api/v1/analyses` (multipart PCAP/PCAPNG)
+- `GET /api/v1/analyses/{run_id}`
+- `POST /api/v1/analyses/{run_id}/cancel`
+- `GET /api/v1/analyses/{run_id}/report`
+- `GET /api/v1/analyses/{run_id}/report.html`
+- `GET /api/v1/analyses/{run_id}/report.pdf`
 
-Full report responses are RFC 8785 bytes produced by the same application
-operation used by `securemail report`. Preview bodies and catalog files are
-bounded to 8 MiB and validated as `CanonicalReport`.
+Canonical JSON is RFC 8785. HTML/PDF are rendered from the same in-memory
+object. Uploads default to 64 MiB. See
+[`plans/post_step_11_capture_dashboard.md`](../plans/post_step_11_capture_dashboard.md).
 
 ## Analyst views
 
@@ -68,10 +93,10 @@ The case view keeps four labeled regions separate:
 3. Advisory / ML
 4. Analyst Notes
 
-Findings retain their evidence state and link to the referenced record, field,
-and frame number when available. Unknown, incomplete, indeterminate, and
-not-observable evidence are never presented as passes. Hostile report strings
-are rendered as text, with control and bidirectional characters made visible.
+Findings retain their evidence state. Unknown, incomplete, indeterminate, and
+not-observable evidence are never presented as passes. Hostile strings render
+as text, with control and bidirectional characters made visible. HTML and PDF
+downloads are offered after a run completes, and for catalog cases.
 
 ## Verification
 
@@ -81,8 +106,3 @@ make test
 make frontend-build
 make e2e
 ```
-
-The API contract test compares response bytes with CLI-generated canonical
-JSON. Playwright covers upload and catalog selection, filtering, evidence
-drill-down, the four-region boundary, hostile text, responsive presentation,
-and no-case-selected isolation.
