@@ -1,15 +1,28 @@
+---
+status: historical
+audience: contributor
+authoritative_for: historical 2026-09-03 scaffold and toolchain baseline
+last_verified: 2026-09-06
+---
+
+> **Status: historical.** This was the pre-development layout and toolchain
+> baseline. Current layout, pins, and import rules live in
+> [`docs/development/repository-map.md`](../../docs/development/repository-map.md)
+> and [`docs/reference/toolchain.md`](../../docs/reference/toolchain.md).
+> `AGENTS.md` remains the standing engineering brief.
+
 # SecureMail Project Scaffold
 
 **Status:** Pre-development baseline — last document before Step 0 of the build plan starts
-**Companion documents:** [OBJECTIVE.MD](./OBJECTIVE.MD) (requirements), [TECHNICAL_DESIGN.md](./TECHNICAL_DESIGN.md)
-(architecture and rationale), [build_plan.md](./build_plan.md) (step sequence and test contracts)
+**Companion documents:** [OBJECTIVE.MD](../requirements/OBJECTIVE.md) (requirements), [TECHNICAL_DESIGN.md](./technical-design-2026-09-02.md)
+(architecture and rationale), [build_plan.md](../completed/build-plan-steps-0-11.md) (step sequence and test contracts)
 **Verified against:** local machine state and live registry/package-index lookups on 3 September 2026
 (macOS 26.5.1, Apple Silicon/arm64, Homebrew 6.0.9, Docker 29.5.2, `uv` 0.11.2, Node 25.4.0)
 
 ## 1. Purpose
 
-[TECHNICAL_DESIGN.md](./TECHNICAL_DESIGN.md) decided *what* to build and *why*.
-[build_plan.md](./build_plan.md) decided *in what order* to build it and *what test proves each
+[TECHNICAL_DESIGN.md](./technical-design-2026-09-02.md) decided *what* to build and *why*.
+[build_plan.md](../completed/build-plan-steps-0-11.md) decided *in what order* to build it and *what test proves each
 piece is done*. Neither document says where a given file lives, what belongs in it, what must
 never be imported into it, or what has to be installed before the first line of code is written.
 This document closes that gap. It is intentionally the last document before Step 0, because every

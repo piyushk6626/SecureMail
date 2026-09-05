@@ -41,6 +41,8 @@ jobs:
         run: make doctor
       - name: Lint
         run: make lint
+      - name: Documentation
+        run: make docs-check
       - name: Analyzer images
         run: |
           docker pull zeek/zeek@sha256:73e80e9cd23ff71fd28d158e9a9af5c7b2b0ef5d4036af61521827531347c0e3

@@ -1,9 +1,7 @@
 # Fixture generators
 
-This directory holds one script per fixture-generation *method*. Each fixture's
-`provenance.json` points at a generator by exact path. Once a fixture depends on
-a generator, do not delete or rewrite that script in place — a changed method
-gets a new script or a new fixture.
+See [fixture generation](../../../docs/development/fixture-generation.md) for
+the contributor workflow. This README remains part of the evidence chain.
 
 ## Lab captures on macOS (tcpdump sidecar)
 

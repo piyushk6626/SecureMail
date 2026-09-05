@@ -3,21 +3,26 @@
 This file is the standing brief for every agent working in this repository. Follow it
 before writing code, tests, fixtures, Dockerfiles, or documentation.
 
-The three plan documents remain the detailed contracts. Do not invent architecture,
-layout, or step order that contradicts them. If they disagree, this file states the
-reconciled rule (taken from `plans/PROJECT_SCAFFOLD.md` Section 8).
+Steps 0–11 and the capture-upload dashboard are **complete**. Live behavior is
+documented under `docs/`. Completed contracts live under `plans/completed/`.
+Historical design lives under `plans/history/` and is not a license to add
+PostgreSQL, Celery, OIDC, or Kubernetes. Future work requires an approved file
+under `plans/proposals/`. If documents disagree, this file states the
+engineering rule; executable code and tests win on current behavior.
 
 | Question | Source of truth |
 |---|---|
-| *What* to build and *why* | `plans/TECHNICAL_DESIGN.md` |
-| *In what order*, and *what test proves it* | `plans/build_plan.md` |
-| *Where files live*, toolchain, import boundaries | `plans/PROJECT_SCAFFOLD.md` |
-| Product requirements / deliverable list | `plans/OBJECTIVE.MD` |
-| How agents must work in this repo | **this file** |
+| *What the code does today* | `docs/` (see `docs/README.md`) |
+| Engineering constraints for agents | **this file** |
+| Original product requirements | `plans/requirements/OBJECTIVE.md` |
+| Completed step contracts (provenance) | `plans/completed/build-plan-steps-0-11.md` |
+| Completed capture-dashboard contract | `plans/completed/capture-dashboard.md` |
+| Historical design (unimplemented control plane) | `plans/history/technical-design-2026-09-02.md` |
+| Historical scaffold baseline | `plans/history/project-scaffold-2026-09-03.md` |
+| Non-implemented scale-out ideas | `docs/future/` (not an approved phase) |
 
-Read the owning plan section for the step you are implementing. Do not re-derive
-Zeek vs Python responsibility, the fixture contract, or the layer map from first
-principles.
+Do not re-derive Zeek vs Python responsibility, the fixture contract, or the
+layer map from first principles. Read `docs/architecture/` and this file.
 
 ---
 
@@ -45,31 +50,32 @@ or TLS record decoding. Zeek is the primary processing engine.
 
 ## 2. Current project state
 
-This repository has completed **Steps 0–11** of `build_plan.md`: package layout,
-sandboxed Zeek/TShark runners, the v1 normalization / v2 evidence envelope,
-TCP reconstruction quality, payload-driven SMTP/IMAP/POP3 identification,
-STARTTLS/STLS plus implicit-TLS assessment, TLS version / cipher / key-exchange
-evidence, per-certificate extraction, offline chain validation with RFC 9525
-identity matching, versioned IETF/NIST/historical rule packs, forward-secrecy
-assessment, posture scoring with coverage denominators, canonical JSON →
-HTML/PDF reports, and advisory ML after the deterministic baseline. The live
-CLI commands are `securemail analyze`, `securemail score`, `securemail report`,
-and `securemail evaluate-ml`. A read-only FastAPI and React dashboard consume
-the same canonical report JSON through browser-local preview or a bounded
-filesystem catalog. The named build plan is complete; future phases require an
-explicitly approved contract.
+This repository has completed **Steps 0–11** plus the capture-upload dashboard:
+package layout, sandboxed Zeek/TShark runners, the v1 normalization / v2
+evidence envelope, TCP reconstruction quality, payload-driven SMTP/IMAP/POP3
+identification, STARTTLS/STLS plus implicit-TLS assessment, TLS version /
+cipher / key-exchange evidence, per-certificate extraction, offline chain
+validation with RFC 9525 identity matching, versioned IETF/NIST/historical
+rule packs, forward-secrecy assessment, posture scoring with coverage
+denominators, canonical JSON → HTML/PDF reports, and advisory ML after the
+deterministic baseline. The live CLI commands are `securemail analyze`,
+`securemail score`, `securemail report`, and `securemail evaluate-ml`. FastAPI
+and the React dashboard present the same canonical report JSON through
+browser-local preview, a bounded filesystem catalog, **and** PCAP/PCAPNG
+upload with a local worker. The named build plan is complete; future phases
+require an explicitly approved contract under `plans/proposals/`.
 
-The tree in `PROJECT_SCAFFOLD.md` Section 3 is the layout Step 0 created;
-later steps **fill named files**, they do not invent new top-level layout.
-As-built documentation of the live pipeline is under `docs/` (see
-`docs/README.md`); `plans/` remains the contract for unimplemented steps.
+The tree Step 0 created is still the layout; later steps **fill named files**,
+they do not invent new top-level layout. See
+`docs/development/repository-map.md`. As-built documentation is under `docs/`
+(see `docs/README.md`). `plans/` is provenance, not “what to build next”.
 
 Do not:
 
 - Add Postgres, RabbitMQ, Celery, Alembic, Keycloak, or `docker-compose` for the
-  control plane without an explicitly approved post-Step-11 phase.
-- Start Step N before Step N−1 exit criteria are met.
-- Put real policy, ML, or report code into a step that does not own it.
+  control plane without an explicitly approved proposal.
+- Invent a new top-level package layout.
+- Treat `docs/future/` or `plans/history/` as approved implementation work.
 
 ---
 
@@ -80,9 +86,11 @@ These apply to every change.
 1. **Zeek first, Python second.** Packet ingest, TCP reassembly, protocol ID, TLS
    handshake decoding, and X.509 extraction happen in Zeek. Python normalizes,
    applies policy, scores, and renders.
-2. **CLI-only until Step 11.** Every step is proven with `securemail <command>`
-   against committed fixtures. FastAPI routers wrap the same `application/` use
-   cases the CLI already calls — no new business logic in routes.
+2. **CLI-proven, then API.** Every deterministic step is proven with
+   `securemail <command>` against committed fixtures. FastAPI routers wrap the
+   same `application/` use cases the CLI already calls — no new business logic
+   in routes. The dashboard may upload captures; it still must not recompute
+   findings in the browser.
 3. **Deterministic before AI.** Steps 0–9 must be fully deterministic, versioned,
    and fixture-tested before Step 10. ML consumes deterministic output; it never
    replaces, gates, suppresses, downgrades, or rewrites a `Finding`.
@@ -97,7 +105,8 @@ These apply to every change.
    or Python that should satisfy it. Step 9 is schema-first + golden snapshot.
    Step 10 is evaluation-harness-first. Step 11 is API/UI-contract-first.
 6. **One step, one runnable proof.** A step is not done until its CLI command
-   against named fixtures passes, including the exit criteria in `build_plan.md`.
+   against named fixtures passes, including the exit criteria in the completed
+    build-plan contract.
 7. **Missing evidence is not a pass.** TLS 1.3 certificates after `ServerHello`
    are `not_observable` unless authorized secrets/telemetry exist. Do not
    fabricate them. ECH can hide SNI. Capture loss makes reconstruction
@@ -117,9 +126,10 @@ These apply to every change.
 
 Work one step at a time. For the current step:
 
-1. Read that step in `plans/build_plan.md` (deliverables, fixtures, test contract,
-   implementation, CLI command, exit criteria).
-2. Confirm the target files in `plans/PROJECT_SCAFFOLD.md` Sections 3–4. Put code
+1. Read that step in `plans/completed/build-plan-steps-0-11.md` (deliverables,
+   fixtures, test contract, implementation, CLI command, exit criteria). For
+   work after Step 11, an approved file under `plans/proposals/` is required.
+2. Confirm the target files in `docs/development/repository-map.md`. Put code
    only in the file that owns the responsibility. Do not create parallel modules.
 3. Author or extend fixtures **first** (except Steps 10–11, which use the
    approaches named in those steps).
@@ -132,12 +142,12 @@ Work one step at a time. For the current step:
 
 If Zeek built-in events are too coarse (Step 2 decision gate), escalate per
 protocol to a small Spicy analyzer **or** a bounded TShark second pass, and
-record the choice in `docs/decisions/step2-imap-pop3-depth.md`. Never skip that
-write-up.
+record the choice in `docs/decisions/` (see
+`docs/decisions/0001-imap-pop3-corroboration.md`). Never skip that write-up.
 
 ### Step map (do not skip or merge)
 
-| Step | Owns | Proof command (see build_plan for exact fixtures) |
+| Step | Owns | Proof command (see `plans/completed/build-plan-steps-0-11.md`) |
 |---|---|---|
 | 0 | Package layout, sandbox runners, `EvidenceState`, fixture harness, analyzer lockfile | `securemail analyze tests/fixtures/empty/capture.pcapng` |
 | 1 | TCP reconstruction quality | `… tcp_snaplen_truncation …` |
@@ -186,8 +196,12 @@ Avoid a generic `utils` package. Put code in the domain or adapter that owns it.
 
 ### Canonical records (do not invent parallel ones)
 
-`Case`, `Capture`, `AnalysisRun`, `Flow`, `EmailSession`, `TlsHandshake`,
-`CertificateEvidence`, `Finding`, `AnomalyResult`, `ReportManifest`, `AuditEvent`.
+Live canonical records: `AnalysisRun` (inside `EvidenceDocument`),
+`CapturePreflight`, `Flow`, `EmailSession`, `TlsHandshake`,
+`CertificateEvidence`, `Finding`, `PolicyCheck`, `PostureAssessment`,
+`AnomalyResult`, `ReportManifest` / `CanonicalReport`, `AnalysisJob`.
+`Case`, `Capture`, and `AuditEvent` are historical design names, not live
+models.
 
 `AnomalyResult` is never merged into `Finding`.
 
@@ -200,7 +214,8 @@ policy_pack_version, trust_store_digest, configuration_digest)`
 
 ## 6. Layout — where new code goes
 
-Authoritative tree: `plans/PROJECT_SCAFFOLD.md` Section 3. Reconciled deviations:
+Authoritative tree: `docs/development/repository-map.md`. Reconciled deviations
+from the historical scaffold:
 
 - Zeek scripts live in top-level `zeek/` (hashed as one bundle), not a loose
   `scripts/securemail-email.zeek`.
@@ -232,8 +247,8 @@ Never hand-edit it (same discipline as `uv.lock`).
 
 ## 7. Toolchain (do not substitute)
 
-Pinned by `PROJECT_SCAFFOLD.md`. Re-verify claims (digests, wheels) rather than
-silently changing versions.
+Pinned in `docs/reference/toolchain.md` and lockfiles. Re-verify claims
+(digests, wheels) rather than silently changing versions.
 
 | Tool | Rule |
 |---|---|
@@ -267,7 +282,7 @@ tests/fixtures/<case_id>/
 ```
 
 `<case_id>` is `<protocol_or_area>_<condition>` matching names already used in
-`build_plan.md` (`tcp_snaplen_truncation`, `imap_starttls_capability_stripped`,
+the completed build plan (`tcp_snaplen_truncation`, `imap_starttls_capability_stripped`,
 `tls13_hello_retry_request`, `cert_expired_rsa1024`, `cert_chain_san_mismatch`,
 `tls13_psk_only_resumption`, …). Guessable from the step, not invented.
 
@@ -322,7 +337,7 @@ autoescape stays on — never disable per-template.
 
 ---
 
-## 10. ML / dashboard (when those steps are open)
+## 10. ML / dashboard
 
 - Baseline (median/MAD, categorical rarity, change-point) is committed and
   scored first. `isolation_forest.py` is in the tree only because a committed
@@ -371,6 +386,6 @@ autoescape stays on — never disable per-template.
   PDF renderer because they appear in the design’s alternatives list. Those are
   deferred unless a later phase explicitly starts them.
 
-When in doubt, open the plan section for the step, put the code in the scaffold
+When in doubt, open the matching `docs/` page, put the code in the repository
 path that already names that job, write the fixture first, and keep evidence
 states honest.

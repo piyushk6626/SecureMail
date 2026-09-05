@@ -8,9 +8,9 @@ npm ci
 npm run dev
 ```
 
-Vite proxies `/api` to `http://127.0.0.1:8000`. The dashboard reads catalog
-reports from the FastAPI service; uploaded report previews stay in browser
-memory.
+Vite proxies `/api` to `http://127.0.0.1:8000`. Operator and analyst docs:
+[dashboard workflows](../docs/user-guide/dashboard-workflows.md) and
+[first dashboard run](../docs/getting-started/first-dashboard-run.md).
 
 Checks:
 

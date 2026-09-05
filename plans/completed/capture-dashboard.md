@@ -1,3 +1,17 @@
+---
+status: completed
+audience: contributor
+authoritative_for: completed capture-upload dashboard contract
+last_verified: 2026-09-06
+---
+
+> **Status: completed contract.** Capture upload, local worker, and HTML/PDF
+> downloads are implemented. Current operator behavior lives in
+> [`docs/operations/`](../../docs/operations/) and
+> [`docs/user-guide/dashboard-workflows.md`](../../docs/user-guide/dashboard-workflows.md).
+> Where this contract and the code disagree, document the code as a known
+> limitation rather than treating this file as live behavior.
+
 # Post-Step-11: Offline capture analysis dashboard
 
 **Status:** Approved contract for the single-host capture-upload phase.
@@ -9,9 +23,9 @@ Companion sources of truth:
 
 | Question | Source |
 |---|---|
-| Analyzer sandbox, evidence states, policy, scoring | `plans/TECHNICAL_DESIGN.md`, `AGENTS.md` |
-| Existing file layout and import rules | `plans/PROJECT_SCAFFOLD.md` |
-| Prior step contracts | `plans/build_plan.md` |
+| Analyzer sandbox, evidence states, policy, scoring | `plans/history/technical-design-2026-09-02.md`, `AGENTS.md` |
+| Existing file layout and import rules | `plans/history/project-scaffold-2026-09-03.md` |
+| Prior step contracts | `plans/completed/build-plan-steps-0-11.md` |
 | This phase | **this file** |
 
 ---

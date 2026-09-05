@@ -1,16 +1,28 @@
+---
+status: completed
+audience: contributor
+authoritative_for: completed Steps 0-11 implementation contracts
+last_verified: 2026-09-06
+---
+
+> **Status: completed contract.** Steps 0–11 are implemented. This file is provenance
+> for what each step was required to prove. Current behavior lives in
+> [`docs/README.md`](../../docs/README.md). Future work needs a new approved contract
+> under `plans/proposals/`.
+
 # SecureMail Build Plan
 
 **Status:** Execution plan
-**Companion documents:** [OBJECTIVE.MD](./OBJECTIVE.MD) (requirements), [TECHNICAL_DESIGN.md](./TECHNICAL_DESIGN.md) (architecture and rationale)
+**Companion documents:** [OBJECTIVE.MD](../requirements/OBJECTIVE.md) (requirements), [TECHNICAL_DESIGN.md](../history/technical-design-2026-09-02.md) (architecture and rationale)
 
 ## 1. Purpose
 
-[TECHNICAL_DESIGN.md](./TECHNICAL_DESIGN.md) answers *what* SecureMail is and *why* each
+[TECHNICAL_DESIGN.md](../history/technical-design-2026-09-02.md) answers *what* SecureMail is and *why* each
 technology choice was made. This document answers *in what order do we build it, and
 what test proves each piece is done*.
 
 Every step below exists to deliver one or more items from the deliverable list in
-[OBJECTIVE.MD](./OBJECTIVE.MD) (lines 29-53), grouped only when they are logically
+[OBJECTIVE.MD](../requirements/OBJECTIVE.md) (lines 29-53), grouped only when they are logically
 inseparable (for example, TLS version and cipher suite are both read from the same
 handshake record). A step is **not complete** until its acceptance tests pass against
 committed fixtures. There is no "implement now, test later" step in this plan.
@@ -857,7 +869,7 @@ analyst content; the no-case-selected isolation test passes.
 
 ## 8. Deliverable traceability
 
-Every deliverable listed in [OBJECTIVE.MD](./OBJECTIVE.MD) (lines 33-53) is mapped
+Every deliverable listed in [OBJECTIVE.MD](../requirements/OBJECTIVE.md) (lines 33-53) is mapped
 below to its owning step, its primary evidence source, and the honest achievable
 state for that deliverable, per TECHNICAL_DESIGN's feasibility constraints
 (Section 2.3). "Full" means the deliverable is fully determinable whenever the
@@ -893,6 +905,6 @@ All 21 deliverables are covered by exactly one owning step (with Steps 4 and 5
 each covering multiple deliverables that share one underlying evidence record, as
 noted in Section 1). No deliverable is left unaddressed, and every deliverable's
 "achievable state" column is the same honest language used in
-[TECHNICAL_DESIGN.md](./TECHNICAL_DESIGN.md) Section 12 — this plan does not
+[TECHNICAL_DESIGN.md](../history/technical-design-2026-09-02.md) Section 12 — this plan does not
 relax those constraints, it only sequences the work needed to prove them.
 

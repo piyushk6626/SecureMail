@@ -1,7 +1,20 @@
+---
+status: historical
+audience: architect
+authoritative_for: historical 2026-09-02 technical design
+last_verified: 2026-09-06
+---
+
+> **Status: historical.** This design proposed a PostgreSQL/Celery/OIDC control
+> plane that was **not** implemented. Current architecture is a single-host
+> filesystem catalog and local worker. See
+> [`docs/architecture/system-context.md`](../../docs/architecture/system-context.md)
+> and [`docs/future/reference-architecture.md`](../../docs/future/reference-architecture.md).
+
 # SecureMail Technical Design
 
 **Status:** Proposed technical baseline  
-**Source requirements:** [OBJECTIVE.MD](./OBJECTIVE.MD)  
+**Source requirements:** [OBJECTIVE.MD](../requirements/OBJECTIVE.md)  
 **Research cutoff:** 2 September 2026  
 **Deployment assumption:** Offline/on-premise and open-source-first
 

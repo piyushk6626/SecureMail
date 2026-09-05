@@ -1,4 +1,4 @@
-.PHONY: doctor sync lint test frontend-build e2e analyzer-lock zeek-image tshark-image
+.PHONY: doctor sync lint test frontend-build e2e analyzer-lock zeek-image tshark-image docs-check
 
 ifeq ($(shell uname -s),Darwin)
 export DYLD_FALLBACK_LIBRARY_PATH := /opt/homebrew/lib:$(if $(DYLD_FALLBACK_LIBRARY_PATH),$(DYLD_FALLBACK_LIBRARY_PATH),)
@@ -43,3 +43,6 @@ zeek-image:
 
 tshark-image:
 	docker build -f docker/tshark/Dockerfile -t securemail/tshark:step0 .
+
+docs-check:
+	$(UV) run python tools/check_docs.py

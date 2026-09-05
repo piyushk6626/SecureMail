@@ -1,63 +1,185 @@
-# SecureMail as-built documentation
+---
+status: current
+audience: user
+authoritative_for: documentation navigation and authority rules
+last_verified: 2026-09-06
+---
 
-This directory describes **what the code does today**, not the full product
-vision. The live surface includes the deterministic CLI plus FastAPI and a React
-dashboard that can analyze PCAP/PCAPNG captures offline.
+# SecureMail documentation
 
-Current implementation: **Steps 0–11** of
-[`plans/build_plan.md`](../plans/build_plan.md) plus the approved
-[`plans/post_step_11_capture_dashboard.md`](../plans/post_step_11_capture_dashboard.md)
-capture-upload workflow.
+This directory describes **what the code does today**. Completed build-plan
+contracts live under [`plans/`](../plans/README.md) as provenance. The
+historical technical design is not the live architecture.
 
-## How these docs relate to the rest of the repo
-
-| Location | Role |
+| Question | Go here |
 |---|---|
-| **this directory** | As-built: pipeline, schema, analyzers, fixtures as they exist in source |
-| [`plans/TECHNICAL_DESIGN.md`](../plans/TECHNICAL_DESIGN.md) | What to build and why (full architecture, including later steps) |
-| [`plans/build_plan.md`](../plans/build_plan.md) | Order of work and the test that proves each step |
-| [`plans/PROJECT_SCAFFOLD.md`](../plans/PROJECT_SCAFFOLD.md) | File layout, toolchain, import boundaries |
-| [`plans/OBJECTIVE.MD`](../plans/OBJECTIVE.MD) | Product requirements / deliverable list |
-| [`AGENTS.md`](../AGENTS.md) | Standing brief for agents working in this repository |
-| [`README.md`](../README.md) | Bootstrap and a short pointer here |
+| Current behavior | **this directory** |
+| Engineering constraints | [`AGENTS.md`](../AGENTS.md) |
+| Original requirements | [`plans/requirements/OBJECTIVE.md`](../plans/requirements/OBJECTIVE.md) |
+| Completed step contracts | [`plans/completed/`](../plans/completed/) |
+| Historical design / scaffold | [`plans/history/`](../plans/history/) |
+| Non-implemented scale-out ideas | [`future/README.md`](future/README.md) |
 
-Do not treat a placeholder file (`"""Filled in at Step N."""`) as implemented
-behavior. If this directory and a plan disagree on *current* behavior, the
-source under `src/`, `zeek/`, and `tests/fixtures/` wins.
+If a page here and a plan disagree on live behavior, `src/`, `zeek/`, and
+`tests/` win. Gaps are recorded as known limitations, not silently “fixed” in
+prose.
 
-## Contents
+Page template and metadata rules:
+[documentation style](development/documentation-style.md).
 
-| Page | What it covers |
+## Start here
+
+| Audience | First pages |
 |---|---|
-| [current-state.md](current-state.md) | Done vs not done, proof commands, fixture count |
-| [architecture.md](architecture.md) | Layers, import-linter, composition root, live modules |
-| [pipeline.md](pipeline.md) | `securemail analyze` end to end, digests, idempotency |
-| [evidence-model.md](evidence-model.md) | v2 JSON envelope, `EvidenceState`, `Flow`, `EmailSession`, `TlsHandshake`, `Finding` |
-| [scoring.md](scoring.md) | Versioned score, dedup, coverage denominators, `securemail score` |
-| [reports.md](reports.md) | Canonical report schema, JCS/HTML/PDF, `securemail report` |
-| [analyzers.md](analyzers.md) | Sandbox, lockfile, Zeek scripts, TShark allowlist, redaction |
-| [tcp-reconstruction.md](tcp-reconstruction.md) | Quality classifier, reason codes, `sm_tcp_recon.log` |
-| [protocol-identification.md](protocol-identification.md) | `port_hint` vs payload, DPD, corroboration, conflict |
-| [starttls.md](starttls.md) | STARTTLS/STLS machines, `downgrade_consistent`, implicit TLS |
-| [advisory-ml.md](advisory-ml.md) | Baseline + Isolation Forest, `evaluate-ml`, `--advisory` |
-| [dashboard.md](dashboard.md) | FastAPI, PCAP upload, React console, HTML/PDF downloads |
-| [cli-and-development.md](cli-and-development.md) | CLI, Make targets, doctor, lint, CI |
-| [fixtures.md](fixtures.md) | Catalog of the 71 PCAP cases plus synthetic finding sets |
-| [decisions/step2-imap-pop3-depth.md](decisions/step2-imap-pop3-depth.md) | ADR: Zeek vs TShark vs Spicy for IMAP/POP3 |
+| New user | [Supported platforms](getting-started/supported-platforms.md) → [First CLI analysis](getting-started/first-cli-analysis.md) |
+| Operator | [Deployment topologies](operations/deployment-topologies.md) → [API and worker startup](operations/api-and-worker-startup.md) |
+| Contributor | [Workstation setup](development/workstation-setup.md) → [Testing](development/testing.md) |
+| Architect | [System context](architecture/system-context.md) → [Analysis pipeline](architecture/analysis-pipeline.md) |
+| Security reviewer | [Threat model](security/threat-model.md) → [Current security limitations](security/current-security-limitations.md) |
 
-## Quick start
+## Getting started
 
-```bash
-uv run securemail analyze tests/fixtures/empty/capture.pcapng --out out/empty.json
-uv run securemail score tests/fixtures/synthetic_findings/mixed_severity.json
-uv run securemail report tests/fixtures/reports/golden_report.json --format json,html,pdf --out out/
-uv run securemail evaluate-ml tests/support/synthetic_cohorts/cohort_seeded_v1/
-SECUREMAIL_DATA_ROOT=out/data SECUREMAIL_REPORT_ROOT=out/data \
-  SECUREMAIL_START_WORKER=1 \
-  uv run uvicorn securemail.api.main:app
-npm --prefix frontend run dev
-```
+- [Index](getting-started/README.md)
+- [Supported platforms](getting-started/supported-platforms.md)
+- [macOS Apple Silicon](getting-started/macos-apple-silicon.md)
+- [Linux](getting-started/linux.md)
+- [First CLI analysis](getting-started/first-cli-analysis.md)
+- [First dashboard run](getting-started/first-dashboard-run.md)
+- [Offline installation](getting-started/offline-installation.md)
 
-Registered commands are `analyze`, `score`, `report`, and `evaluate-ml`. See
-[cli-and-development.md](cli-and-development.md) for toolchain and
-[dashboard.md](dashboard.md) for the API/UI workflow.
+## User guide
+
+- [Index](user-guide/README.md)
+- [Analyze captures](user-guide/analyze-captures.md)
+- [Policy profiles](user-guide/policy-profiles.md)
+- [Interpret evidence](user-guide/interpret-evidence.md)
+- [Interpret findings](user-guide/interpret-findings.md)
+- [Scoring and coverage](user-guide/scoring-and-coverage.md)
+- [Generate reports](user-guide/generate-reports.md)
+- [Advisory ML](user-guide/advisory-ml.md)
+- [Dashboard workflows](user-guide/dashboard-workflows.md)
+- [Evidence limitations](user-guide/evidence-limitations.md)
+
+## Architecture
+
+- [Index](architecture/README.md)
+- [System context](architecture/system-context.md)
+- [Clean architecture](architecture/clean-architecture.md)
+- [Runtime topology](architecture/runtime-topology.md)
+- [Analysis pipeline](architecture/analysis-pipeline.md)
+- [Analyzer boundary](architecture/analyzer-boundary.md)
+- [Evidence and report contracts](architecture/evidence-and-report-contracts.md)
+- [Filesystem control plane](architecture/filesystem-control-plane.md)
+- [Worker lifecycle](architecture/worker-lifecycle.md)
+- [Frontend data flow](architecture/frontend-data-flow.md)
+- [Trust boundaries](architecture/trust-boundaries.md)
+
+## Forensics
+
+- [Index](forensics/README.md)
+- [Capture intake](forensics/capture-intake.md)
+- [TCP reconstruction](forensics/tcp-reconstruction.md)
+- [Protocol identification](forensics/protocol-identification.md)
+- [STARTTLS and STLS](forensics/starttls-and-stls.md)
+- [Implicit TLS](forensics/implicit-tls.md)
+- [TLS handshakes](forensics/tls-handshakes.md)
+- [Certificate extraction](forensics/certificate-extraction.md)
+- [Chain and identity validation](forensics/chain-and-identity-validation.md)
+- [Policy evaluation](forensics/policy-evaluation.md)
+- [Forward secrecy](forensics/forward-secrecy.md)
+- [Finding deduplication](forensics/finding-deduplication.md)
+
+## Operations
+
+- [Index](operations/README.md)
+- [Deployment topologies](operations/deployment-topologies.md)
+- [Configuration](operations/configuration.md)
+- [API and worker startup](operations/api-and-worker-startup.md)
+- [Storage layout](operations/storage-layout.md)
+- [Job lifecycle](operations/job-lifecycle.md)
+- [Resource limits](operations/resource-limits.md)
+- [Performance and tuning](operations/performance-and-tuning.md)
+- [Retention and cleanup](operations/retention-and-cleanup.md)
+- [Backup and recovery](operations/backup-and-recovery.md)
+- [Monitoring and health](operations/monitoring-and-health.md)
+- [Troubleshooting](operations/troubleshooting.md)
+- [Air-gapped operation](operations/air-gapped-operation.md)
+- [Security hardening](operations/security-hardening.md)
+
+## Reference
+
+- [Index](reference/README.md)
+- [CLI](reference/cli.md)
+- [API](reference/api.md)
+- [Environment variables](reference/environment-variables.md)
+- [Evidence schema](reference/evidence-schema.md)
+- [Report schema](reference/report-schema.md)
+- [Evidence states](reference/evidence-states.md)
+- [Policy packs](reference/policy-packs.md)
+- [Limits](reference/limits.md)
+- [Exit codes and errors](reference/exit-codes-and-errors.md)
+- [Toolchain](reference/toolchain.md)
+- [Standards](reference/standards.md)
+- [Glossary](reference/glossary.md)
+- [Requirements traceability](reference/requirements-traceability.md)
+
+## Development
+
+- [Index](development/README.md)
+- [Workstation setup](development/workstation-setup.md)
+- [Repository map](development/repository-map.md)
+- [Coding and import boundaries](development/coding-and-import-boundaries.md)
+- [Make targets](development/make-targets.md)
+- [Testing](development/testing.md)
+- [Frontend development](development/frontend-development.md)
+- [Fixture contract](development/fixture-contract.md)
+- [Fixture generation](development/fixture-generation.md)
+- [Golden updates](development/golden-updates.md)
+- [Analyzer image upgrades](development/analyzer-image-upgrades.md)
+- [Policy development](development/policy-development.md)
+- [Report development](development/report-development.md)
+- [ML evaluation](development/ml-evaluation.md)
+- [CI](development/ci.md)
+- [Release process](development/release-process.md)
+- [Documentation style](development/documentation-style.md)
+
+## Security
+
+- [Index](security/README.md)
+- [Threat model](security/threat-model.md)
+- [Untrusted input handling](security/untrusted-input-handling.md)
+- [Data handling and privacy](security/data-handling-and-privacy.md)
+- [Analyzer isolation](security/analyzer-isolation.md)
+- [Report rendering security](security/report-rendering-security.md)
+- [Current security limitations](security/current-security-limitations.md)
+
+## Status
+
+- [Index](status/README.md)
+- [Current capabilities](status/current-capabilities.md)
+- [Compatibility matrix](status/compatibility-matrix.md)
+- [Known limitations](status/known-limitations.md)
+- [Deferred scope](status/deferred-scope.md)
+
+## Future (not implemented)
+
+- [Index](future/README.md)
+- [Reference architecture](future/reference-architecture.md)
+- [Scale-out control plane](future/scale-out-control-plane.md)
+- [Identity and access](future/identity-and-access.md)
+- [Deployment and observability](future/deployment-and-observability.md)
+- [Migration triggers](future/migration-triggers.md)
+
+## Decisions
+
+- [Index](decisions/README.md)
+- [0001 IMAP/POP3 corroboration](decisions/0001-imap-pop3-corroboration.md)
+- [0002 Filesystem catalog](decisions/0002-filesystem-catalog.md)
+- [0003 Local worker model](decisions/0003-local-worker-model.md)
+- [0004 Evidence-state semantics](decisions/0004-evidence-state-semantics.md)
+
+## Related pages
+
+- [Root README](../README.md)
+- [Plans index](../plans/README.md)
+- [Contributing](../CONTRIBUTING.md)

@@ -1,4 +1,20 @@
+---
+status: current
+audience: architect
+authoritative_for: IMAP/POP3 TShark corroboration vs Spicy
+last_verified: 2026-09-06
+---
+
 # Step 2 decision: IMAP/POP3 event depth for Step 3 STARTTLS state machines
+
+> **As-built note (2026-09-06):** the live TShark display filter is
+> `smtp or imap or pop or tls.handshake` in
+> [`tshark_runner.py`](../../src/securemail/adapters/analyzers/tshark_runner.py)
+> (`TSHARK_DISPLAY_FILTER`). That is **broader** than the filter recorded
+> below (`tls.handshake.type == 1`). Handshake **type** is still requested as
+> an allowlisted `-e` field; the display filter no longer restricts to
+> ClientHello (`type == 1`) only. Do not “correct” the historical decision
+> text; treat this note as the live contract.
 
 Date: 2026-09-04
 Status: accepted

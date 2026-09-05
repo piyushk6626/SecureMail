@@ -1,3 +1,14 @@
+---
+status: completed
+audience: architect
+authoritative_for: original product requirements
+last_verified: 2026-09-06
+---
+
+> **Status: completed requirements.** This file is the original product objective.
+> Current as-built behavior lives in [`docs/README.md`](../../docs/README.md).
+> Do not treat this document as a license to add PostgreSQL, queues, or OIDC.
+
 • Background Electronic mail remains one of the most critical communication services for governments, enterprises, financial institutions, and academic organizations. Despite the widespread adoption of Transport Layer Security (TLS), many SMTP, IMAP, and POP3 deployments continue to suffer from cryptographic misconfigurations such as obsolete TLS versions, weak cipher suites, insecure STARTTLS implementations, expired or improperly configured certificates, and non-compliance with modern security standards. These weaknesses expose email infrastructures to downgrade attacks, man-in-the-middle attacks, passive interception, and other cryptographic threats.
 
 Although existing network analysis tools provide extensive packet-level visibility, they primarily focus on protocol decoding and traffic inspection. They do not automatically evaluate the overall cryptographic security posture of email communications or provide intelligent risk assessment and prioritization for security analysts.
