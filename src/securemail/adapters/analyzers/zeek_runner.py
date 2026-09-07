@@ -92,6 +92,10 @@ class DockerZeekRunner:
         with tempfile.TemporaryDirectory(prefix="securemail-zeek-") as tmp:
             output_dir = Path(tmp)
             os.chmod(output_dir, 0o1777)
+            certificate_dir = output_dir / "certs"
+            certificate_dir.mkdir()
+            os.chmod(certificate_dir, 0o1777)
+
             command = self.argv(capture_path, output_dir)
             try:
                 completed = subprocess.run(

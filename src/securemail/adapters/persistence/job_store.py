@@ -129,6 +129,9 @@ class FilesystemJobStore:
         target = job_dir / capture_name
         try:
             os.replace(staged, target)
+            # The job directory remains private (0700), but this file is bind-mounted
+            # directly into analyzers running as the unprivileged container user.
+            os.chmod(target, 0o644)
         except OSError as exc:
             self._remove_tree(job_dir)
             raise AnalysisJobError("cannot store capture") from exc

@@ -17,7 +17,7 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex min-h-9 items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 disabled:pointer-events-none disabled:opacity-45",
+        "inline-flex min-h-9 items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 disabled:pointer-events-none disabled:opacity-45",
         variant === "primary" && "bg-cyan-600 text-white hover:bg-cyan-500",
         variant === "secondary" &&
           "border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface-raised)]",
@@ -37,7 +37,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_1px_0_rgb(255_255_255/0.03)]",
+        "rounded-[0.8rem] border border-[var(--border)] bg-[var(--surface)] shadow-[inset_0_1px_rgb(255_255_255/0.025),0_12px_32px_rgb(0_0_0/0.08)]",
         className,
       )}
       {...props}

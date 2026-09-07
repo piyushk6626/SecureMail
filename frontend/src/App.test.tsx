@@ -8,6 +8,7 @@ import { make_report } from "./test/report_fixture";
 vi.mock("./components/charts", () => ({
   CoverageChart: () => <div aria-label="Coverage chart" />,
   SeverityChart: () => <div aria-label="Severity chart" />,
+  TransportProfileCard: () => <div aria-label="Transport profile" />,
   InventoryChart: () => <div aria-label="Inventory chart" />,
 }));
 
@@ -120,6 +121,24 @@ describe("capture upload", () => {
       "href",
       "/api/v1/analyses/r1/report.pdf",
     );
+    expect(screen.getByRole("heading", { name: "Investigate in this order" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /Case posture rings/ })).toBeInTheDocument();
+    const certificate_ring = screen.getByRole("button", { name: /Ring 4 · inner, Certificate health:/ });
+    fireEvent.pointerEnter(certificate_ring);
+    expect(screen.getByRole("heading", { name: "Certificate health" })).toBeInTheDocument();
+    expect(certificate_ring).toHaveAttribute("data-active", "true");
+    fireEvent.click(screen.getByRole("tab", { name: /Evidence/ }));
+    expect(await screen.findByRole("region", { name: "Observed Facts" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Network volume" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Flow integrity" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Evidence heatmaps" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Flows heatmap" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "TLS handshakes heatmap" })).toBeInTheDocument();
+    const tls_cell = await screen.findByRole("button", { name: /TLSv10.*attention/ });
+    fireEvent.click(tls_cell);
+    expect(screen.getByRole("heading", { name: "TLS handshakes" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Flow path explorer" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /Network graph highlighting/ })).toBeInTheDocument();
   });
 
   it("shows a failed analysis without leaking the previous case", async () => {
