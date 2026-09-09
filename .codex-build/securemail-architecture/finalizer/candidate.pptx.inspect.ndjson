@@ -1,0 +1,91 @@
+{"kind":"deck","id":"pr/m2g6sp","name":"Deck"}
+{"kind":"layout","layoutId":"8a363889-29e8-4043-8801-360bc5aaf242","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"acab8402-c4c6-4e82-86cc-cf439abc1ad1","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/vvmar2","slide":1,"title":"SecureMail component architecture","textShapes":36}
+{"kind":"textbox","id":"sh/wrqdwvmh","slide":1,"name":"title","text":"SecureMail component architecture","textPreview":"SecureMail component architecture","textChars":33,"textLines":1,"bbox":[52,28,1176,48]}
+{"kind":"textbox","id":"sh/vqxc3q5w","slide":1,"name":"subtitle","text":"Current packages, runtime components and dependency boundaries","textPreview":"Current packages, runtime components and dependency boundaries","textChars":62,"textLines":1,"bbox":[54,77,1172,26]}
+{"kind":"shape","id":"sh/upovul4b","slide":1,"name":"title-rule","bbox":[54,112,1172,3]}
+{"kind":"shape","id":"sh/9ofu1gnq","slide":1,"name":"securemail-workstation","bbox":[48,132,1184,532]}
+{"kind":"textbox","id":"sh/8n6dsbml","slide":1,"name":"system-label","text":"SECUREMAIL WORKSTATION","textPreview":"SECUREMAIL WORKSTATION","textChars":22,"textLines":1,"bbox":[70,141,260,24]}
+{"kind":"shape","id":"sh/7mxcz650","slide":1,"name":"entry-group","bbox":[70,174,258,462]}
+{"kind":"shape","id":"sh/mlovql4f","slide":1,"name":"entry-group-accent","bbox":[88,216,42,4]}
+{"kind":"textbox","id":"sh/lkfuxgnu","slide":1,"name":"entry-group-label","text":"ENTRY POINTS","textPreview":"ENTRY POINTS","textChars":12,"textLines":1,"bbox":[88,184,222,28]}
+{"kind":"shape","id":"sh/kjmdobm9","slide":1,"name":"core-group","bbox":[348,174,482,462]}
+{"kind":"shape","id":"sh/q1gzihob","slide":1,"name":"core-group-accent","bbox":[366,216,42,4]}
+{"kind":"textbox","id":"sh/b2p0bmpw","slide":1,"name":"core-group-label","text":"CORE LOGIC AND CONTRACTS","textPreview":"CORE LOGIC AND CONTRACTS","textChars":24,"textLines":1,"bbox":[366,184,446,28]}
+{"kind":"shape","id":"sh/c3yhkr6h","slide":1,"name":"infra-group","bbox":[850,174,360,462]}
+{"kind":"shape","id":"sh/d4ridw72","slide":1,"name":"infra-group-accent","bbox":[868,216,42,4]}
+{"kind":"textbox","id":"sh/2dgzehof","slide":1,"name":"infra-group-label","text":"ADAPTERS AND LOCAL RUNTIME","textPreview":"ADAPTERS AND LOCAL RUNTIME","textChars":26,"textLines":1,"bbox":[868,184,324,28]}
+{"kind":"shape","id":"sh/3ep07mp0","slide":1,"name":"frontend-node","bbox":[91,229,216,76]}
+{"kind":"shape","id":"sh/4zyhgr6l","slide":1,"name":"frontend-node-marker","bbox":[103,243,6,48]}
+{"kind":"textbox","id":"sh/p07i9w7q","slide":1,"name":"frontend-node-title","text":"frontend/","textPreview":"frontend/","textChars":9,"textLines":1,"bbox":[119,239,176,27]}
+{"kind":"textbox","id":"sh/u9wzaxo3","slide":1,"name":"frontend-node-description","text":"React dashboard","textPreview":"React dashboard","textChars":15,"textLines":1,"bbox":[119,267,176,30]}
+{"kind":"shape","id":"sh/fa5032po","slide":1,"name":"api-node","bbox":[91,346,216,92]}
+{"kind":"shape","id":"sh/jelwby5g","slide":1,"name":"api-node-marker","bbox":[103,360,6,64]}
+{"kind":"textbox","id":"sh/idsfid4v","slide":1,"name":"api-node-title","text":"api/","textPreview":"api/","textChars":4,"textLines":1,"bbox":[119,356,176,27]}
+{"kind":"textbox","id":"sh/5g3ed8nm","slide":1,"name":"api-node-description","text":"Typer CLI and FastAPI routers","textPreview":"Typer CLI and FastAPI routers","textChars":29,"textLines":1,"bbox":[119,384,176,46]}
+{"kind":"shape","id":"sh/kfuxk3m1","slide":1,"name":"worker-node","bbox":[91,507,216,76]}
+{"kind":"shape","id":"sh/7ilwfi5s","slide":1,"name":"worker-node-marker","bbox":[103,521,6,48]}
+{"kind":"textbox","id":"sh/6hcfmd47","slide":1,"name":"worker-node-title","text":"worker.py","textPreview":"worker.py","textChars":9,"textLines":1,"bbox":[119,517,176,27]}
+{"kind":"textbox","id":"sh/tk3ehsni","slide":1,"name":"worker-node-description","text":"Local job processor","textPreview":"Local job processor","textChars":19,"textLines":1,"bbox":[119,545,176,30]}
+{"kind":"shape","id":"sh/sjuxonmd","slide":1,"name":"bootstrap-node","bbox":[372,226,434,70]}
+{"kind":"shape","id":"sh/nm1w3e58","slide":1,"name":"bootstrap-node-marker","bbox":[384,240,6,42]}
+{"kind":"textbox","id":"sh/ml8vato3","slide":1,"name":"bootstrap-node-title","text":"bootstrap.py","textPreview":"bootstrap.py","textChars":12,"textLines":1,"bbox":[400,236,394,27]}
+{"kind":"textbox","id":"sh/cfmlovyp","slide":1,"name":"bootstrap-node-description","text":"Composition root","textPreview":"Composition root","textChars":16,"textLines":1,"bbox":[400,264,394,24]}
+{"kind":"shape","id":"sh/dgv2x0zu","slide":1,"name":"application-node","bbox":[372,354,184,96]}
+{"kind":"shape","id":"sh/qd43mlgj","slide":1,"name":"application-node-marker","bbox":[384,368,6,68]}
+{"kind":"textbox","id":"sh/redkvqh4","slide":1,"name":"application-node-title","text":"application/","textPreview":"application/","textChars":12,"textLines":1,"bbox":[400,364,144,27]}
+{"kind":"textbox","id":"sh/4bmlkbid","slide":1,"name":"application-node-description","text":"Use cases and normalization","textPreview":"Use cases and normalization","textChars":27,"textLines":1,"bbox":[400,392,144,50]}
+{"kind":"shape","id":"sh/pcv2tgzy","slide":1,"name":"domain-node","bbox":[604,342,202,126]}
+{"kind":"shape","id":"sh/i9k3il07","slide":1,"name":"domain-node-marker","bbox":[616,356,6,98]}
+{"kind":"textbox","id":"sh/3adkr6hs","slide":1,"name":"domain-node-title","text":"domain/","textPreview":"domain/","textChars":7,"textLines":1,"bbox":[632,352,162,27]}
+{"kind":"textbox","id":"sh/o76lwfyh","slide":1,"name":"domain-node-description","text":"Evidence models, policy, scoring, report schemas, jobs and ML","textPreview":"Evidence models, policy, scoring, report schemas, jobs and ML","textChars":61,"textLines":1,"bbox":[632,380,162,80]}
+{"kind":"shape","id":"sh/98fm5kz2","slide":1,"name":"ports-node","bbox":[604,521,202,82]}
+{"kind":"shape","id":"sh/lsrihcfe","slide":1,"name":"ports-node-marker","bbox":[616,535,6,54]}
+{"kind":"textbox","id":"sh/kriho7y9","slide":1,"name":"ports-node-title","text":"ports/","textPreview":"ports/","textChars":6,"textLines":1,"bbox":[632,531,162,27]}
+{"kind":"textbox","id":"sh/jq90f2xo","slide":1,"name":"ports-node-description","text":"Analyzer, storage, report and ML contracts","textPreview":"Analyzer, storage, report and ML contracts","textChars":42,"textLines":1,"bbox":[632,559,162,36]}
+{"kind":"shape","id":"sh/ypgzmxg3","slide":1,"name":"adapters-node","bbox":[875,226,310,142]}
+{"kind":"shape","id":"sh/tgrilcfq","slide":1,"name":"adapters-node-marker","bbox":[887,240,6,114]}
+{"kind":"textbox","id":"sh/8fihs7e5","slide":1,"name":"adapters-node-title","text":"adapters/","textPreview":"adapters/","textChars":9,"textLines":1,"bbox":[903,236,270,27]}
+{"kind":"textbox","id":"sh/7u90jmxk","slide":1,"name":"adapters-node-description","text":"Analyzer runners, filesystem persistence, reporting, PKI and reference data, advisory ML","textPreview":"Analyzer runners, filesystem persistence, reporting, PKI and reference data, advisory ML","textChars":88,"textLines":1,"bbox":[903,264,270,96]}
+{"kind":"shape","id":"sh/6t0zqhgz","slide":1,"name":"analyzers-node","bbox":[875,450,145,112]}
+{"kind":"shape","id":"sh/hkbipwfm","slide":1,"name":"analyzers-node-marker","bbox":[887,464,6,84]}
+{"kind":"textbox","id":"sh/gj21wreh","slide":1,"name":"analyzers-node-title","text":"Zeek + TShark","textPreview":"Zeek + TShark","textChars":13,"textLines":1,"bbox":[903,460,105,27]}
+{"kind":"textbox","id":"sh/epcfqtwj","slide":1,"name":"analyzers-node-description","text":"Offline Docker analyzers","textPreview":"Offline Docker analyzers","textChars":24,"textLines":1,"bbox":[903,488,105,66]}
+{"kind":"shape","id":"sh/zqlwjyd4","slide":1,"name":"filesystem-node","bbox":[1040,450,145,112]}
+{"kind":"shape","id":"sh/0rexsjep","slide":1,"name":"filesystem-node-marker","bbox":[1052,464,6,84]}
+{"kind":"textbox","id":"sh/1snelova","slide":1,"name":"filesystem-node-title","text":"Local filesystem","textPreview":"Local filesystem","textChars":16,"textLines":1,"bbox":[1068,460,105,27]}
+{"kind":"textbox","id":"sh/mtwfutwv","slide":1,"name":"filesystem-node-description","text":"Jobs, catalog, artifacts and ML history","textPreview":"Jobs, catalog, artifacts and ML history","textChars":39,"textLines":1,"bbox":[1068,488,105,66]}
+{"kind":"shape","id":"sh/nu5wnydg","slide":1,"bbox":[199,305,0,41]}
+{"kind":"shape","id":"sh/ovexw3u1","slide":1,"bbox":[199,438,0,69]}
+{"kind":"shape","id":"sh/9wnyp8v6","slide":1,"bbox":[307,392,65,10]}
+{"kind":"shape","id":"sh/axwfydcr","slide":1,"bbox":[307,402,65,143]}
+{"kind":"shape","id":"sh/by5gridc","slide":1,"bbox":[556,402,48,3]}
+{"kind":"shape","id":"sh/72pwfitk","slide":1,"bbox":[464,450,140,112]}
+{"kind":"shape","id":"sh/61gvmdsz","slide":1,"bbox":[806,297,69,265]}
+{"kind":"shape","id":"sh/to7ehsbq","slide":1,"bbox":[307,261,65,131]}
+{"kind":"shape","id":"sh/8nydona5","slide":1,"bbox":[464,296,125,58]}
+{"kind":"shape","id":"sh/jypwbyto","slide":1,"bbox":[806,261,69,36]}
+{"kind":"shape","id":"sh/yxwvits3","slide":1,"bbox":[947.5,368,82.5,82]}
+{"kind":"shape","id":"sh/l07ed8be","slide":1,"bbox":[1030,368,82.5,82]}
+{"kind":"shape","id":"sh/kzydk3at","slide":1,"name":"label-http-bg","bbox":[177,310,72,19]}
+{"kind":"textbox","id":"sh/bu5w7ytc","slide":1,"name":"label-http","text":"HTTP API","textPreview":"HTTP API","textChars":8,"textLines":1,"bbox":[177,310,72,19]}
+{"kind":"shape","id":"sh/atwvetsr","slide":1,"name":"label-spawns-bg","bbox":[176,461,66,19]}
+{"kind":"textbox","id":"sh/0zut8zqp","slide":1,"name":"label-spawns","text":"spawns","textPreview":"spawns","textChars":6,"textLines":1,"bbox":[176,461,66,19]}
+{"kind":"shape","id":"sh/103ah4ra","slide":1,"name":"label-api-calls-bg","bbox":[319,371,52,19]}
+{"kind":"textbox","id":"sh/exsb6p8j","slide":1,"name":"label-api-calls","text":"calls","textPreview":"calls","textChars":5,"textLines":1,"bbox":[319,371,52,19]}
+{"kind":"shape","id":"sh/zy1sfu94","slide":1,"name":"label-worker-calls-bg","bbox":[319,523,52,19]}
+{"kind":"textbox","id":"sh/o3utczql","slide":1,"name":"label-worker-calls","text":"calls","textPreview":"calls","textChars":5,"textLines":1,"bbox":[319,523,52,19]}
+{"kind":"shape","id":"sh/943ul4r6","slide":1,"name":"label-uses-bg","bbox":[558,382,42,19]}
+{"kind":"textbox","id":"sh/m1cbap8v","slide":1,"name":"label-uses","text":"uses","textPreview":"uses","textChars":4,"textLines":1,"bbox":[558,382,42,19]}
+{"kind":"shape","id":"sh/n2lcju9g","slide":1,"name":"label-depends-bg","bbox":[508,512,85,19]}
+{"kind":"textbox","id":"sh/47qt0fqh","slide":1,"name":"label-depends","text":"depends on","textPreview":"depends on","textChars":10,"textLines":1,"bbox":[508,512,85,19]}
+{"kind":"shape","id":"sh/p8ja9kr2","slide":1,"name":"label-implements-bg","bbox":[790,477,84,19]}
+{"kind":"textbox","id":"sh/90vylc3i","slide":1,"name":"label-implements","text":"implements","textPreview":"implements","textChars":10,"textLines":1,"bbox":[790,477,84,19]}
+{"kind":"shape","id":"sh/8zmhs72x","slide":1,"name":"label-wires-bg","bbox":[559,306,48,19]}
+{"kind":"textbox","id":"sh/7ydgj2lc","slide":1,"name":"label-wires","text":"wires","textPreview":"wires","textChars":5,"textLines":1,"bbox":[559,306,48,19]}
+{"kind":"shape","id":"sh/mx4zqhk7","slide":1,"name":"label-launches-bg","bbox":[895,407,70,19]}
+{"kind":"textbox","id":"sh/lwvyhc3m","slide":1,"name":"label-launches","text":"launches","textPreview":"launches","textChars":8,"textLines":1,"bbox":[895,407,70,19]}
+{"kind":"shape","id":"sh/kbmho721","slide":1,"name":"label-storage-bg","bbox":[1031,407,108,19]}
+{"kind":"textbox","id":"sh/zatgf2lg","slide":1,"name":"label-storage","text":"reads and writes","textPreview":"reads and writes","textChars":16,"textLines":1,"bbox":[1031,407,108,19]}
+{"kind":"notes","id":"nt/vvmar2","slide":1,"text":"Purpose: component and package view. Arrows show calls, dependencies, implementation, composition, or runtime lifecycle. They do not represent the capture-processing sequence.\nSources: docs/development/repository-map.md; docs/architecture/clean-architecture.md; docs/architecture/runtime-topology.md; docs/architecture/frontend-data-flow.md; src/securemail/bootstrap.py; src/securemail/worker.py.\nVerified against the repository on 2026-09-07."}
