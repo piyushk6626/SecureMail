@@ -18,11 +18,16 @@ async function open_catalog_case(page: Page, case_id = "dashboard_critical"): Pr
   await expect(page.getByRole("heading", { name: case_id })).toBeVisible();
 }
 
-test("preserves all four authority regions for a catalog case", async ({ page }) => {
+test("switches between all four authority workspaces for a catalog case", async ({ page }) => {
+  test.setTimeout(60_000);
   await open_catalog_case(page);
 
-  await expect(page.getByRole("region", { name: "Observed Facts" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Posture command deck" })).toBeVisible();
+  await page.getByRole("tab", { name: /Findings/ }).click();
   await expect(page.getByRole("region", { name: "Deterministic Conclusions" })).toBeVisible();
+  await page.getByRole("tab", { name: /Evidence/ }).click();
+  await expect(page.getByRole("region", { name: "Observed Facts" })).toBeVisible();
+  await page.getByRole("tab", { name: /Analysis context/ }).click();
   await expect(page.getByRole("region", { name: "Advisory / ML" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Analyst Notes" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Download HTML" })).toBeVisible();
@@ -51,6 +56,7 @@ test("filters portfolio summaries and selects a catalog case", async ({ page }) 
 
 test("drills from a finding to the exact evidence frame", async ({ page }) => {
   await open_catalog_case(page);
+  await page.getByRole("tab", { name: /Findings/ }).click();
   await page.getByRole("button", { name: /TLS 1\.0 negotiated/ }).click();
 
   const dialog = page.getByRole("dialog", { name: "TLS 1.0 negotiated" });
@@ -63,6 +69,7 @@ test("drills from a finding to the exact evidence frame", async ({ page }) => {
 
 test("renders hostile strings as visible inert forensic text", async ({ page }) => {
   await open_catalog_case(page, "dashboard_attention");
+  await page.getByRole("tab", { name: /Evidence/ }).click();
   const facts = page.getByRole("region", { name: "Observed Facts" });
 
   await expect(facts.getByText(/<script>alert\(1\)<\/script>/)).toBeVisible();
@@ -102,10 +109,10 @@ test("clears and switches cases without stale evidence", async ({ page }) => {
 
   await page.goto("/");
   await page.getByLabel("Select a case").selectOption("case-a");
-  await expect(page.getByText("Alpha-only finding")).toBeVisible();
+  await expect(page.getByText("Alpha-only finding", { exact: true }).first()).toBeVisible();
   await page.getByLabel("Select a case").selectOption("case-b");
   await expect(page.getByText("Alpha-only finding")).toHaveCount(0);
-  await expect(page.getByText("Bravo-only finding")).toBeVisible();
+  await expect(page.getByText("Bravo-only finding", { exact: true }).first()).toBeVisible();
   await page.getByRole("button", { name: "Clear case" }).click();
   await expect(page.getByTestId("no-case-selected")).toBeVisible();
   await expect(page.getByText("Bravo-only finding")).toHaveCount(0);

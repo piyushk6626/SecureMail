@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import stat
 from pathlib import Path
 
 import pytest
@@ -31,6 +32,19 @@ def test_claim_cancel_and_artifacts(tmp_path: Path) -> None:
     cancelled = store.request_cancel(job.run_id)
     assert cancelled.cancel_requested is True
     assert store.is_cancel_requested(job.run_id) is True
+
+
+def test_committed_capture_is_readable_by_sandbox_analyzer(tmp_path: Path) -> None:
+    store = FilesystemJobStore(tmp_path)
+    job = ingest_capture(
+        CaptureIntakeRequest(original_filename="mail.pcapng"),
+        iter([PCAPNG_MAGIC, b"\x00"]),
+        job_store=store,
+    )
+
+    mode = store.capture_path(job.run_id).stat().st_mode
+
+    assert mode & stat.S_IROTH
 
 
 def test_cancel_queued_job_is_terminal(tmp_path: Path) -> None:

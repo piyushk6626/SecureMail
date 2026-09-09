@@ -494,23 +494,39 @@ function PortfolioView({
   const [assessment, set_assessment] = useState("");
   const filtered_cases = useMemo(
     () =>
-      cases.filter((item) => {
-        if (assessment && item.assessment_state !== assessment) return false;
-        const haystack = `${case_label(item)} ${item.case_id}`.toLocaleLowerCase();
-        return haystack.includes(search.trim().toLocaleLowerCase());
-      }),
+      cases
+        .filter((item) => {
+          if (assessment && item.assessment_state !== assessment) return false;
+          const haystack = `${case_label(item)} ${item.case_id}`.toLocaleLowerCase();
+          return haystack.includes(search.trim().toLocaleLowerCase());
+        })
+        .sort(
+          (left, right) =>
+            (right.risk_score ?? -1) - (left.risk_score ?? -1) ||
+            ((right.unknown_count ?? 0) + (right.not_observable_count ?? 0)) -
+              ((left.unknown_count ?? 0) + (left.not_observable_count ?? 0)),
+        ),
     [assessment, cases, search],
+  );
+  const scored_cases = cases.filter((item) => item.risk_score !== null && item.risk_score !== undefined);
+  const average_risk = scored_cases.length > 0
+    ? Math.round(scored_cases.reduce((sum, item) => sum + (item.risk_score ?? 0), 0) / scored_cases.length)
+    : null;
+  const urgent_cases = cases.filter((item) => (item.risk_score ?? 0) >= 80).length;
+  const unresolved = cases.reduce(
+    (sum, item) => sum + (item.unknown_count ?? 0) + (item.not_observable_count ?? 0),
+    0,
   );
   return (
     <section aria-labelledby="portfolio-title">
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <p className="section-label">Portfolio comparison</p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight" id="portfolio-title">
-            Cases
+          <p className="section-label">Portfolio triage</p>
+          <h1 aria-label="Cases" className="mt-2 text-2xl font-semibold tracking-tight" id="portfolio-title">
+            Case portfolio
           </h1>
           <p className="mt-2 text-sm text-[var(--muted)]">
-            Compare published posture summaries without loading case evidence.
+            Highest-risk cases are ordered first. Open one to inspect its evidence and control failures.
           </p>
         </div>
         <div className="flex gap-2">
@@ -535,6 +551,12 @@ function PortfolioView({
           </select>
         </div>
       </div>
+      <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <PortfolioSummary label="Published cases" value={cases.length} />
+        <PortfolioSummary label="Immediate attention" tone="danger" value={urgent_cases} />
+        <PortfolioSummary label="Average risk" tone="warning" value={average_risk ?? "—"} />
+        <PortfolioSummary label="Unresolved checks" tone="unknown" value={unresolved} />
+      </div>
       {is_loading ? (
         <LoadingState />
       ) : filtered_cases.length === 0 ? (
@@ -542,7 +564,7 @@ function PortfolioView({
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filtered_cases.map((item) => (
-            <Card className="p-5" data-testid="portfolio-case" key={item.case_id}>
+            <Card className="portfolio-case-card p-5" data-testid="portfolio-case" key={item.case_id}>
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <h2 className="forensic-text truncate font-semibold">{render_forensic_text(case_label(item))}</h2>
@@ -562,14 +584,35 @@ function PortfolioView({
                   value={(item.unknown_count ?? 0) + (item.not_observable_count ?? 0)}
                 />
               </div>
-              <Button className="mt-5 w-full" onClick={() => on_select(item.case_id)} variant="secondary">
-                Open case
+              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[var(--surface-raised)]" aria-hidden="true">
+                <div
+                  className={`h-full rounded-full ${(item.risk_score ?? 0) >= 80 ? "bg-red-400" : (item.risk_score ?? 0) >= 50 ? "bg-amber-400" : "bg-emerald-400"}`}
+                  style={{ width: `${Math.max(0, Math.min(100, item.risk_score ?? 0))}%` }}
+                />
+              </div>
+              <Button aria-label="Open case" className="mt-5 w-full" onClick={() => on_select(item.case_id)} variant="secondary">
+                Open case intelligence
               </Button>
             </Card>
           ))}
         </div>
       )}
     </section>
+  );
+}
+
+function PortfolioSummary({ label, tone = "info", value }: { label: string; tone?: "info" | "danger" | "warning" | "unknown"; value: string | number }) {
+  const colors = {
+    info: "text-cyan-400",
+    danger: "text-red-400",
+    warning: "text-amber-400",
+    unknown: "text-violet-300",
+  };
+  return (
+    <Card className="p-4">
+      <p className="text-xs text-[var(--muted)]">{label}</p>
+      <p className={`mt-2 font-mono text-2xl font-semibold ${colors[tone]}`}>{value}</p>
+    </Card>
   );
 }
 
