@@ -2,7 +2,7 @@
 status: current
 audience: architect
 authoritative_for: classification of plan documents
-last_verified: 2026-09-06
+last_verified: 2026-09-09
 ---
 
 # Plans
@@ -11,10 +11,10 @@ last_verified: 2026-09-06
 design. It is **not** the live description of the running system. That lives in
 [`docs/README.md`](../docs/README.md).
 
-There is currently **no approved future implementation phase**. Ideas that
-appear in the 2026-09-02 technical design (PostgreSQL, Celery/RabbitMQ, OIDC,
-Kubernetes) are deferred unless a file appears under `proposals/` and is
-explicitly approved.
+Approved post-Step-11 UI work lives under [`proposals/`](proposals/README.md).
+Ideas that appear in the 2026-09-02 technical design (PostgreSQL,
+Celery/RabbitMQ, OIDC, Kubernetes) remain deferred unless a file appears under
+`proposals/` and is explicitly approved.
 
 ## Classification
 
@@ -26,7 +26,7 @@ explicitly approved.
 | [`history/technical-design-2026-09-02.md`](history/technical-design-2026-09-02.md) | historical | Broad design; includes unimplemented control-plane options |
 | [`history/project-scaffold-2026-09-03.md`](history/project-scaffold-2026-09-03.md) | historical | Pre-development layout and toolchain baseline |
 | [`history/exports/`](history/exports/README.md) | historical | Frozen HTML copies; Markdown is canonical |
-| [`proposals/`](proposals/README.md) | empty | Only approved or under-review future phases |
+| [`proposals/dashboard-navigation-simplification.md`](proposals/dashboard-navigation-simplification.md) | current | Dashboard routes, dark-only shell, no sidebar |
 
 ## Authority
 

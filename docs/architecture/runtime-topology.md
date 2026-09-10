@@ -2,7 +2,7 @@
 status: current
 audience: architect
 authoritative_for: process and container topology
-last_verified: 2026-09-06
+last_verified: 2026-09-09
 ---
 
 # Runtime topology
@@ -118,7 +118,8 @@ is set, capture routes return 503 and the catalog is empty. Layout details:
 ## Frontend serving
 
 After `npm --prefix frontend run build`, FastAPI mounts `frontend/dist` at `/`
-when that directory exists. During development Vite owns the UI and proxies
+when that directory exists and returns `index.html` for extensionless client
+routes (`/cases`, `/upload`). During development Vite owns the UI and proxies
 `/api`. Packet decoding never happens in the browser.
 
 ## Concurrency

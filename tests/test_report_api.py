@@ -154,14 +154,29 @@ def test_environment_root_and_static_mount_preserve_api_routes(
     static_dir = tmp_path / "dist"
     static_dir.mkdir()
     (static_dir / "index.html").write_text("<main>dashboard</main>", encoding="utf-8")
+    (static_dir / "asset.js").write_text("console.log(1);", encoding="utf-8")
     app = create_api(static_dir=static_dir)
     with TestClient(app) as client:
         health = client.get("/api/v1/health")
         frontend = client.get("/")
+        cases = client.get("/cases")
+        case_detail = client.get("/cases/dashboard_critical")
+        upload = client.get("/upload")
+        asset = client.get("/asset.js")
+        missing_asset = client.get("/missing.js")
     assert health.status_code == 200
     assert health.json() == {"status": "ok"}
     assert frontend.status_code == 200
     assert "dashboard" in frontend.text
+    assert cases.status_code == 200
+    assert "dashboard" in cases.text
+    assert case_detail.status_code == 200
+    assert "dashboard" in case_detail.text
+    assert upload.status_code == 200
+    assert "dashboard" in upload.text
+    assert asset.status_code == 200
+    assert asset.text == "console.log(1);"
+    assert missing_asset.status_code == 404
 
 
 def test_unconfigured_catalog_is_empty(monkeypatch: MonkeyPatch) -> None:

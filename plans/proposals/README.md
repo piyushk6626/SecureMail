@@ -1,15 +1,19 @@
 ---
 status: current
 audience: architect
-authoritative_for: future-phase proposal folder (currently empty)
-last_verified: 2026-09-06
+authoritative_for: future-phase proposal folder
+last_verified: 2026-09-09
 ---
 
 # Proposals
 
-This folder is reserved for **approved or under-review** post-Step-11 phases.
+This folder holds **approved or under-review** post-Step-11 phases.
 
-It is empty. Do not treat
+| File | Status |
+|---|---|
+| [Dashboard navigation simplification](dashboard-navigation-simplification.md) | approved / implemented with the dashboard routes |
+
+Do not treat
 [`../history/technical-design-2026-09-02.md`](../history/technical-design-2026-09-02.md)
 as an approved proposal.
 

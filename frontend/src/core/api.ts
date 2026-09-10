@@ -28,18 +28,6 @@ async function read_json(response: Response): Promise<unknown> {
   return response.json() as Promise<unknown>;
 }
 
-export async function get_health(input: { signal?: AbortSignal }): Promise<"ok"> {
-  const payload = await read_json(
-    await fetch(`${api_root}/health`, {
-      headers: { Accept: "application/json" },
-      signal: input.signal ?? null,
-    }),
-  );
-  if (!is_record(payload) || payload.status !== "ok")
-    throw new ApiError("The API health response is invalid.", 502);
-  return "ok";
-}
-
 export async function get_cases(input: { signal?: AbortSignal }): Promise<CaseCatalog> {
   const payload = await read_json(
     await fetch(`${api_root}/cases`, {

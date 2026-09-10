@@ -27,6 +27,7 @@
     "motion": "13.2.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "react-router": "7.9.4",
     "tailwind-merge": "3.3.1",
     "tailwindcss": "4.3.3"
   },
@@ -45,8 +46,8 @@
     "eslint-plugin-react-hooks": "6.0.0-rc.1",
     "eslint-plugin-react-refresh": "0.4.20",
     "globals": "16.3.0",
-    "json-schema-to-typescript": "15.0.4",
     "jsdom": "30.0.1",
+    "json-schema-to-typescript": "15.0.4",
     "shadcn": "4.21.0",
     "typescript": "5.9.2",
     "typescript-eslint": "8.42.0",

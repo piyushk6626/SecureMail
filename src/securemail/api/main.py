@@ -7,17 +7,33 @@ import subprocess
 import sys
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from fastapi import FastAPI, Request, Response
-from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import RequestResponseEndpoint
+from starlette.staticfiles import StaticFiles
+from starlette.types import Scope
 
 from securemail.api.dependencies import ApiDependencies
 from securemail.api.routers import analyses_router, reports_router
 
 _APP: FastAPI | None = None
+
+
+class SpaStaticFiles(StaticFiles):
+    """Serve the SPA index for extensionless client routes."""
+
+    async def get_response(self, path: str, scope: Scope) -> Response:
+        try:
+            return await super().get_response(path, scope)
+        except StarletteHTTPException as exc:
+            if exc.status_code != 404 or not self.html:
+                raise
+            if PurePosixPath(path).suffix:
+                raise
+            return await super().get_response("index.html", scope)
 
 
 @asynccontextmanager
@@ -87,7 +103,7 @@ def build_app(
         return response
 
     if static_dir is not None and static_dir.is_dir():
-        app.mount("/", StaticFiles(directory=static_dir, html=True), name="frontend")
+        app.mount("/", SpaStaticFiles(directory=static_dir, html=True), name="frontend")
     return app
 
 

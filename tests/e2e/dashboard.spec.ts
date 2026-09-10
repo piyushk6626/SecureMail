@@ -12,9 +12,7 @@ const golden_report = path.resolve(
 );
 
 async function open_catalog_case(page: Page, case_id = "dashboard_critical"): Promise<void> {
-  await page.goto("/");
-  await page.getByLabel("Select a case").waitFor();
-  await page.getByLabel("Select a case").selectOption(case_id);
+  await page.goto(`/cases/${case_id}`);
   await expect(page.getByRole("heading", { name: case_id })).toBeVisible();
 }
 
@@ -34,21 +32,15 @@ test("switches between all four authority workspaces for a catalog case", async 
   await expect(page.getByRole("link", { name: "Download PDF" })).toBeVisible();
 });
 
-test("filters portfolio summaries and selects a catalog case", async ({ page }) => {
-  await page.goto("/");
-  const selector = page.getByLabel("Select a case");
-  await selector.waitFor();
-  const options = await selector.locator("option").allTextContents();
-  expect(options.length).toBeGreaterThan(1);
-
-  await page.getByRole("button", { name: "Portfolio" }).click();
+test("filters catalog summaries and selects a catalog case", async ({ page }) => {
+  await page.goto("/cases");
   await expect(page.getByRole("heading", { name: "Cases" })).toBeVisible();
-  const cards = page.getByTestId("portfolio-case");
+  const cards = page.getByTestId("catalog-case");
   await expect(cards.first()).toBeVisible();
 
   const first_case = (await cards.first().locator("p.forensic-text").textContent())?.trim();
   expect(first_case).toBeTruthy();
-  await page.getByLabel("Filter portfolio").fill(first_case as string);
+  await page.getByLabel("Filter catalog").fill(first_case as string);
   await expect(cards).toHaveCount(1);
   await cards.first().getByRole("button", { name: "Open case" }).click();
   await expect(page.getByRole("heading", { name: first_case as string })).toBeVisible();
@@ -107,13 +99,14 @@ test("clears and switches cases without stale evidence", async ({ page }) => {
     await route.fulfill({ contentType: "application/json", body: JSON.stringify(report_b) });
   });
 
-  await page.goto("/");
-  await page.getByLabel("Select a case").selectOption("case-a");
+  await page.goto("/cases");
+  await page.getByTestId("catalog-case").filter({ hasText: "case-a" }).getByRole("button", { name: "Open case" }).click();
   await expect(page.getByText("Alpha-only finding", { exact: true }).first()).toBeVisible();
-  await page.getByLabel("Select a case").selectOption("case-b");
+  await page.getByRole("link", { name: "Back to catalog" }).click();
+  await page.getByTestId("catalog-case").filter({ hasText: "case-b" }).getByRole("button", { name: "Open case" }).click();
   await expect(page.getByText("Alpha-only finding")).toHaveCount(0);
   await expect(page.getByText("Bravo-only finding", { exact: true }).first()).toBeVisible();
-  await page.getByRole("button", { name: "Clear case" }).click();
+  await page.getByRole("link", { name: "Back to catalog" }).click();
   await expect(page.getByTestId("no-case-selected")).toBeVisible();
   await expect(page.getByText("Bravo-only finding")).toHaveCount(0);
 });
@@ -139,8 +132,8 @@ test("honors reduced motion and keeps charts accessible", async ({ page }) => {
 
 test("uploads a pcapng capture and can download reports", async ({ page }) => {
   test.setTimeout(180_000);
-  await page.goto("/");
-  await page.getByLabel("Select a case").waitFor();
+  await page.goto("/upload");
+  await page.getByLabel("Upload capture").waitFor();
   await page.locator('input[type="file"]').setInputFiles(empty_capture);
   await expect(page.getByRole("link", { name: "Download HTML" })).toBeVisible({ timeout: 120_000 });
   await expect(page.getByRole("link", { name: "Download PDF" })).toBeVisible();
@@ -155,26 +148,24 @@ test("keeps download actions keyboard-focusable", async ({ page }) => {
   await expect(html).toBeFocused();
 });
 
-test("opens navigation on a mobile viewport without leaking cases", async ({ page }) => {
+test("opens a catalog case on a mobile viewport without leaking cases", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  await page.goto("/cases");
   await expect(page.getByTestId("no-case-selected")).toBeVisible();
-  await page.getByRole("button", { name: "Open navigation" }).click();
-  await expect(page.getByLabel("Select a case")).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(page.getByLabel("Select a case")).toBeHidden();
-  await page.getByRole("button", { name: "Open navigation" }).click();
-  await page.getByLabel("Select a case").selectOption("dashboard_clear");
+  await page.getByTestId("catalog-case").filter({ hasText: "dashboard_clear" }).getByRole("button", { name: "Open case" }).click();
   await expect(page.getByRole("heading", { name: "dashboard_clear" })).toBeVisible();
-  await page.getByRole("button", { name: "Open navigation" }).click();
-  await page.getByRole("button", { name: "Clear case" }).click();
+  await page.getByRole("link", { name: "Back to catalog" }).click();
   await expect(page.getByTestId("no-case-selected")).toBeVisible();
 });
 
-test("supports a light theme without leaking a previous case", async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("button", { name: /Use (light|dark) theme/ }).click();
-  await open_catalog_case(page, "dashboard_clear");
-  await page.getByRole("button", { name: "Clear case" }).click();
-  await expect(page.getByTestId("no-case-selected")).toBeVisible();
+test("stays dark-only with a logo and without removed header controls", async ({ page }) => {
+  await page.goto("/cases");
+  await expect(page.getByRole("img", { name: "SecureMail" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Upload capture" })).toBeVisible();
+  await expect(page.getByText("API online")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Portfolio", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Case", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /theme/i })).toHaveCount(0);
+  const color_scheme = await page.locator(":root").evaluate((element) => getComputedStyle(element).colorScheme);
+  expect(color_scheme).toContain("dark");
 });

@@ -2,7 +2,7 @@
 status: current
 audience: user
 authoritative_for: first local dashboard startup
-last_verified: 2026-09-06
+last_verified: 2026-09-09
 ---
 
 # First dashboard run
@@ -30,9 +30,9 @@ npm --prefix frontend run dev
 
 Vite listens on `127.0.0.1:5173` and proxies `/api` to `127.0.0.1:8000`.
 
-Upload a `.pcap` / `.pcapng` from the UI. Polling uses
-`GET /api/v1/analyses/{run_id}`. When `status` is `completed`, JSON/HTML/PDF
-downloads are available.
+Upload a `.pcap` / `.pcapng` from `/upload`. Polling uses
+`GET /api/v1/analyses/{run_id}`. When `status` is `completed`, the UI opens
+the case view and JSON/HTML/PDF downloads are available.
 
 Until 14 local endpoint-windows exist, Advisory / ML shows
 `ADVISORY_INSUFFICIENT_HISTORY` rather than implying a clean baseline.

@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { make_report } from "./test/report_fixture";
@@ -17,13 +18,15 @@ afterEach(() => {
   localStorage.clear();
 });
 
-function render_app() {
+function render_app(path = "/cases") {
   const query_client = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 } },
   });
   return render(
     <QueryClientProvider client={query_client}>
-      <App />
+      <MemoryRouter initialEntries={[path]}>
+        <App />
+      </MemoryRouter>
     </QueryClientProvider>,
   );
 }
@@ -67,16 +70,21 @@ function assign_files(input: HTMLInputElement, file: File): void {
   fireEvent.change(input);
 }
 
+async function open_catalog_case(label: string, user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  const card = screen.getAllByTestId("catalog-case").find((node) => node.textContent.includes(label));
+  if (!card) throw new Error(`Missing catalog card: ${label}`);
+  await user.click(within(card).getByRole("button", { name: "Open case" }));
+}
+
 describe("capture upload", () => {
   it("rejects files that are not pcap captures", async () => {
     vi.spyOn(globalThis, "fetch").mockImplementation((request) => {
       const url = request_url(request);
-      if (url.endsWith("/health")) return Promise.resolve(json_response({ status: "ok" }));
       if (url.endsWith("/cases")) return Promise.resolve(json_response({ cases: [] }));
       return Promise.resolve(json_response({ detail: "unexpected" }, 500));
     });
-    render_app();
-    await screen.findByTestId("no-case-selected");
+    render_app("/upload");
+    expect(await screen.findByRole("heading", { name: "Upload a capture" })).toBeInTheDocument();
     assign_files(
       screen.getByLabelText("Upload capture"),
       new File(["{}"], "note.json", { type: "application/json" }),
@@ -88,7 +96,6 @@ describe("capture upload", () => {
     vi.spyOn(globalThis, "fetch").mockImplementation((request, init) => {
       const url = request_url(request);
       const method = request_method(request, init);
-      if (url.endsWith("/health")) return Promise.resolve(json_response({ status: "ok" }));
       if (url.endsWith("/cases")) return Promise.resolve(json_response({ cases: [] }));
       if (url.endsWith("/analyses") && method === "POST")
         return Promise.resolve(json_response(make_job(), 202));
@@ -106,7 +113,7 @@ describe("capture upload", () => {
         return Promise.resolve(json_response(make_report("mail-abcd1234")));
       return Promise.resolve(json_response({ detail: "unexpected" }, 500));
     });
-    render_app();
+    render_app("/upload");
     const bytes = new Uint8Array([0x0a, 0x0d, 0x0d, 0x0a, 0x00]);
     assign_files(
       screen.getByLabelText("Upload capture"),
@@ -145,27 +152,22 @@ describe("capture upload", () => {
     vi.spyOn(globalThis, "fetch").mockImplementation((request, init) => {
       const url = request_url(request);
       const method = request_method(request, init);
-      if (url.endsWith("/health")) return Promise.resolve(json_response({ status: "ok" }));
       if (url.endsWith("/cases"))
-        return Promise.resolve(
-          json_response({ cases: [{ case_id: "case-a", title: "Case Alpha" }] }),
-        );
-      if (url.includes("/cases/case-a/report"))
-        return Promise.resolve(json_response(make_report("case-a")));
+        return Promise.resolve(json_response({ cases: [{ case_id: "case-a", title: "Case Alpha" }] }));
+      if (url.includes("/cases/case-a/report")) return Promise.resolve(json_response(make_report("case-a")));
       if (url.endsWith("/analyses") && method === "POST") {
-        return Promise.resolve(
-          json_response(make_job({ status: "running", stage: "deterministic_analysis" }), 202),
-        );
+        return Promise.resolve(json_response(make_job({ status: "running", stage: "deterministic_analysis" }), 202));
       }
       if (url.endsWith("/analyses/r1"))
         return Promise.resolve(json_response(make_job({ status: "failed", error_message: "zeek failed" })));
       return Promise.resolve(json_response({ detail: "unexpected" }, 500));
     });
     const user = userEvent.setup();
-    render_app();
-    await screen.findByRole("option", { name: "Case Alpha" });
-    await user.selectOptions(screen.getByLabelText("Select a case"), "case-a");
+    render_app("/cases");
+    await screen.findByRole("heading", { name: "Case Alpha" });
+    await open_catalog_case("Case Alpha", user);
     expect(await screen.findByRole("heading", { name: "case-a" })).toBeInTheDocument();
+    await user.click(screen.getByRole("link", { name: "Upload capture" }));
     const bytes = new Uint8Array([0x0a, 0x0d, 0x0d, 0x0a, 0x00]);
     assign_files(
       screen.getByLabelText("Upload capture"),
@@ -182,40 +184,55 @@ describe("case isolation", () => {
     let resolve_case_b: ((response: Response) => void) | undefined;
     vi.spyOn(globalThis, "fetch").mockImplementation((request) => {
       const url = request_url(request);
-      if (url.endsWith("/health"))
-        return Promise.resolve(new Response(JSON.stringify({ status: "ok" }), { status: 200 }));
       if (url.endsWith("/cases"))
         return Promise.resolve(
-          new Response(
-            JSON.stringify({
-              cases: [
-                { case_id: "case-a", title: "Case Alpha" },
-                { case_id: "case-b", title: "Case Bravo" },
-              ],
-            }),
-            { status: 200 },
-          ),
+          json_response({
+            cases: [
+              { case_id: "case-a", title: "Case Alpha" },
+              { case_id: "case-b", title: "Case Bravo" },
+            ],
+          }),
         );
-      if (url.includes("case-a"))
-        return Promise.resolve(new Response(JSON.stringify(make_report("case-a")), { status: 200 }));
+      if (url.includes("/cases/case-a/report")) return Promise.resolve(json_response(make_report("case-a")));
       return new Promise<Response>((resolve) => {
         resolve_case_b = resolve;
       });
     });
     const user = userEvent.setup();
-    render_app();
+    render_app("/cases");
 
-    await screen.findByRole("option", { name: "Case Alpha" });
-    await user.selectOptions(screen.getByLabelText("Select a case"), "case-a");
+    await screen.findByRole("heading", { name: "Case Alpha" });
+    await open_catalog_case("Case Alpha", user);
     expect(await screen.findByRole("heading", { name: "case-a" })).toBeInTheDocument();
 
-    await user.selectOptions(screen.getByLabelText("Select a case"), "case-b");
+    await user.click(screen.getByRole("link", { name: "Back to catalog" }));
+    await waitFor(() => expect(screen.getByTestId("no-case-selected")).toBeInTheDocument());
     expect(screen.queryByRole("heading", { name: "case-a" })).not.toBeInTheDocument();
-    resolve_case_b?.(new Response(JSON.stringify(make_report("case-b")), { status: 200 }));
+
+    await open_catalog_case("Case Bravo", user);
+    expect(screen.queryByRole("heading", { name: "case-a" })).not.toBeInTheDocument();
+    resolve_case_b?.(json_response(make_report("case-b")));
     expect(await screen.findByRole("heading", { name: "case-b" })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Clear case" }));
+    await user.click(screen.getByRole("link", { name: "Back to catalog" }));
     await waitFor(() => expect(screen.getByTestId("no-case-selected")).toBeInTheDocument());
     expect(screen.queryByRole("heading", { name: "case-b" })).not.toBeInTheDocument();
+  });
+});
+
+describe("dashboard shell", () => {
+  it("renders the SecureMail logo and omits removed header controls", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation((request) => {
+      const url = request_url(request);
+      if (url.endsWith("/cases")) return Promise.resolve(json_response({ cases: [] }));
+      return Promise.resolve(json_response({ detail: "unexpected" }, 500));
+    });
+    render_app("/cases");
+    expect(await screen.findByRole("img", { name: "SecureMail" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Upload capture" })).toBeInTheDocument();
+    expect(screen.queryByText("API online")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Portfolio", exact: true })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Case", exact: true })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /theme/i })).not.toBeInTheDocument();
   });
 });

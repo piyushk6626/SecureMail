@@ -2,7 +2,7 @@
 status: current
 audience: user
 authoritative_for: dashboard analyst workflows and four-region case isolation
-last_verified: 2026-09-06
+last_verified: 2026-09-09
 ---
 
 # Dashboard workflows
@@ -29,17 +29,23 @@ tables: [API reference](../reference/api.md).
 Every report fetch names a case or analysis run explicitly. There is no
 implicit current/latest report.
 
-## No case selected
+## Routes
 
-The main pane shows **No case selected** (`data-testid="no-case-selected"`)
-until you pick a catalog case or upload a capture. Clearing a selection
-removes prior evidence from the view (React Query cache for case-report,
-analysis, and analysis-report is dropped). The empty state must not leak
-another case’s facts, findings, or notes.
+| Path | View |
+|---|---|
+| `/` | Redirects to `/cases` |
+| `/cases` | Catalog of published case summaries |
+| `/cases/:case_id` | Case detail (four labeled regions) |
+| `/upload` | Capture intake, progress, and terminal job errors |
 
-Portfolio view lists catalog summaries (risk, finding count, unknown +
-not-observable) without loading full evidence. Opening a case loads that
-case’s report only.
+The header shows the SecureMail logo (links to `/cases`) and **Upload
+capture**. There is no sidebar, no API health pill, and no light theme.
+
+The catalog lists summaries (risk, finding count, unknown + not-observable)
+without loading full evidence. Opening a case loads that case’s report only.
+**Back to catalog** returns to `/cases` and drops React Query caches for
+case-report, analysis, and analysis-report so another case cannot leak into
+the view (`data-testid="no-case-selected"` on the catalog page).
 
 ## Four labeled regions
 
@@ -62,11 +68,11 @@ HTML and PDF downloads appear after a run completes, and for catalog cases.
 
 ## Capture upload
 
-Primary intake is `.pcap` / `.pcapng`. Magic bytes must match the extension.
-The API streams the file to quarantine, hashes it, and enqueues a job. A
-dedicated worker (`python -m securemail.worker`) runs analyze, assembles a
-canonical report, scores advisory ML against local history, and publishes
-JSON/HTML/PDF.
+Open `/upload` (header **Upload capture**). Primary intake is `.pcap` /
+`.pcapng`. Magic bytes must match the extension. The API streams the file to
+quarantine, hashes it, and enqueues a job. A dedicated worker
+(`python -m securemail.worker`) runs analyze, assembles a canonical report,
+scores advisory ML against local history, and publishes JSON/HTML/PDF.
 
 The UI dropzone sends `policy_profile=ietf_current`. It does not expose a
 profile picker or `--expected-hostname`. Use curl for those form fields
@@ -94,24 +100,26 @@ Cancel is cooperative between stages. It does not kill a running Docker
 analyzer. Queued jobs become `cancelled` immediately. Terminal jobs return
 409.
 
-Failed and cancelled jobs show an empty state with the error message (max
-1000 characters) or a cancelled note. They do not display another case.
+When `status` is `completed`, the UI navigates to
+`/cases/{case_id}?run={run_id}` so HTML/PDF links use job artifact URLs.
+Failed and cancelled jobs stay on `/upload` with the error message (max 1000
+characters) or a cancelled note. They do not display another case.
 
 Until 14 (baseline) / 40 (Isolation Forest) endpoint-windows exist locally,
 Advisory / ML shows `ADVISORY_INSUFFICIENT_HISTORY` rather than implying that
 no anomaly was found.
 
-## Header health pill
+## Health endpoint
 
-“API online” means `GET /api/v1/health` returned `{"status":"ok"}`. That
-endpoint is **liveness only**. It does not check Docker, disk, the worker, or
-the catalog. A green pill with a stuck job or missing analyzer image is
-expected. See [monitoring and health](../operations/monitoring-and-health.md).
+`GET /api/v1/health` still returns `{"status":"ok"}` for process liveness. The
+dashboard does not display that probe. See
+[monitoring and health](../operations/monitoring-and-health.md).
 
 ## Production static UI
 
 After `make frontend-build`, FastAPI serves `frontend/dist` from the same
-Uvicorn process. Vite `npm --prefix frontend run dev` listens on
+Uvicorn process. Reloading `/cases`, `/cases/{case_id}`, or `/upload` returns
+the SPA `index.html`. Vite `npm --prefix frontend run dev` listens on
 `127.0.0.1:5173` and proxies `/api` to `VITE_API_TARGET`
 (default `http://127.0.0.1:8000`).
 
@@ -122,11 +130,14 @@ Uvicorn process. Vite `npm --prefix frontend run dev` listens on
 - [Generate reports](generate-reports.md)
 - [API reference](../reference/api.md)
 - [Job lifecycle](../operations/job-lifecycle.md)
-- [API reference](../reference/api.md)
+- [Dashboard navigation simplification](../../plans/proposals/dashboard-navigation-simplification.md)
 
 ## Implementation anchors
 
 - `frontend/src/App.tsx`
+- `frontend/src/pages/catalog_page.tsx`
+- `frontend/src/pages/case_page.tsx`
+- `frontend/src/pages/upload_page.tsx`
 - `frontend/src/components/case_view.tsx`
 - `src/securemail/api/main.py`
 - `src/securemail/application/analysis_workflow.py`
@@ -134,6 +145,7 @@ Uvicorn process. Vite `npm --prefix frontend run dev` listens on
 ## Test evidence
 
 - `tests/e2e/dashboard.spec.ts`
+- `frontend/src/App.test.tsx`
 - `tests/test_report_api.py`
 - `tests/test_analysis_api.py`
 - `tests/test_capture_acceptance.py`

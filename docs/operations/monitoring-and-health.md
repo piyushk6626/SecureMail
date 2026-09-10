@@ -2,7 +2,7 @@
 status: current
 audience: operator
 authoritative_for: health endpoint semantics and what is not monitored
-last_verified: 2026-09-06
+last_verified: 2026-09-09
 ---
 
 # Monitoring and health
@@ -11,8 +11,8 @@ last_verified: 2026-09-06
 **liveness only**. It does not check Docker, disk quota, the worker process,
 analyzer image digests, Pango, or catalog readability.
 
-The dashboard header pill “API online” is that same probe (30 s stale time).
-A green pill with failed jobs or a dead worker is expected.
+The dashboard does not display that probe. A 200 from `/api/v1/health` with
+failed jobs or a dead worker is still expected.
 
 FastAPI OpenAPI at `/docs` is also unauthenticated. Do not treat it as a
 health dashboard.

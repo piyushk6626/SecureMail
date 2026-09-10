@@ -22,7 +22,10 @@ export interface CaseCatalog {
   cases: CaseSummary[];
 }
 
-export type ViewMode = "portfolio" | "case";
+export function case_label(item: CaseSummary): string {
+  const title = item.title?.trim();
+  return title && title.length > 0 ? title : item.case_id;
+}
 
 export type AnalysisStatus =
   | "queued"

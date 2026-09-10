@@ -21,26 +21,6 @@
   --unknown: #9b8cff;
 }
 
-:root[data-theme="light"] {
-  color-scheme: light;
-  --background: #edf2f6;
-  --background-alpha: rgb(237 242 246 / 0.92);
-  --surface: #ffffff;
-  --surface-raised: #e7eef4;
-  --surface-soft: #f7f9fb;
-  --border: #cfdae3;
-  --border-strong: #9fb0bf;
-  --text: #101b26;
-  --text-soft: #364858;
-  --muted: #607284;
-  --accent: #0891b2;
-  --sidebar: #f7f9fb;
-  --danger: #d83c47;
-  --warning: #b47608;
-  --success: #07865d;
-  --unknown: #6754d8;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -170,13 +150,6 @@ code,
   mask-image: radial-gradient(circle at center, black, transparent 70%);
 }
 
-:root[data-theme="light"] .command-deck {
-  border-color: #b8ccd9;
-  background:
-    radial-gradient(circle at 50% 48%, rgb(8 145 178 / 0.13), transparent 22rem),
-    linear-gradient(155deg, #f8fbfd, #eaf2f6 60%, #f6f9fb);
-}
-
 .briefing-panel,
 .attention-queue {
   position: relative;
@@ -187,11 +160,6 @@ code,
   background: rgb(8 14 22 / 0.74);
   padding: 1.15rem;
   backdrop-filter: blur(10px);
-}
-
-:root[data-theme="light"] .briefing-panel,
-:root[data-theme="light"] .attention-queue {
-  background: rgb(255 255 255 / 0.72);
 }
 
 .briefing-panel {

@@ -2,7 +2,7 @@
 status: current
 audience: architect
 authoritative_for: dashboard query and selector data flow
-last_verified: 2026-09-06
+last_verified: 2026-09-09
 ---
 
 # Frontend data flow
@@ -12,13 +12,15 @@ The dashboard is a React 19 + Vite 8 SPA (`frontend/`). It consumes
 browser. The UI is **not** read-only: it uploads PCAP/PCAPNG, cancels in-flight
 jobs, and offers HTML/PDF downloads.
 
-Node 22 is pinned in `frontend/.nvmrc`. Stack: TanStack Query, TanStack Table,
-ECharts, Tailwind, Motion, Vitest, Playwright. Routes: [API
-reference](../reference/api.md).
+Node 22 is pinned in `frontend/.nvmrc`. Stack: React Router, TanStack Query,
+TanStack Table, ECharts, Tailwind, Motion, Vitest, Playwright. Routes: [API
+reference](../reference/api.md). UI routes:
+[dashboard workflows](../user-guide/dashboard-workflows.md).
 
 ```mermaid
 flowchart TB
   ui[AppTsx]
+  router[reactRouter]
   query[tanstackQuery]
   api[apiV1]
   catalog[caseReport]
@@ -27,7 +29,8 @@ flowchart TB
   selectors[selectorsTs]
   resolver[evidenceResolverTs]
   regions[fourRegions]
-  ui --> query
+  ui --> router
+  router --> query
   query --> api
   api --> catalog
   api --> job
@@ -41,45 +44,49 @@ flowchart TB
 
 ## Selection and isolation
 
-[`App.tsx`](../../frontend/src/App.tsx) keeps:
+[`App.tsx`](../../frontend/src/App.tsx) is a dark-only shell: logo → `/cases`,
+**Upload capture** → `/upload`. Client routes:
 
-- `selected_case_id` — catalog case, or the case id after a completed upload
-- `active_run` — in-flight or just-finished analysis job
-- `view_mode` — `portfolio` | `case`
+| Path | Owner |
+|---|---|
+| `/cases` | catalog summaries only |
+| `/cases/:case_id` | case report; optional `?run=` for job artifacts |
+| `/upload` | capture intake and job polling |
 
 Every report fetch names a case or run explicitly. There is no implicit
-current/latest report. **Clear case** nulls selection, drops the active run,
-and `removeQueries` for `case-report`, `analysis`, and `analysis-report` so
+current/latest report. **Back to catalog** navigates to `/cases` and
+`removeQueries` for `case-report`, `analysis`, and `analysis-report` so
 another case cannot leak into the view. Playwright covers this in
 `tests/e2e/dashboard.spec.ts`.
 
-No-case-selected is an empty state (`data-testid="no-case-selected"`), not
-another case’s evidence.
+The catalog page is the no-case-selected view
+(`data-testid="no-case-selected"`). It must not render another case’s
+evidence.
 
 ## TanStack Query keys
 
 | Key | Source | Notes |
 |---|---|---|
-| `["health"]` | `GET /api/v1/health` | staleTime 30s |
 | `["cases"]` | `GET /api/v1/cases` | catalog summaries only |
-| `["analysis", run_id]` | `GET /api/v1/analyses/{run_id}` | enabled while queued/running; refetch every 1s |
-| `["analysis-report", run_id]` | `GET /api/v1/analyses/{run_id}/report` | enabled when status is `completed` |
-| `["case-report", case_id]` | `GET /api/v1/cases/{case_id}/report` | enabled when a case is selected **and** no completed run is showing |
+| `["analysis", run_id]` | `GET /api/v1/analyses/{run_id}` | enabled on `/upload` while queued/running; refetch every 1s |
+| `["analysis-report", run_id]` | `GET /api/v1/analyses/{run_id}/report` | enabled on `/cases/:id?run=` |
+| `["case-report", case_id]` | `GET /api/v1/cases/{case_id}/report` | enabled on `/cases/:id` when `run` is absent |
 
 Visible report: `analysis_report_query.data ?? report_query.data ?? null`.
-While a run is in progress, the case view is replaced by a stage stepper and
-Cancel.
+While a run is in progress, `/upload` shows a stage stepper and Cancel. On
+`completed`, the upload page navigates to the case detail.
 
 Vite proxies `/api` to `VITE_API_TARGET` (default `http://127.0.0.1:8000`).
-After `npm --prefix frontend run build`, FastAPI serves `frontend/dist`.
+After `npm --prefix frontend run build`, FastAPI serves `frontend/dist` and
+returns `index.html` for extensionless client routes.
 
 ## Upload and cancel
 
 [`create_analysis`](../../frontend/src/core/api.ts) posts multipart `file` plus
 `policy_profile` (default `ietf_current`). Filename must end in `.pcap` or
-`.pcapng`. On success the UI stores the job and polls. Cancel posts
+`.pcapng`. On success the upload page stores the job and polls. Cancel posts
 `/analyses/{run_id}/cancel`. HTML/PDF links use either job artifact URLs or
-catalog render URLs depending on whether `run_id` is set
+catalog render URLs depending on whether `run` is set
 ([`case_view.tsx`](../../frontend/src/components/case_view.tsx)).
 
 ## Four labeled regions
@@ -96,7 +103,7 @@ Hostile strings go through `render_forensic_text` (C0/C1 and bidi made
 visible). HTML is not interpreted. Playwright asserts the four `aria` regions,
 hostile banners, and HTML/PDF links.
 
-Portfolio view lists catalog **summaries** (risk, finding count, unknown
+The catalog lists catalog **summaries** (risk, finding count, unknown
 counts) without loading full evidence until Open case.
 
 ## Selectors do not recompute findings
@@ -138,16 +145,21 @@ than inventing a value.
 - [Evidence and report contracts](evidence-and-report-contracts.md)
 - [Worker lifecycle](worker-lifecycle.md)
 - [API reference](../reference/api.md)
+- [Dashboard navigation simplification](../../plans/proposals/dashboard-navigation-simplification.md)
 
 ## Implementation anchors
 
 - `frontend/src/App.tsx`
+- `frontend/src/pages/catalog_page.tsx`
+- `frontend/src/pages/case_page.tsx`
+- `frontend/src/pages/upload_page.tsx`
 - `frontend/src/core/api.ts`
 - `frontend/src/core/selectors.ts`
 - `frontend/src/core/evidence_resolver.ts`
 - `frontend/src/components/case_view.tsx`
 - `frontend/src/components/finding_details.tsx`
 - `frontend/vite.config.ts`
+- `src/securemail/api/main.py`
 
 ## Test evidence
 
@@ -156,3 +168,4 @@ than inventing a value.
 - `frontend/src/core/forensic_text.test.ts`
 - `frontend/src/App.test.tsx`
 - `tests/e2e/dashboard.spec.ts`
+- `tests/test_report_api.py`

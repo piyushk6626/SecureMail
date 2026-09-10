@@ -138,6 +138,18 @@ export function Sheet({
   );
 }
 
+export function LoadingState() {
+  return (
+    <div aria-label="Loading case" className="space-y-4">
+      <div className="h-28 animate-pulse rounded-xl bg-[var(--surface)]" />
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="h-64 animate-pulse rounded-xl bg-[var(--surface)]" />
+        <div className="h-64 animate-pulse rounded-xl bg-[var(--surface)]" />
+      </div>
+    </div>
+  );
+}
+
 export function EmptyState({
   title,
   description,

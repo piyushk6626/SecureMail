@@ -2,7 +2,7 @@
 status: current
 audience: contributor
 authoritative_for: dashboard frontend toolchain and type generation
-last_verified: 2026-09-06
+last_verified: 2026-09-09
 ---
 
 # Frontend development
@@ -43,7 +43,8 @@ Do not hand-edit `frontend/src/types/canonical_report.generated.ts`.
 
 | Path | Role |
 |---|---|
-| `src/App.tsx` | Case list, four labeled regions |
+| `src/App.tsx` | Dark-only shell, logo, client routes |
+| `src/pages/` | Catalog, case detail, upload |
 | `src/core/api.ts` | Fetch wrappers |
 | `src/core/selectors.ts` | View models over generated types |
 | `src/core/evidence_resolver.ts` | Resolve `EvidenceReference` against the report |
@@ -81,7 +82,7 @@ If a root is set and `SECUREMAIL_START_WORKER` is omitted, the worker
 **starts**.
 
 Playwright e2e copies dashboard JSON into `out/e2e-data`, starts Uvicorn on
-port 8011 with `SECUREMAIL_ANALYSIS_STUB=1`, and Vite with
+port 8011 with `SECUREMAIL_ANALYSIS_STUB=1`, and Vite on `127.0.0.1:5174` with
 `VITE_API_TARGET=http://127.0.0.1:8011`.
 
 On Apple Silicon the e2e script may set `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE` to
