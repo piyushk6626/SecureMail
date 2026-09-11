@@ -2,7 +2,7 @@
 status: current
 audience: user
 authoritative_for: Implemented capabilities after Steps 0–11
-last_verified: 2026-09-06
+last_verified: 2026-09-11
 ---
 
 # Current capabilities
@@ -41,10 +41,17 @@ dashboard catalog fixtures, and the ML cohort.
 
 ## Dashboard
 
-Read-only FastAPI + React over the same canonical JSON. Browser-local preview
-or a bounded filesystem catalog. PCAP/PCAPNG upload on a single host with an
-out-of-process worker. Four labeled regions: observed facts, deterministic
-conclusions, advisory/ML, analyst notes.
+FastAPI + React workbench over the same canonical JSON. Browser-local preview
+or a bounded filesystem catalog; PCAP/PCAPNG upload on a single host with an
+out-of-process worker. Every case starts with assessment trust, coverage,
+limitations, and provenance before the endpoint-first finding tree. The score
+is labelled **Highest endpoint priority**, never overall system health.
+Coverage is a zero-filled protocol × category matrix with a canonical
+policy-check ledger. Finding detail exposes all six score addends,
+occurrences, qualified/derived evidence references, frame context, and same-UID
+lineage. Session, TLS-handshake, and certificate review stay in separate
+observed-fact views. Four labelled regions remain: observed facts,
+deterministic conclusions, advisory/ML, and analyst conclusions.
 
 HTTP routes: [API](../reference/api.md).
 

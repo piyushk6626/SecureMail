@@ -20,7 +20,6 @@ import {
 } from "../core/selectors";
 import { render_forensic_text } from "../core/forensic_text";
 import { Badge, Button, Card, EmptyState, Input } from "./ui";
-import { FindingDetails } from "./finding_details";
 
 const evidence_states: EvidenceState[] = [
   "observed",
@@ -79,7 +78,13 @@ function SelectFilter({
   );
 }
 
-export function FindingsTable({ report }: { report: CanonicalReport }) {
+export function FindingsTable({
+  report,
+  on_select,
+}: {
+  report: CanonicalReport;
+  on_select: (finding: FindingRow) => void;
+}) {
   const [filters, set_filters] = useState<FindingFilters>({
     search: "",
     severities: [],
@@ -87,7 +92,6 @@ export function FindingsTable({ report }: { report: CanonicalReport }) {
     evidence_states: [],
   });
   const [sorting, set_sorting] = useState<SortingState>([{ id: "score", desc: true }]);
-  const [selected_finding, set_selected_finding] = useState<FindingRow | null>(null);
   const rows = useMemo(
     () => filter_findings({ rows: select_findings(report), filters }),
     [filters, report],
@@ -107,7 +111,7 @@ export function FindingsTable({ report }: { report: CanonicalReport }) {
         cell: ({ row }) => (
           <button
             className="text-left font-medium text-[var(--text)] hover:text-cyan-400 focus-visible:outline-2 focus-visible:outline-cyan-400"
-            onClick={() => set_selected_finding(row.original)}
+            onClick={() => on_select(row.original)}
             type="button"
           >
             <span className="block">{render_forensic_text(row.original.title)}</span>
@@ -147,7 +151,7 @@ export function FindingsTable({ report }: { report: CanonicalReport }) {
         cell: ({ getValue }) => <span className="font-mono font-semibold">{String(getValue())}</span>,
       }),
     ]),
-    [],
+    [on_select],
   );
   const table = useTable({
     features: finding_features,
@@ -291,11 +295,6 @@ export function FindingsTable({ report }: { report: CanonicalReport }) {
           </>
         )}
       </Card>
-      <FindingDetails
-        finding={selected_finding}
-        on_close={() => set_selected_finding(null)}
-        report={report}
-      />
     </>
   );
 }

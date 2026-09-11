@@ -12,8 +12,16 @@ export interface CaseSummary {
   generated_at?: string | null;
   risk_score?: number | null;
   finding_count?: number;
+  severity_counts?: {
+    high: number;
+    medium: number;
+    low: number;
+    informational: number;
+  };
   unknown_count?: number;
   not_observable_count?: number;
+  advisory_present?: boolean;
+  analyst_conclusions_present?: boolean;
   assessment_state?: "complete" | "limited" | "none";
   protocols?: string[];
 }
@@ -64,7 +72,11 @@ export function normalize_case_catalog(payload: unknown): CaseCatalog {
 }
 
 function is_case_summary(value: unknown): value is CaseSummary {
-  return is_record(value) && typeof value.case_id === "string";
+  return (
+    is_record(value) &&
+    typeof value.case_id === "string" &&
+    (value.risk_score === undefined || value.risk_score === null || typeof value.risk_score === "number")
+  );
 }
 
 export function is_record(value: unknown): value is Record<string, unknown> {

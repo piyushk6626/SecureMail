@@ -2,7 +2,7 @@
 status: current
 audience: architect
 authoritative_for: classification of plan documents
-last_verified: 2026-09-09
+last_verified: 2026-09-11
 ---
 
 # Plans
@@ -27,6 +27,7 @@ Celery/RabbitMQ, OIDC, Kubernetes) remain deferred unless a file appears under
 | [`history/project-scaffold-2026-09-03.md`](history/project-scaffold-2026-09-03.md) | historical | Pre-development layout and toolchain baseline |
 | [`history/exports/`](history/exports/README.md) | historical | Frozen HTML copies; Markdown is canonical |
 | [`proposals/dashboard-navigation-simplification.md`](proposals/dashboard-navigation-simplification.md) | current | Dashboard routes, dark-only shell, no sidebar |
+| [`proposals/analyst-dashboard-implementation.md`](proposals/analyst-dashboard-implementation.md) | current | Analyst-first dashboard implementation contract based on `analyzer.md` |
 
 ## Authority
 

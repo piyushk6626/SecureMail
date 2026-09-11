@@ -2,10 +2,6 @@ import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-const empty_capture = path.resolve(
-  process.cwd(),
-  "../tests/fixtures/empty/capture.pcapng",
-);
 const golden_report = path.resolve(
   process.cwd(),
   "../tests/fixtures/reports/golden_report.json",
@@ -20,14 +16,15 @@ test("switches between all four authority workspaces for a catalog case", async 
   test.setTimeout(60_000);
   await open_catalog_case(page);
 
-  await expect(page.getByRole("region", { name: "Posture command deck" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Assessment trust" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Endpoint-first risk tree" })).toBeVisible();
   await page.getByRole("tab", { name: /Findings/ }).click();
   await expect(page.getByRole("region", { name: "Deterministic Conclusions" })).toBeVisible();
   await page.getByRole("tab", { name: /Evidence/ }).click();
   await expect(page.getByRole("region", { name: "Observed Facts" })).toBeVisible();
   await page.getByRole("tab", { name: /Analysis context/ }).click();
   await expect(page.getByRole("region", { name: "Advisory / ML" })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Analyst Notes" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Analyst Conclusions" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Download HTML" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Download PDF" })).toBeVisible();
 });
@@ -49,7 +46,7 @@ test("filters catalog summaries and selects a catalog case", async ({ page }) =>
 test("drills from a finding to the exact evidence frame", async ({ page }) => {
   await open_catalog_case(page);
   await page.getByRole("tab", { name: /Findings/ }).click();
-  await page.getByRole("button", { name: /TLS 1\.0 negotiated/ }).click();
+  await page.locator(".risk-leaf").filter({ hasText: "TLS 1.0 negotiated" }).click();
 
   const dialog = page.getByRole("dialog", { name: "TLS 1.0 negotiated" });
   await expect(dialog).toBeVisible();
@@ -111,16 +108,14 @@ test("clears and switches cases without stale evidence", async ({ page }) => {
   await expect(page.getByText("Bravo-only finding")).toHaveCount(0);
 });
 
-test("honors reduced motion and keeps charts accessible", async ({ page }) => {
+test("honors reduced motion and keeps coverage accessible", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "dark" });
   await open_catalog_case(page);
 
-  const severity_chart = page.getByTestId("severity-chart");
-  const coverage_chart = page.getByTestId("coverage-chart");
-  await expect(severity_chart).toHaveAttribute("role", "img");
-  await expect(severity_chart).toHaveAttribute("aria-label", /chart/i);
-  await expect(coverage_chart).toHaveAttribute("role", "img");
-  await expect(coverage_chart).toHaveAttribute("aria-label", /chart/i);
+  const coverage = page.getByRole("region", { name: "Coverage matrix" });
+  await expect(coverage).toBeVisible();
+  await expect(coverage.getByRole("img", { name: /Coverage donut/ })).toBeVisible();
+  await expect(coverage.getByRole("button", { name: /smtp transport/ })).toBeVisible();
   const motion_duration = await page.locator("main").evaluate((element) => {
     const probe = element.querySelector("div");
     return probe ? getComputedStyle(probe).animationDuration : "";
@@ -134,7 +129,11 @@ test("uploads a pcapng capture and can download reports", async ({ page }) => {
   test.setTimeout(180_000);
   await page.goto("/upload");
   await page.getByLabel("Upload capture").waitFor();
-  await page.locator('input[type="file"]').setInputFiles(empty_capture);
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "empty.pcapng",
+    mimeType: "application/octet-stream",
+    buffer: Buffer.from([0x0a, 0x0d, 0x0d, 0x0a, 0x1a, 0x2b, 0x3c, 0x4d]),
+  });
   await expect(page.getByRole("link", { name: "Download HTML" })).toBeVisible({ timeout: 120_000 });
   await expect(page.getByRole("link", { name: "Download PDF" })).toBeVisible();
   const html = page.getByRole("link", { name: "Download HTML" });
@@ -146,6 +145,12 @@ test("keeps download actions keyboard-focusable", async ({ page }) => {
   const html = page.getByRole("link", { name: "Download HTML" });
   await html.focus();
   await expect(html).toBeFocused();
+  const overview = page.getByRole("tab", { name: "Overview" });
+  await overview.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(page.getByRole("tab", { name: /Findings/ })).toHaveAttribute("aria-selected", "true");
+  await page.keyboard.press("End");
+  await expect(page.getByRole("tab", { name: /Analysis context/ })).toHaveAttribute("aria-selected", "true");
 });
 
 test("opens a catalog case on a mobile viewport without leaking cases", async ({ page }) => {

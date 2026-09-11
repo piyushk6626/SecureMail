@@ -1,0 +1,20 @@
+{
+  "artifacts": {
+    "html": false,
+    "json": false,
+    "pdf": false
+  },
+  "cancel_requested": false,
+  "capture_format": "pcapng",
+  "capture_sha256": "7c6899ce6ec08501ee75aba89654ddbcb44880a2c010e832d78d124da2bf60fd",
+  "case_id": "securemail_ml_topology_1000flows-7c6899ce",
+  "created_at": "2026-09-11T12:45:53Z",
+  "error_message": null,
+  "expected_hostname": null,
+  "original_filename": "securemail_ml_topology_1000flows.pcapng",
+  "policy_profile": "ietf_current",
+  "run_id": "r366ed3655b5adf42",
+  "stage": "intake",
+  "status": "queued",
+  "updated_at": "2026-09-11T12:45:53Z"
+}

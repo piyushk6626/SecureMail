@@ -2,7 +2,7 @@
 status: current
 audience: user
 authoritative_for: dashboard analyst workflows and four-region case isolation
-last_verified: 2026-09-09
+last_verified: 2026-09-11
 ---
 
 # Dashboard workflows
@@ -41,28 +41,55 @@ implicit current/latest report.
 The header shows the SecureMail logo (links to `/cases`) and **Upload
 capture**. There is no sidebar, no API health pill, and no light theme.
 
-The catalog lists summaries (risk, finding count, unknown + not-observable)
-without loading full evidence. Opening a case loads that case’s report only.
+The catalog lists summaries without loading full evidence: generated time,
+assessment state, **Highest endpoint priority**, finding count, four severity
+counts, separate unknown/not-observable counts, and advisory presence. A null
+priority is **Not proven**, not a zero or healthy result. Cases are ordered by
+scored priority, unresolved count, generated time, then case ID. Opening a
+case loads that case’s report only.
 **Back to catalog** returns to `/cases` and drops React Query caches for
 case-report, analysis, and analysis-report so another case cannot leak into
 the view (`data-testid="no-case-selected"` on the catalog page).
 
-## Four labeled regions
+## Assessment trust and four labeled regions
+
+Every case subview starts with **Assessment trust**. It shows the canonical
+assessment state, **Highest endpoint priority (0–100)** or **Not proven**, the
+four coverage outcomes, capture limitations, stage errors, and short/full run
+provenance. A limited/none assessment or an evidence limitation opens the
+limitations panel. **Acknowledge limits and continue** only changes the local
+view; it does not turn unknown evidence into a pass.
+
+The overview then shows an endpoint-first action tree and a 4 × 4 coverage
+matrix. The matrix has SMTP, IMAP, POP3, and unclassified rows with transport,
+mail-protocol, TLS-handshake, and certificate columns. Select a cell to see
+the exact canonical policy checks behind it. Passed checks appear there; they
+are not findings.
 
 The case view keeps these separate:
 
-1. **Observed Facts** — flow / session / handshake / certificate counts,
-   certificate validity/identity tallies, frame-linked event text.
-2. **Deterministic Conclusions** — scored findings table (search, severity,
-   evidence-state filters). Unknown/incomplete/indeterminate/not-observable
-   stay labeled.
+1. **Observed Facts** — flow, session, handshake, and certificate records;
+   selected STARTTLS/STLS timeline; frame-linked protocol and TLS messages.
+   A port hint is not protocol proof; uncorrelated implicit TLS stays
+   indeterminate.
+2. **Deterministic Conclusions** — endpoint-first scored findings with
+   remediation/rule/protocol grouping, searchable filters, a six-addend score
+   explanation, occurrences, and evidence/frame lineage. Unknown,
+   incomplete, indeterminate, and not-observable states stay labelled.
 3. **Advisory / ML** — shadow-mode items. Until 14 local endpoint-windows
-   exist, expect `ADVISORY_INSUFFICIENT_HISTORY`. ML never changes findings.
-4. **Analyst Notes** — read-only notes from the canonical report. Worker
+   exist, expect `ADVISORY_INSUFFICIENT_HISTORY`. Advisory never changes
+   deterministic findings.
+4. **Analyst Conclusions** — read-only notes from the canonical report. Worker
    assembly publishes an empty section in this build.
 
 Hostile strings render as forensic text, with control and bidirectional
 characters made visible.
+
+Certificate path, SAN identity, capture-time validity, analysis-time validity,
+and revocation are separate facts. Revocation is normally **unknown** in the
+offline workflow; it is never shown as “not revoked.” A TLS 1.3 certificate
+that cannot be observed is an unresolved visibility limit, not a healthy empty
+certificate list.
 
 HTML and PDF downloads appear after a run completes, and for catalog cases.
 

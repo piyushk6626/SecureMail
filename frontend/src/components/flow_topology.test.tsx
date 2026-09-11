@@ -4,7 +4,7 @@ import { make_report } from "../test/report_fixture";
 import { FlowTopology } from "./flow_topology";
 
 describe("FlowTopology", () => {
-  it("highlights the graph path for the hovered list entry", () => {
+  it("selects a canonical flow record without synthesizing a topology health state", () => {
     const report = make_report();
     const first_flow = report.evidence.flows?.[0];
     if (!first_flow) throw new Error("fixture requires one flow");
@@ -20,9 +20,14 @@ describe("FlowTopology", () => {
 
     render(<FlowTopology report={report} />);
     const second_flow = screen.getByRole("button", { name: /Flow 2:/ });
-    fireEvent.pointerEnter(second_flow);
+    fireEvent.click(second_flow);
 
     expect(second_flow).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("img", { name: /198\.51\.100\.10:49152.*203\.0\.113\.25:993/ })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Selected flow evidence" })).toHaveTextContent(
+      "198.51.100.10:49152",
+    );
+    expect(screen.getByRole("region", { name: "Selected flow evidence" })).toHaveTextContent(
+      "203.0.113.25:993",
+    );
   });
 });

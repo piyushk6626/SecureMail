@@ -2,7 +2,7 @@
 status: current
 audience: operator
 authoritative_for: live known limitations (not deferred future work)
-last_verified: 2026-09-06
+last_verified: 2026-09-11
 ---
 
 # Known limitations
@@ -45,7 +45,6 @@ They are not [deferred scope](deferred-scope.md) and not
 
 | Limitation | Detail |
 |---|---|
-| Evidence resolver path mismatch | Engine `field_path` values are qualified (`handshake.version.selected`). The UI resolver walks paths relative to the record (`version.selected`). Live findings can resolve as `dangling_field`. Vitest fixtures use the relative form. |
 | `AdvisoryItem` drops detector metadata | Only `code` and `reason` are stored. Detector name, endpoint, score, and contributions are discarded. |
 | Analyst notes | Schema exists; the live UI does not persist notes. |
 | Isolation Forest silence | Needs 40 local windows; baseline needs 14. |

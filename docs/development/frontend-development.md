@@ -2,7 +2,7 @@
 status: current
 audience: contributor
 authoritative_for: dashboard frontend toolchain and type generation
-last_verified: 2026-09-09
+last_verified: 2026-09-11
 ---
 
 # Frontend development
@@ -53,11 +53,11 @@ Do not hand-edit `frontend/src/types/canonical_report.generated.ts`.
 | `src/components/findings_table.tsx` | Prioritized findings |
 | `src/components/finding_details.tsx` | Evidence links |
 
-**Known limitation:** the resolver walks `field_path` relative to the already
-selected record. Engine references use qualified paths such as
-`handshake.version.selected`. Vitest fixtures use `version.selected`. Live
-findings can show as `dangling_field`. See
-[known limitations](../status/known-limitations.md).
+The resolver accepts both relative and matching target-qualified paths (for
+example `version.selected` and `handshake.version.selected`) and the four
+documented presentation-only `derived.*` paths. It never evaluates policy in
+the browser. Unknown paths still display a raw path and explicit unavailable
+state; do not add a fallback that guesses a value.
 
 ## Local API
 

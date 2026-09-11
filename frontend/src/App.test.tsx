@@ -6,13 +6,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { make_report } from "./test/report_fixture";
 
-vi.mock("./components/charts", () => ({
-  CoverageChart: () => <div aria-label="Coverage chart" />,
-  SeverityChart: () => <div aria-label="Severity chart" />,
-  TransportProfileCard: () => <div aria-label="Transport profile" />,
-  InventoryChart: () => <div aria-label="Inventory chart" />,
-}));
-
 afterEach(() => {
   vi.restoreAllMocks();
   localStorage.clear();
@@ -128,24 +121,17 @@ describe("capture upload", () => {
       "href",
       "/api/v1/analyses/r1/report.pdf",
     );
-    expect(screen.getByRole("heading", { name: "Investigate in this order" })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: /Case posture rings/ })).toBeInTheDocument();
-    const certificate_ring = screen.getByRole("button", { name: /Ring 4 · inner, Certificate health:/ });
-    fireEvent.pointerEnter(certificate_ring);
-    expect(screen.getByRole("heading", { name: "Certificate health" })).toBeInTheDocument();
-    expect(certificate_ring).toHaveAttribute("data-active", "true");
+    expect(screen.getByRole("region", { name: "Assessment trust" })).toBeInTheDocument();
+    expect(screen.getByTestId("trust-limitations")).toHaveTextContent(
+      "Missing, conflicting, encrypted, or incomplete evidence is unresolved scope",
+    );
+    expect(screen.getByRole("heading", { name: "What needs action, where" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Acknowledge limits and continue" }));
+    expect(screen.queryByTestId("trust-limitations")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("tab", { name: /Evidence/ }));
-    expect(await screen.findByRole("region", { name: "Observed Facts" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Network volume" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Flow integrity" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Evidence heatmaps" })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Flows heatmap" })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "TLS handshakes heatmap" })).toBeInTheDocument();
-    const tls_cell = await screen.findByRole("button", { name: /TLSv10.*attention/ });
-    fireEvent.click(tls_cell);
-    expect(screen.getByRole("heading", { name: "TLS handshakes" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Flow path explorer" })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /Network graph highlighting/ })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Evidence workspace" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Presented certificate chains" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Flow evidence" })).toBeInTheDocument();
   });
 
   it("shows a failed analysis without leaking the previous case", async () => {
@@ -231,8 +217,8 @@ describe("dashboard shell", () => {
     expect(await screen.findByRole("img", { name: "SecureMail" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Upload capture" })).toBeInTheDocument();
     expect(screen.queryByText("API online")).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Portfolio", exact: true })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Case", exact: true })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Portfolio$/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Case$/ })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /theme/i })).not.toBeInTheDocument();
   });
 });

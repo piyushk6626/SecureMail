@@ -26,21 +26,17 @@ export function CatalogPage() {
       })
       .sort(
         (left, right) =>
+          Number(right.risk_score !== null && right.risk_score !== undefined) -
+            Number(left.risk_score !== null && left.risk_score !== undefined) ||
           (right.risk_score ?? -1) - (left.risk_score ?? -1) ||
           (right.unknown_count ?? 0) + (right.not_observable_count ?? 0) -
-            ((left.unknown_count ?? 0) + (left.not_observable_count ?? 0)),
+            ((left.unknown_count ?? 0) + (left.not_observable_count ?? 0)) ||
+          Date.parse(right.generated_at ?? "") - Date.parse(left.generated_at ?? "") ||
+          left.case_id.localeCompare(right.case_id),
       );
   }, [assessment, cases_query.data, search]);
-  const scored_cases = cases.filter((item) => item.risk_score !== null && item.risk_score !== undefined);
-  const average_risk =
-    scored_cases.length > 0
-      ? Math.round(scored_cases.reduce((sum, item) => sum + (item.risk_score ?? 0), 0) / scored_cases.length)
-      : null;
   const urgent_cases = cases.filter((item) => (item.risk_score ?? 0) >= 80).length;
-  const unresolved = cases.reduce(
-    (sum, item) => sum + (item.unknown_count ?? 0) + (item.not_observable_count ?? 0),
-    0,
-  );
+  const not_proven = cases.filter((item) => item.risk_score === null || item.risk_score === undefined).length;
 
   return (
     <section aria-labelledby="catalog-title" data-testid="no-case-selected">
@@ -51,7 +47,7 @@ export function CatalogPage() {
             Cases
           </h1>
           <p className="mt-2 text-sm text-[var(--muted)]">
-            Highest-risk cases are ordered first. Open one to inspect its evidence and control failures.
+            Highest endpoint priority is ordered first. It is not a mail-system health score.
           </p>
         </div>
         <div className="flex gap-2">
@@ -79,8 +75,8 @@ export function CatalogPage() {
       <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <CatalogSummary label="Published cases" value={cases.length} />
         <CatalogSummary label="Immediate attention" tone="danger" value={urgent_cases} />
-        <CatalogSummary label="Average risk" tone="warning" value={average_risk ?? "—"} />
-        <CatalogSummary label="Unresolved checks" tone="unknown" value={unresolved} />
+        <CatalogSummary label="Not proven" tone="unknown" value={not_proven} />
+        <CatalogSummary label="Catalog order" tone="info" value="Priority first" />
       </div>
       {cases_query.isLoading ? (
         <LoadingState />
@@ -116,23 +112,18 @@ function CatalogCard({ item, on_open }: { item: CaseSummary; on_open: () => void
             {render_forensic_text(item.case_id)}
           </p>
         </div>
-        <Badge tone={item.assessment_state === "complete" ? "success" : "unknown"}>
+        <Badge tone={item.assessment_state === "limited" ? "warning" : item.assessment_state === "none" ? "unknown" : "info"}>
           {item.assessment_state ?? "unknown"}
         </Badge>
       </div>
-      <div className="mt-5 grid grid-cols-3 gap-2">
-        <CatalogMetric label="Risk" value={item.risk_score ?? "—"} />
+      <p className="mt-3 text-xs text-[var(--muted)]">{item.generated_at ? new Date(item.generated_at).toLocaleString() : "Generated time unavailable"}</p>
+      <div className="mt-4 grid grid-cols-4 gap-2">
+        <CatalogMetric label="Priority" value={item.risk_score ?? "Not proven"} />
         <CatalogMetric label="Findings" value={item.finding_count ?? "—"} />
-        <CatalogMetric label="Unknown" value={(item.unknown_count ?? 0) + (item.not_observable_count ?? 0)} />
+        <CatalogMetric label="Unknown" value={item.unknown_count ?? 0} />
+        <CatalogMetric label="Not observable" value={item.not_observable_count ?? 0} />
       </div>
-      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[var(--surface-raised)]" aria-hidden="true">
-        <div
-          className={`h-full rounded-full ${
-            (item.risk_score ?? 0) >= 80 ? "bg-red-400" : (item.risk_score ?? 0) >= 50 ? "bg-amber-400" : "bg-emerald-400"
-          }`}
-          style={{ width: `${Math.max(0, Math.min(100, item.risk_score ?? 0))}%` }}
-        />
-      </div>
+      <div className="mt-4 flex flex-wrap gap-1">{(["high", "medium", "low", "informational"] as const).map((severity) => <Badge className="normal-case" key={severity} tone={severity === "high" ? "danger" : severity === "medium" ? "warning" : severity === "low" ? "info" : "neutral"}>{severity} {item.severity_counts?.[severity] ?? 0}</Badge>)}{item.advisory_present ? <Badge tone="unknown">Advisory</Badge> : null}</div>
       <Button aria-label="Open case" className="mt-5 w-full" onClick={on_open} variant="secondary">
         Open case intelligence
       </Button>

@@ -100,8 +100,9 @@ post-Step-11 modules.
 | Path | Role |
 |---|---|
 | `frontend/src/App.test.tsx` | Case isolation, four regions |
-| `frontend/src/core/evidence_resolver.test.ts` | Nested field + dangling records |
-| `frontend/src/core/selectors.test.ts` | View-model selectors |
+| `frontend/src/core/evidence_resolver.test.ts` | Relative/qualified paths, composite certificates, derived fields, dangling records |
+| `frontend/src/core/selectors.test.ts` | Zero-filled coverage, domain/group projections, immutable view-model selectors |
+| `frontend/src/components/coverage_matrix.test.tsx` | 16-cell matrix and canonical check-ledger filtering |
 | `frontend/src/core/forensic_text.test.ts` | Control/bidi visibility |
 | `tests/e2e/dashboard.spec.ts` | Playwright catalog, preview, upload stub |
 

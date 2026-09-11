@@ -2,7 +2,7 @@
 status: current
 audience: architect
 authoritative_for: dashboard query and selector data flow
-last_verified: 2026-09-09
+last_verified: 2026-09-11
 ---
 
 # Frontend data flow
@@ -89,19 +89,30 @@ returns `index.html` for extensionless client routes.
 catalog render URLs depending on whether `run` is set
 ([`case_view.tsx`](../../frontend/src/components/case_view.tsx)).
 
-## Four labeled regions
+## Analyst-first workbench
 
-[`CaseView`](../../frontend/src/components/case_view.tsx) always renders:
+[`CaseView`](../../frontend/src/components/case_view.tsx) places an
+**Assessment trust** gate above every case subview. It shows the canonical
+assessment state, **Highest endpoint priority (0–100)** (or **Not proven**),
+coverage counts, passive-evidence limitations, stage errors, and report
+provenance. Acknowledging a limit is local UI state; it never resolves or
+rewrites that evidence.
 
-1. **Observed Facts** — flow/session/handshake/certificate counts, certificate
-   posture, forensic-escaped session event text
-2. **Deterministic Conclusions** — findings table from posture
-3. **Advisory / ML** — `report.advisory.items`; never mixed into findings
-4. **Analyst Notes** — `report.analyst_conclusions.notes` (read-only in the UI)
+The workbench keeps these four authority regions separate:
+
+1. **Observed Facts** — flow, session, handshake, and certificate records;
+   explicit STARTTLS/STLS timelines; frame-linked protocol and TLS messages.
+2. **Deterministic Conclusions** — canonical endpoint findings in an
+   endpoint-first risk tree, plus a searchable ledger and six-part score
+   explanation.
+3. **Advisory / ML** — `report.advisory.items`; always marked as unable to
+   change deterministic findings.
+4. **Analyst Conclusions** — `report.analyst_conclusions.notes`, read-only in
+   this build.
 
 Hostile strings go through `render_forensic_text` (C0/C1 and bidi made
-visible). HTML is not interpreted. Playwright asserts the four `aria` regions,
-hostile banners, and HTML/PDF links.
+visible). HTML is not interpreted. Playwright asserts the four regions,
+hostile strings, limitation gate, and HTML/PDF links.
 
 The catalog lists catalog **summaries** (risk, finding count, unknown
 counts) without loading full evidence until Open case.
@@ -109,35 +120,34 @@ counts) without loading full evidence until Open case.
 ## Selectors do not recompute findings
 
 [`selectors.ts`](../../frontend/src/core/selectors.ts) maps
-`evidence.posture.prioritized_findings` into table rows. Protocol is joined
-from `policy_checks` by record key or endpoint. Filters and sorts are
-presentation-only.
+`evidence.posture.prioritized_findings` into presentation rows, zero-filled
+protocol × category coverage cells, endpoint groups, stable rule-domain and
+remediation groups, session/TLS projections, and presented certificate chains.
+Protocol is joined from `policy_checks` by record key or endpoint. Filters,
+sorts, role focus, and grouping are presentation-only.
 
-Selectors **do not** re-run the rule engine, re-score, or rewrite findings.
-Charts (`select_severity_counts`, `select_coverage`, inventories) read the
-canonical object. Coverage percent is `passed / applicable`; unknown and
-not-observable are never treated as passed.
+Selectors **do not** re-run the rule engine, re-score, deduplicate, or rewrite
+findings. The score shown is the canonical highest endpoint priority, not a
+health percentage. Coverage is always presented as passed, failed, unknown,
+and not-observable counts; the latter two are never treated as passed.
 
-## Evidence resolver — known limitation
+## Evidence resolver
 
 [`evidence_resolver.ts`](../../frontend/src/core/evidence_resolver.ts) looks up
-a record by `record_type` + `record_key`, then walks `field_path` as dotted
-attributes **on that record**.
+a record by `record_type` + `record_key`, including canonical composite
+certificate keys, then walks `field_path` on that record.
 
-Live YAML policy paths are **target-prefixed**: `handshake.version.selected`,
-`session.explicit_upgrade.state`, `certificate.validation.identity_match`,
-`derived.service_role`. The resolver does not strip the `handshake.` /
-`session.` / `certificate.` / `flow.` prefix, so those paths resolve as
-`dangling_field` on analyze-produced findings.
+It accepts both old relative paths (`version.selected`) and engine-qualified
+paths (`handshake.version.selected`, `session.explicit_upgrade.state`,
+`certificate.validation.identity_match`, and `flow.*`). It strips exactly the
+matching record prefix. Known `derived.*` display inputs resolve only from the
+same report: service role, observed commands, transport TLS establishment, and
+forward-secrecy outcome. This is display resolution, never browser-side policy
+evaluation.
 
-Hand-assembled dashboard and golden reports use **unprefixed** paths
-(`version.selected`, `explicit_upgrade.state`). Playwright’s
-“TLS 1.0 negotiated” drill-down uses the catalog fixture, so it passes.
-
-`derived.*` paths are not fields on any evidence record either.
-
-The UI still shows the raw `field_path` and a “field unavailable” badge rather
-than inventing a value.
+An unknown path or missing record remains an explicit **field unavailable** or
+**record unavailable** status. Null frame references say **No direct frame
+linked**; related record context is not labelled as the exact frame.
 
 ## Related pages
 

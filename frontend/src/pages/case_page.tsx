@@ -1,6 +1,6 @@
 import { Link, Navigate, useParams, useSearchParams } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { get_analysis_report, get_case_report } from "../core/api";
+import { get_analysis, get_analysis_report, get_case_report } from "../core/api";
 import { CaseView } from "../components/case_view";
 import { EmptyState, LoadingState } from "../components/ui";
 
@@ -30,6 +30,16 @@ export function CasePage() {
     retry: false,
     staleTime: 0,
   });
+  const analysis_query = useQuery({
+    queryKey: ["analysis", run_id],
+    queryFn: ({ signal }) => {
+      if (run_id === null) throw new Error("No analysis job.");
+      return get_analysis({ run_id, signal });
+    },
+    enabled: run_id !== null,
+    retry: false,
+    staleTime: 0,
+  });
 
   if (!case_id) return <Navigate replace to="/cases" />;
 
@@ -55,7 +65,7 @@ export function CasePage() {
       {is_loading ? (
         <LoadingState />
       ) : report ? (
-        <CaseView key={case_id} report={report} run_id={run_id} />
+        <CaseView key={`${case_id}-${report.manifest.generated_at}`} original_filename={analysis_query.data?.original_filename} report={report} run_id={run_id} />
       ) : (
         <EmptyState description={error_message ?? "The selected case has no report."} title="Case report unavailable">
           <Link
