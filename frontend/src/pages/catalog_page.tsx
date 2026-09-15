@@ -72,7 +72,7 @@ export function CatalogPage() {
           </select>
         </div>
       </div>
-      <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="catalog-summary-line" aria-label="Catalog summary">
         <CatalogSummary label="Published cases" value={cases.length} />
         <CatalogSummary label="Immediate attention" tone="danger" value={urgent_cases} />
         <CatalogSummary label="Not proven" tone="unknown" value={not_proven} />
@@ -88,7 +88,7 @@ export function CatalogPage() {
           title="No matching cases"
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="catalog-docket">
           {filtered_cases.map((item) => (
             <CatalogCard
               item={item}
@@ -104,27 +104,17 @@ export function CatalogPage() {
 
 function CatalogCard({ item, on_open }: { item: CaseSummary; on_open: () => void }) {
   return (
-    <Card className="portfolio-case-card p-5" data-testid="catalog-case">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h2 className="forensic-text truncate font-semibold">{render_forensic_text(case_label(item))}</h2>
-          <p className="forensic-text mt-1 truncate font-mono text-[10px] text-[var(--muted)]">
-            {render_forensic_text(item.case_id)}
-          </p>
-        </div>
-        <Badge tone={item.assessment_state === "limited" ? "warning" : item.assessment_state === "none" ? "unknown" : "info"}>
-          {item.assessment_state ?? "unknown"}
-        </Badge>
+    <Card className="portfolio-case-card" data-testid="catalog-case">
+      <div className="catalog-priority" data-urgent={(item.risk_score ?? 0) >= 80}>{item.risk_score ?? "Not proven"}</div>
+      <div className="min-w-0">
+        <h2 className="forensic-text truncate font-semibold">{render_forensic_text(case_label(item))}</h2>
+        <p className="catalog-case-id forensic-text mt-1">{render_forensic_text(item.case_id)}</p>
+        <p className="catalog-case-metadata mt-1">{item.generated_at ? new Date(item.generated_at).toLocaleString() : "Generated time unavailable"} · findings {item.finding_count ?? "—"}</p>
       </div>
-      <p className="mt-3 text-xs text-[var(--muted)]">{item.generated_at ? new Date(item.generated_at).toLocaleString() : "Generated time unavailable"}</p>
-      <div className="mt-4 grid grid-cols-4 gap-2">
-        <CatalogMetric label="Priority" value={item.risk_score ?? "Not proven"} />
-        <CatalogMetric label="Findings" value={item.finding_count ?? "—"} />
-        <CatalogMetric label="Unknown" value={item.unknown_count ?? 0} />
-        <CatalogMetric label="Not observable" value={item.not_observable_count ?? 0} />
-      </div>
-      <div className="mt-4 flex flex-wrap gap-1">{(["high", "medium", "low", "informational"] as const).map((severity) => <Badge className="normal-case" key={severity} tone={severity === "high" ? "danger" : severity === "medium" ? "warning" : severity === "low" ? "info" : "neutral"}>{severity} {item.severity_counts?.[severity] ?? 0}</Badge>)}{item.advisory_present ? <Badge tone="unknown">Advisory</Badge> : null}</div>
-      <Button aria-label="Open case" className="mt-5 w-full" onClick={on_open} variant="secondary">
+      <div><Badge tone={item.assessment_state === "limited" ? "warning" : item.assessment_state === "none" ? "unknown" : "info"}>{item.assessment_state ?? "unknown"}</Badge><p className="catalog-case-metadata mt-2">Highest endpoint priority</p></div>
+      <div className="catalog-severity" aria-label="Severity counts">{(["high", "medium", "low", "informational"] as const).map((severity) => <Badge className="normal-case" key={severity} tone={severity === "high" ? "danger" : severity === "medium" ? "warning" : severity === "low" ? "info" : "neutral"}>{severity === "informational" ? "I" : severity.charAt(0).toUpperCase()} {item.severity_counts?.[severity] ?? 0}</Badge>)}{item.advisory_present ? <Badge tone="unknown">Advisory</Badge> : null}</div>
+      <div className="catalog-counts"><span><strong>U</strong> {item.unknown_count ?? 0} unknown</span><span><strong>O</strong> {item.not_observable_count ?? 0} not observable</span></div>
+      <Button aria-label="Open case" className="catalog-open" onClick={on_open} variant="secondary">
         Open case intelligence
       </Button>
     </Card>
@@ -140,25 +130,10 @@ function CatalogSummary({
   tone?: "info" | "danger" | "warning" | "unknown";
   value: string | number;
 }) {
-  const colors = {
-    info: "text-cyan-400",
-    danger: "text-red-400",
-    warning: "text-amber-400",
-    unknown: "text-violet-300",
-  };
   return (
-    <Card className="p-4">
+    <div>
       <p className="text-xs text-[var(--muted)]">{label}</p>
-      <p className={`mt-2 font-mono text-2xl font-semibold ${colors[tone]}`}>{value}</p>
-    </Card>
-  );
-}
-
-function CatalogMetric({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="rounded-lg bg-[var(--surface-raised)] p-2">
-      <p className="text-[10px] uppercase text-[var(--muted)]">{label}</p>
-      <p className="mt-1 font-mono font-semibold">{value}</p>
+      <b className={`catalog-summary-${tone}`}>{value}</b>
     </div>
   );
 }

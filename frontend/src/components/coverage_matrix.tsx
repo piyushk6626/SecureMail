@@ -9,23 +9,16 @@ import {
   select_policy_checks,
   type CoverageCell,
 } from "../core/selectors";
-import { Badge, Card } from "./ui";
+import { Badge, Card, evidence_state_tone, outcome_tone } from "./ui";
 
 function humanize(value: string): string {
   return value.replaceAll("_", " ");
 }
 
-function outcome_tone(outcome: string): "success" | "danger" | "unknown" | "warning" {
-  if (outcome === "pass") return "success";
-  if (outcome === "fail") return "danger";
-  if (outcome === "unknown") return "unknown";
-  return "warning";
-}
-
 function coverage_gradient(values: number[]): string {
   const total = values.reduce((sum, value) => sum + value, 0);
   if (total === 0) return "conic-gradient(var(--border) 0deg 360deg)";
-  const colors = ["#22c55e", "#ef4444", "#a78bfa", "#94a3b8"];
+  const colors = ["var(--success)", "var(--danger)", "var(--unknown)", "var(--not-observable)"];
   let degrees = 0;
   return `conic-gradient(${values
     .map((value, index) => {
@@ -50,7 +43,7 @@ export function CoverageMatrix({ report }: { report: CanonicalReport }) {
     { key: "passed", label: "Passed", value: coverage.passed_count, tone: "success" as const },
     { key: "failed", label: "Failed", value: coverage.failed_count, tone: "danger" as const },
     { key: "unknown", label: "Unknown", value: coverage.unknown_count, tone: "unknown" as const },
-    { key: "not_observable", label: "Not observable", value: coverage.not_observable_count, tone: "warning" as const },
+    { key: "not_observable", label: "Not observable", value: coverage.not_observable_count, tone: "not_observable" as const },
   ];
   const donut_style = { background: coverage_gradient(slices.map((slice) => slice.value)) };
 
@@ -94,7 +87,7 @@ export function CoverageMatrix({ report }: { report: CanonicalReport }) {
       {selected ? (
         <Card className="coverage-ledger mt-4 overflow-hidden" data-testid="coverage-ledger">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] p-4"><div><p className="section-label">Policy checks</p><h3 className="mt-1 font-semibold">{humanize(selected.protocol)} × {humanize(selected.category)}</h3></div><button className="text-sm text-cyan-400 hover:text-cyan-200" onClick={() => { set_selected(null); set_ledger_limit(100); }} type="button">Clear filter</button></div>
-          {selected_checks.length === 0 ? <p className="p-4 text-sm text-[var(--muted)]">No applicable checks were published for this cell.</p> : <><div className="overflow-x-auto"><table className="w-full min-w-[920px] text-left text-xs"><thead className="bg-[var(--surface-raised)] text-[var(--muted)]"><tr><th className="p-3">Outcome</th><th className="p-3">Check</th><th className="p-3">Endpoint</th><th className="p-3">Record</th><th className="p-3">Evidence</th></tr></thead><tbody>{visible_checks.map((check) => <tr className="border-t border-[var(--border)]" key={check.check_id}><td className="p-3"><Badge tone={outcome_tone(check.outcome)}>{check.outcome}</Badge></td><td className="p-3"><b>{render_forensic_text(check.title)}</b><span className="forensic-text mt-1 block text-[10px] text-[var(--muted)]">{check.code} · {check.protocol} · {check.category}</span></td><td className="forensic-text p-3">{render_forensic_text(check.affected_endpoint)}</td><td className="forensic-text p-3"><b>{check.record_type}</b><span className="mt-1 block break-all text-[10px] text-[var(--muted)]">{render_forensic_text(check.record_key)}</span></td><td className="p-3"><Badge tone={check.evidence_state === "observed" || check.evidence_state === "verified" ? "info" : "unknown"}>{check.evidence_state}</Badge></td></tr>)}</tbody></table></div>{visible_checks.length < selected_checks.length ? <div className="flex items-center justify-between gap-3 p-4 text-xs text-[var(--muted)]"><span>Showing {visible_checks.length} of {selected_checks.length} checks.</span><button className="text-cyan-400 hover:text-cyan-200" onClick={() => set_ledger_limit((value) => value + 100)} type="button">Show 100 more</button></div> : null}</>}
+          {selected_checks.length === 0 ? <p className="p-4 text-sm text-[var(--muted)]">No applicable checks were published for this cell.</p> : <><div className="overflow-x-auto"><table className="w-full min-w-[920px] text-left text-xs"><thead className="bg-[var(--surface-raised)] text-[var(--muted)]"><tr><th className="p-3">Outcome</th><th className="p-3">Check</th><th className="p-3">Endpoint</th><th className="p-3">Record</th><th className="p-3">Evidence</th></tr></thead><tbody>{visible_checks.map((check) => <tr className="border-t border-[var(--border)]" key={check.check_id}><td className="p-3"><Badge tone={outcome_tone(check.outcome)}>{check.outcome}</Badge></td><td className="p-3"><b>{render_forensic_text(check.title)}</b><span className="forensic-text mt-1 block text-[10px] text-[var(--muted)]">{check.code} · {check.protocol} · {check.category}</span></td><td className="forensic-text p-3">{render_forensic_text(check.affected_endpoint)}</td><td className="forensic-text p-3"><b>{check.record_type}</b><span className="mt-1 block break-all text-[10px] text-[var(--muted)]">{render_forensic_text(check.record_key)}</span></td><td className="p-3"><Badge tone={evidence_state_tone(check.evidence_state)}>{check.evidence_state}</Badge></td></tr>)}</tbody></table></div>{visible_checks.length < selected_checks.length ? <div className="flex items-center justify-between gap-3 p-4 text-xs text-[var(--muted)]"><span>Showing {visible_checks.length} of {selected_checks.length} checks.</span><button className="text-cyan-400 hover:text-cyan-200" onClick={() => set_ledger_limit((value) => value + 100)} type="button">Show 100 more</button></div> : null}</>}
         </Card>
       ) : null}
     </section>

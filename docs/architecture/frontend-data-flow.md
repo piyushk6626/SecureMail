@@ -73,8 +73,8 @@ evidence.
 | `["case-report", case_id]` | `GET /api/v1/cases/{case_id}/report` | enabled on `/cases/:id` when `run` is absent |
 
 Visible report: `analysis_report_query.data ?? report_query.data ?? null`.
-While a run is in progress, `/upload` shows a stage stepper and Cancel. On
-`completed`, the upload page navigates to the case detail.
+While a run is in progress, `/upload` shows the six-stage analysis ledger and
+Cancel. On `completed`, the upload page navigates to the case detail.
 
 Vite proxies `/api` to `VITE_API_TARGET` (default `http://127.0.0.1:8000`).
 After `npm --prefix frontend run build`, FastAPI serves `frontend/dist` and
@@ -88,6 +88,24 @@ returns `index.html` for extensionless client routes.
 `/analyses/{run_id}/cancel`. HTML/PDF links use either job artifact URLs or
 catalog render URLs depending on whether `run` is set
 ([`case_view.tsx`](../../frontend/src/components/case_view.tsx)).
+
+The in-progress ledger is a presentation of `AnalysisJob`, not a second worker
+state machine. It has exactly these ordered rows: capture intake,
+deterministic analysis, assemble report (`policy_scoring`), advisory
+evaluation, report rendering, and publication. A queued intake job says
+**Waiting for the local worker**; a running job names the real worker stage in
+plain language. The page derives total elapsed time only from `created_at` and
+the browser clock. It does not expose a percentage, ETA, queue position,
+substage, or artifact forecast.
+
+The current row has `aria-current="step"`, and phase title plus job status share
+one polite status region. The elapsed timer is intentionally outside that live
+region. A small CSS tracer is decorative, indeterminate, and present only
+while a job has not accepted a cancellation request. `motion` transitions are
+keyed by status/stage/cancellation state rather than `updated_at`, so a normal
+one-second poll does not restart them. Reduced-motion removes the tracer and
+translation; forced-colors retains marker outlines, the active rail, visible
+status text, and button boundaries.
 
 ## Analyst-first workbench
 

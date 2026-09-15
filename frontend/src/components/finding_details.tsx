@@ -4,16 +4,10 @@ import { resolve_evidence_reference } from "../core/evidence_resolver";
 import { render_forensic_text, render_forensic_value } from "../core/forensic_text";
 import { record_uid_from_reference } from "../core/selectors";
 import { ScoreComponents } from "./score_components";
-import { Badge, Card, Sheet } from "./ui";
+import { Badge, Card, Sheet, evidence_state_tone } from "./ui";
 
 function EvidenceStateBadge({ state }: { state: string }) {
-  const tone =
-    state === "observed" || state === "verified"
-      ? "info"
-      : state === "incomplete" || state === "conflicting"
-        ? "warning"
-        : "unknown";
-  return <Badge tone={tone}>{state.replaceAll("_", " ")}</Badge>;
+  return <Badge tone={evidence_state_tone(state)}>{state.replaceAll("_", " ")}</Badge>;
 }
 
 export function FindingDetails({

@@ -9,7 +9,7 @@ import {
   type FindingGroupMode,
   type FindingRow,
 } from "../core/selectors";
-import { Badge, Card } from "./ui";
+import { Badge, Card, evidence_state_tone } from "./ui";
 
 const modes: { id: FindingGroupMode; label: string }[] = [
   { id: "endpoint", label: "Endpoint" },
@@ -47,5 +47,5 @@ export function RiskTree({
 }
 
 function FindingLeaf({ finding, on_select }: { finding: FindingRow; on_select: (finding: FindingRow) => void }) {
-  return <button className="risk-leaf" onClick={() => on_select(finding)} type="button"><span className="min-w-0"><b>{render_forensic_text(finding.title)}</b><small className="forensic-text">{finding.code} · {finding.unique_occurrences} occurrence(s)</small></span><span className="risk-leaf-badges"><Badge tone={severity_tone(finding.severity)}>{finding.severity}</Badge><Badge tone={finding.basis_state === "observed" || finding.basis_state === "verified" ? "info" : "unknown"}>{finding.basis_state}</Badge><b className="font-mono">{finding.score}</b></span></button>;
+  return <button className="risk-leaf" onClick={() => on_select(finding)} type="button"><span className="min-w-0"><b>{render_forensic_text(finding.title)}</b><small className="forensic-text">{finding.code} · {finding.unique_occurrences} occurrence(s)</small></span><span className="risk-leaf-badges"><Badge tone={severity_tone(finding.severity)}>{finding.severity}</Badge><Badge tone={evidence_state_tone(finding.basis_state)}>{finding.basis_state}</Badge><b className="font-mono" aria-label={`Score ${finding.score}`}>{finding.score}</b></span></button>;
 }

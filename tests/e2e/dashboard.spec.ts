@@ -12,6 +12,22 @@ async function open_catalog_case(page: Page, case_id = "dashboard_critical"): Pr
   await expect(page.getByRole("heading", { name: case_id })).toBeVisible();
 }
 
+function analysis_job(overrides: Record<string, unknown> = {}) {
+  return {
+    run_id: "r-ledger",
+    case_id: "ledger-capture",
+    status: "queued",
+    stage: "intake",
+    original_filename: "securemail_ml_topology_1000flows.pcapng",
+    policy_profile: "ietf_current",
+    created_at: new Date(Date.now() - 102_000).toISOString(),
+    updated_at: new Date().toISOString(),
+    artifacts: { json: false, html: false, pdf: false },
+    cancel_requested: false,
+    ...overrides,
+  };
+}
+
 test("switches between all four authority workspaces for a catalog case", async ({ page }) => {
   test.setTimeout(60_000);
   await open_catalog_case(page);
@@ -140,6 +156,62 @@ test("uploads a pcapng capture and can download reports", async ({ page }) => {
   await expect(html).toHaveAttribute("href", /\/api\/v1\/analyses\/.+\/report\.html/);
 });
 
+test("presents queued and running analysis as a truthful, accessible ledger", async ({ page }) => {
+  let job = analysis_job();
+  await page.route("**/api/v1/analyses", async (route) => {
+    if (route.request().method() !== "POST") return route.fallback();
+    await route.fulfill({ contentType: "application/json", status: 202, body: JSON.stringify(job) });
+  });
+  await page.route("**/api/v1/analyses/r-ledger", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(job) });
+  });
+  await page.route("**/api/v1/analyses/r-ledger/cancel", async (route) => {
+    job = analysis_job({ status: "running", stage: "report_rendering", cancel_requested: true });
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(job) });
+  });
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/upload");
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "securemail_ml_topology_1000flows.pcapng",
+    mimeType: "application/octet-stream",
+    buffer: Buffer.from([0x0a, 0x0d, 0x0d, 0x0a, 0x1a, 0x2b, 0x3c, 0x4d]),
+  });
+
+  const progress = page.getByRole("region", { name: "Analysis progress" });
+  await expect(progress.getByRole("status")).toContainText("Waiting for the local worker");
+  await expect(progress.getByRole("listitem")).toHaveCount(6);
+  await expect(progress.locator("li[aria-current='step']")).toContainText("Capture intake");
+  await expect(progress.getByLabel("Elapsed time 01:42")).toBeVisible();
+  await expect(progress).not.toContainText(/ETA|%/i);
+  await expect(progress.locator(".analysis-tracer")).toBeVisible();
+  expect((await page.screenshot({ animations: "disabled", fullPage: true })).byteLength).toBeGreaterThan(10_000);
+
+  job = analysis_job({ status: "running", stage: "report_rendering" });
+  await expect(progress.getByRole("status")).toContainText("Rendering report artifacts", { timeout: 3_000 });
+  await expect(progress.locator("li[aria-current='step']")).toContainText("Report rendering");
+
+  await page.setViewportSize({ width: 768, height: 900 });
+  await expect(progress.getByText("Report rendering", { exact: true })).toBeVisible();
+  expect((await page.screenshot({ animations: "disabled", fullPage: true })).byteLength).toBeGreaterThan(10_000);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(progress.getByText("In progress", { exact: true })).toBeVisible();
+  await expect(progress.getByRole("button", { name: "Cancel analysis" })).toBeVisible();
+  expect((await page.screenshot({ animations: "disabled", fullPage: true })).byteLength).toBeGreaterThan(10_000);
+
+  await page.getByRole("button", { name: "Cancel analysis" }).click();
+  await expect(progress.getByRole("button", { name: "Cancellation requested…" })).toBeDisabled();
+  await expect(progress.locator(".analysis-tracer")).toHaveCount(0);
+
+  await page.emulateMedia({ forcedColors: "active", reducedMotion: "reduce" });
+  await expect(progress.locator("li[aria-current='step']")).toBeVisible();
+  await expect(progress.locator(".analysis-tracer")).toBeHidden();
+
+  job = analysis_job({ status: "cancelled", stage: "report_rendering", cancel_requested: true });
+  await expect(page.getByText("Analysis cancelled", { exact: true })).toBeVisible({ timeout: 3_000 });
+});
+
 test("keeps download actions keyboard-focusable", async ({ page }) => {
   await open_catalog_case(page);
   const html = page.getByRole("link", { name: "Download HTML" });
@@ -157,8 +229,12 @@ test("opens a catalog case on a mobile viewport without leaking cases", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/cases");
   await expect(page.getByTestId("no-case-selected")).toBeVisible();
-  await page.getByTestId("catalog-case").filter({ hasText: "dashboard_clear" }).getByRole("button", { name: "Open case" }).click();
-  await expect(page.getByRole("heading", { name: "dashboard_clear" })).toBeVisible();
+  await page.getByTestId("catalog-case").filter({ hasText: "dashboard_critical" }).getByRole("button", { name: "Open case" }).click();
+  await expect(page.getByRole("heading", { name: "dashboard_critical" })).toBeVisible();
+  const finding = page.locator(".risk-leaf").first();
+  await expect(finding).toBeVisible();
+  await expect(finding.getByText(/high|medium|low|informational/i)).toBeVisible();
+  await expect(finding.locator(".risk-leaf-badges")).toBeVisible();
   await page.getByRole("link", { name: "Back to catalog" }).click();
   await expect(page.getByTestId("no-case-selected")).toBeVisible();
 });

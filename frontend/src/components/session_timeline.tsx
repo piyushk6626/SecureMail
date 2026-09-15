@@ -1,6 +1,6 @@
 import type { EmailSession } from "../types/canonical_report.generated";
 import { render_forensic_text } from "../core/forensic_text";
-import { Badge, Card } from "./ui";
+import { Badge, Card, evidence_state_tone } from "./ui";
 
 const states = ["advertised", "requested", "accepted", "tls_established"] as const;
 
@@ -16,7 +16,7 @@ export function SessionTimeline({ session }: { session: EmailSession }) {
   const index = state_index(terminal);
   return (
     <Card className="session-timeline p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="section-label">STARTTLS / STLS evidence</p><h3 className="mt-1 font-semibold">{session.protocol ?? "Unclassified"} session</h3><p className="mt-1 text-xs text-[var(--muted)]">Payload evidence: {session.payload_evidence}. Port hint: {session.port_hint}.</p></div><Badge tone={upgrade?.evidence_state === "observed" || upgrade?.evidence_state === "verified" ? "info" : "unknown"}>{upgrade?.evidence_state ?? "not recorded"}</Badge></div>
+      <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="section-label">STARTTLS / STLS evidence</p><h3 className="mt-1 font-semibold">{session.protocol ?? "Unclassified"} session</h3><p className="mt-1 text-xs text-[var(--muted)]">Payload evidence: {session.payload_evidence}. Port hint: {session.port_hint}.</p></div><Badge tone={evidence_state_tone(upgrade?.evidence_state)}>{upgrade?.evidence_state ?? "not recorded"}</Badge></div>
       {!upgrade ? (
         implicit ? (
           <div className="upgrade-terminal"><Badge tone={implicit.correlated_protocol ? "info" : "unknown"}>implicit TLS</Badge><p>{implicit.correlated_protocol ? `TLS correlated with payload-identified ${implicit.correlated_protocol}.` : "Implicit TLS correlation was not established; a port alone is not proof of protocol identity."}</p><div className="flex flex-wrap gap-2">{(implicit.evidence_frames ?? []).map((frame) => <span className="frame-chip" key={frame}>frame {frame}</span>)}</div></div>

@@ -2,7 +2,7 @@
 status: current
 audience: architect
 authoritative_for: future-phase proposal folder
-last_verified: 2026-09-11
+last_verified: 2026-09-15
 ---
 
 # Proposals
@@ -13,7 +13,8 @@ This folder holds **approved or under-review** post-Step-11 phases.
 |---|---|
 | [Dashboard navigation simplification](dashboard-navigation-simplification.md) | approved / implemented with the dashboard routes |
 | [Analyst-first dashboard implementation](analyst-dashboard-implementation.md) | approved / implemented; awaiting completed-contract archival |
-| [Dashboard visual redesign: Evidence Ledger](dashboard-visual-redesign.md) | proposed; visual-only implementation contract awaiting approval |
+| [Dashboard visual redesign: Evidence Ledger](dashboard-visual-redesign.md) | implemented; visual-only Evidence Ledger dashboard refresh |
+| [Report generation waiting experience](report-generation-waiting-experience.md) | under review; frontend-only stage-aware waiting animation |
 
 Do not treat
 [`../history/technical-design-2026-09-02.md`](../history/technical-design-2026-09-02.md)

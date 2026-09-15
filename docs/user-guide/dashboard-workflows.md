@@ -2,7 +2,7 @@
 status: current
 audience: user
 authoritative_for: dashboard analyst workflows and four-region case isolation
-last_verified: 2026-09-11
+last_verified: 2026-09-15
 ---
 
 # Dashboard workflows
@@ -40,6 +40,14 @@ implicit current/latest report.
 
 The header shows the SecureMail logo (links to `/cases`) and **Upload
 capture**. There is no sidebar, no API health pill, and no light theme.
+
+The dark-only visual system is an **Evidence Ledger**: flat graphite surfaces,
+warm technical type, hairline rules, and compact mono evidence values. Color
+never stands alone: findings, coverage outcomes, and evidence states retain
+their exact labels and a marker shape. In particular, **not observable** is a
+grey visibility state everywhere; it is not a warning or a pass. At narrow
+widths records reflow rather than omit severity, evidence state, score,
+unknown, or not-observable values.
 
 The catalog lists summaries without loading full evidence: generated time,
 assessment state, **Highest endpoint priority**, finding count, four severity
@@ -123,9 +131,25 @@ Polling: `GET /api/v1/analyses/{run_id}` every 1 s while `queued` or
 5. `report_rendering`
 6. `publication`
 
+While a capture is queued, the ledger says **Waiting for the local worker**;
+the first row remains visibly `QUEUED` rather than implying that analysis has
+started. Once the worker reports a stage, that row becomes `IN PROGRESS` and
+completed rows are marked `COMPLETE`. The active-operation card names the
+current operation, explains it in plain language, and shows elapsed time from
+the capture's creation time. It deliberately has no progress percentage, ETA,
+queue position, packet count, or guessed worker substage.
+
+The moving line in this card is only an indeterminate activity cue. It does
+not fill a progress bar or predict completion. The full ledger is an ordered
+list with a text state for every row, so it remains usable with reduced motion,
+forced colours, mobile layouts, and screen readers. The elapsed clock is not
+announced every second.
+
 Cancel is cooperative between stages. It does not kill a running Docker
 analyzer. Queued jobs become `cancelled` immediately. Terminal jobs return
-409.
+409. For a running job, after the API accepts cancel, the dashboard disables
+the action, stops the decorative tracer, and says **Cancellation requested…**
+until the worker reports `cancelled`.
 
 When `status` is `completed`, the UI navigates to
 `/cases/{case_id}?run={run_id}` so HTML/PDF links use job artifact URLs.

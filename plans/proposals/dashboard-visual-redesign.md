@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implemented
 audience: architect
-authoritative_for: proposed dashboard visual language and visual-only implementation plan
-last_verified: 2026-09-11
+authoritative_for: implemented dashboard visual language and visual-only implementation record
+last_verified: 2026-09-15
 ---
 
 # Dashboard visual redesign: Evidence Ledger
@@ -31,8 +31,9 @@ The visual direction is derived from those evidence principles, not from the
 current dashboard aesthetic. Current screens were inspected only to inventory
 behavior and information that cannot be lost.
 
-**Approval gate:** this document is a proposed post-Step-11 contract. It does
-not authorize implementation until its status is changed to approved.
+**Implementation record:** this post-Step-11 visual-only contract was approved
+for implementation on 2026-09-15. The frontend implementation retains the
+existing routes, report contract, and workflows.
 
 ## 2. Sources and boundaries
 

@@ -2,7 +2,7 @@
 status: current
 audience: contributor
 authoritative_for: dashboard frontend toolchain and type generation
-last_verified: 2026-09-11
+last_verified: 2026-09-15
 ---
 
 # Frontend development
@@ -18,6 +18,12 @@ npm ci
 ```
 
 `make sync` already runs `npm --prefix frontend ci`.
+
+The bundled interface fonts are `@fontsource-variable/ibm-plex-sans` and
+`@fontsource/ibm-plex-mono`; do not replace them with a remote font request.
+`src/styles.css` owns the Evidence Ledger tokens and responsive/forced-colors
+rules. Canonical evidence-state presentation is centralized in
+`src/components/ui.tsx`, including the distinct `not_observable` tone.
 
 ## Scripts
 

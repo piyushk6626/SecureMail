@@ -19,7 +19,7 @@ import {
   type FindingRow,
 } from "../core/selectors";
 import { render_forensic_text } from "../core/forensic_text";
-import { Badge, Button, Card, EmptyState, Input } from "./ui";
+import { Badge, Button, Card, EmptyState, Input, evidence_state_tone } from "./ui";
 
 const evidence_states: EvidenceState[] = [
   "observed",
@@ -137,13 +137,7 @@ export function FindingsTable({
         header: "Evidence",
         cell: ({ getValue }) => {
           const value = getValue();
-          const tone =
-            value === "observed" || value === "verified"
-              ? "info"
-              : value === "inferred"
-                ? "neutral"
-                : "unknown";
-          return <Badge tone={tone}>{value.replaceAll("_", " ")}</Badge>;
+          return <Badge tone={evidence_state_tone(value)}>{value.replaceAll("_", " ")}</Badge>;
         },
       }),
       column_helper.accessor("score", {

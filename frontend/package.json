@@ -17,8 +17,8 @@
     "generate:types": "json2ts ../src/securemail/domain/reports/canonical_report.schema.json src/types/canonical_report.generated.ts --bannerComment '/* Generated from canonical_report.schema.json. Do not edit. */'"
   },
   "dependencies": {
-    "@fontsource-variable/inter": "5.2.8",
-    "@fontsource-variable/jetbrains-mono": "5.2.8",
+    "@fontsource-variable/ibm-plex-sans": "5.3.0",
+    "@fontsource/ibm-plex-mono": "5.3.0",
     "@tanstack/react-query": "5.102.8",
     "@tanstack/react-table": "9.2.4",
     "clsx": "2.1.1",

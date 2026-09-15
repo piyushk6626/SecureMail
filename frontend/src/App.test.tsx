@@ -85,6 +85,108 @@ describe("capture upload", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Choose a .pcap or .pcapng capture.");
   });
 
+  it("presents a queued job as waiting for the local worker without a forecast", async () => {
+    const created_at = new Date(Date.now() - 102_000).toISOString();
+    vi.spyOn(globalThis, "fetch").mockImplementation((request, init) => {
+      const url = request_url(request);
+      const method = request_method(request, init);
+      if (url.endsWith("/cases")) return Promise.resolve(json_response({ cases: [] }));
+      if (url.endsWith("/analyses") && method === "POST") {
+        return Promise.resolve(json_response(make_job({ created_at }), 202));
+      }
+      if (url.endsWith("/analyses/r1")) return Promise.resolve(json_response(make_job({ created_at })));
+      return Promise.resolve(json_response({ detail: "unexpected" }, 500));
+    });
+
+    render_app("/upload");
+    assign_files(screen.getByLabelText("Upload capture"), new File(["capture"], "mail.pcapng"));
+
+    const announcement = await screen.findByRole("status");
+    expect(announcement).toHaveTextContent("Waiting for the local worker");
+    expect(announcement).toHaveTextContent("queued");
+    expect(announcement).toHaveAttribute("aria-live", "polite");
+    expect(announcement).toHaveAttribute("aria-atomic", "true");
+    expect(screen.getByLabelText("Elapsed time 01:42")).toHaveTextContent("Elapsed 01:42");
+    const queued_row = screen.getByText("Capture intake").closest("li");
+    if (!queued_row) throw new Error("Missing capture intake ledger row.");
+    expect(queued_row).toHaveAttribute("aria-current", "step");
+    expect(screen.getByText("Deterministic analysis").closest("li")).toHaveTextContent("Pending");
+    expect(screen.queryByText(/ETA|%/i)).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ["intake", "Capture intake", "Preparing capture analysis"],
+    ["deterministic_analysis", "Deterministic analysis", "Examining protocol and TLS evidence"],
+    ["policy_scoring", "Assemble report", "Assembling the deterministic report"],
+    ["ml_advisory", "Advisory evaluation", "Evaluating advisory signals"],
+    ["report_rendering", "Report rendering", "Rendering report artifacts"],
+    ["publication", "Publication", "Publishing the local report"],
+  ])("presents the %s running stage with truthful ledger language", async (stage, label, title) => {
+    const running_job = make_job({ status: "running", stage });
+    vi.spyOn(globalThis, "fetch").mockImplementation((request, init) => {
+      const url = request_url(request);
+      const method = request_method(request, init);
+      if (url.endsWith("/cases")) return Promise.resolve(json_response({ cases: [] }));
+      if (url.endsWith("/analyses") && method === "POST") return Promise.resolve(json_response(running_job, 202));
+      if (url.endsWith("/analyses/r1")) return Promise.resolve(json_response(running_job));
+      return Promise.resolve(json_response({ detail: "unexpected" }, 500));
+    });
+
+    render_app("/upload");
+    assign_files(screen.getByLabelText("Upload capture"), new File(["capture"], "mail.pcapng"));
+
+    expect(await screen.findByRole("status")).toHaveTextContent(title);
+    const current = screen.getByText(label).closest("li");
+    if (!current) throw new Error(`Missing ${label} ledger row.`);
+    expect(current).toHaveTextContent("In progress");
+    expect(current).toHaveAttribute("aria-current", "step");
+  });
+
+  it("settles into the accepted cancellation-request state without resetting the stage", async () => {
+    let cancel_requested = false;
+    vi.spyOn(globalThis, "fetch").mockImplementation((request, init) => {
+      const url = request_url(request);
+      const method = request_method(request, init);
+      const running_job = make_job({ status: "running", stage: "deterministic_analysis", cancel_requested });
+      if (url.endsWith("/cases")) return Promise.resolve(json_response({ cases: [] }));
+      if (url.endsWith("/analyses") && method === "POST") return Promise.resolve(json_response(running_job, 202));
+      if (url.endsWith("/analyses/r1/cancel") && method === "POST") {
+        cancel_requested = true;
+        return Promise.resolve(json_response(make_job({ status: "running", stage: "deterministic_analysis", cancel_requested })));
+      }
+      if (url.endsWith("/analyses/r1")) return Promise.resolve(json_response(running_job));
+      return Promise.resolve(json_response({ detail: "unexpected" }, 500));
+    });
+
+    const user = userEvent.setup();
+    render_app("/upload");
+    assign_files(screen.getByLabelText("Upload capture"), new File(["capture"], "mail.pcapng"));
+    await screen.findByText("Examining protocol and TLS evidence");
+    await user.click(screen.getByRole("button", { name: "Cancel analysis" }));
+
+    expect(await screen.findByRole("button", { name: "Cancellation requested…" })).toBeDisabled();
+    expect(document.querySelector(".analysis-cancellation-state")).toHaveTextContent("Cancellation requested…");
+    expect(document.querySelector(".analysis-tracer")).not.toBeInTheDocument();
+    const active_row = screen.getByText("Deterministic analysis").closest("li");
+    if (!active_row) throw new Error("Missing deterministic analysis ledger row.");
+    expect(active_row).toHaveAttribute("aria-current", "step");
+  });
+
+  it("keeps a cancelled upload on the intake page", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation((request, init) => {
+      const url = request_url(request);
+      const method = request_method(request, init);
+      if (url.endsWith("/cases")) return Promise.resolve(json_response({ cases: [] }));
+      if (url.endsWith("/analyses") && method === "POST") {
+        return Promise.resolve(json_response(make_job({ status: "cancelled" }), 202));
+      }
+      return Promise.resolve(json_response({ detail: "unexpected" }, 500));
+    });
+    render_app("/upload");
+    assign_files(screen.getByLabelText("Upload capture"), new File(["capture"], "mail.pcapng"));
+    expect(await screen.findByText("Analysis cancelled")).toBeInTheDocument();
+  });
+
   it("polls a completed run and shows HTML/PDF downloads", async () => {
     vi.spyOn(globalThis, "fetch").mockImplementation((request, init) => {
       const url = request_url(request);
