@@ -43,7 +43,8 @@ Flags from [`sandbox.py`](../../src/securemail/adapters/analyzers/sandbox.py):
 Also `--rm`, capture bind-mounted **readonly** at `/data/capture.pcapng`,
 output directory at `/data/out`. Timeout **120s**. Combined stdout (or Zeek log
 bytes plus extracted certificate DER) capped at **50 MiB**. Extracted
-certificates are additionally bounded to 64 KiB each and 256 files. Numeric
+certificates are additionally bounded to 64 KiB each, 4,096 raw files, and 256
+distinct DER values. Numeric
 table: [limits](../reference/limits.md).
 
 `assert_fixed_argv` rejects empty parts and the substrings ` && `, ` | `, `;`,

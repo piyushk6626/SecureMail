@@ -15,6 +15,7 @@ This folder holds **approved or under-review** post-Step-11 phases.
 | [Analyst-first dashboard implementation](analyst-dashboard-implementation.md) | approved / implemented; awaiting completed-contract archival |
 | [Dashboard visual redesign: Evidence Ledger](dashboard-visual-redesign.md) | implemented; visual-only Evidence Ledger dashboard refresh |
 | [Report generation waiting experience](report-generation-waiting-experience.md) | under review; frontend-only stage-aware waiting animation |
+| [Analyst snapshot metrics and heatmap](analyst-snapshot-metrics-and-heatmap.md) | proposed; frontend-only concentric attention metrics and GitHub-style unified evidence heatmap |
 
 Do not treat
 [`../history/technical-design-2026-09-02.md`](../history/technical-design-2026-09-02.md)

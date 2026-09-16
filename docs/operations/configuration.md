@@ -16,20 +16,24 @@ Do not duplicate that table here.
 
 ## Catalog-only vs analysis
 
-```bash
-# Catalog browse. Explicitly disable the worker.
-SECUREMAIL_REPORT_ROOT=tests/fixtures/dashboard \
-SECUREMAIL_START_WORKER=0 \
-  uv run uvicorn securemail.api.main:app --host 127.0.0.1 --port 8000
-```
+The standard local analysis command is:
 
 ```bash
-# Analysis on this host
-SECUREMAIL_DATA_ROOT=out/data \
-SECUREMAIL_REPORT_ROOT=out/data \
-SECUREMAIL_START_WORKER=1 \
-  uv run uvicorn securemail.api.main:app --host 127.0.0.1 --port 8000
+make dashboard-api
 ```
+
+It binds the API to port 8000, uses a writable `out/local-dashboard` root, and
+starts exactly one local worker. Override the root with
+`DASHBOARD_DATA_ROOT=...` when isolation is needed.
+
+Catalog-only fixture browsing is intentionally separated onto port 8001:
+
+```bash
+make dashboard-catalog
+```
+
+Do not use the catalog target to exercise upload or progress behavior. It has
+no worker and uploaded jobs would not advance.
 
 `SECUREMAIL_START_WORKER` defaults to `1` when either root is set, else `0`.
 Exactly `1` starts `python -m securemail.worker` from FastAPI lifespan.

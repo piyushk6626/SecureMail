@@ -45,6 +45,30 @@ test("switches between all four authority workspaces for a catalog case", async 
   await expect(page.getByRole("link", { name: "Download PDF" })).toBeVisible();
 });
 
+test("keeps the analyst snapshot above tabs and supports keyboard evidence inspection", async ({ page }) => {
+  await open_catalog_case(page);
+  const trust = page.getByRole("region", { name: "Assessment trust" });
+  const snapshot = trust.getByRole("region", { name: "Unified evidence contribution grid" });
+  await expect(snapshot).toBeVisible();
+  await expect(snapshot.locator(".heatmap-groups")).toHaveCount(1);
+  await expect(snapshot.locator(".heatmap-group")).toHaveCount(4);
+  await expect(snapshot.getByRole("group", { name: "Evidence grid legend" })).toContainText("Low / informational");
+  await expect(snapshot.getByRole("group", { name: "Evidence grid legend" })).toContainText("High / failed");
+  await expect(trust.getByText(/^Highest endpoint priority \(0–100\):/).last()).toBeVisible();
+  await expect(snapshot.getByText("Report order, not capture chronology.")).toBeVisible();
+  const cells = snapshot.getByRole("gridcell");
+  await expect(cells.first()).toBeVisible();
+  await cells.first().focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(snapshot.getByRole("region", { name: "Selected evidence record" })).toBeVisible();
+  await page.getByRole("tab", { name: /Evidence/ }).click();
+  await expect(snapshot).toBeVisible();
+  const is_before_tabs = await page.locator(".analyst-snapshot").evaluate((element) =>
+    Boolean(element.compareDocumentPosition(document.querySelector(".case-page-tabs")!) & Node.DOCUMENT_POSITION_FOLLOWING),
+  );
+  expect(is_before_tabs).toBe(true);
+});
+
 test("filters catalog summaries and selects a catalog case", async ({ page }) => {
   await page.goto("/cases");
   await expect(page.getByRole("heading", { name: "Cases" })).toBeVisible();

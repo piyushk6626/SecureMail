@@ -2,7 +2,7 @@
 status: current
 audience: architect
 authoritative_for: dashboard query and selector data flow
-last_verified: 2026-09-11
+last_verified: 2026-09-15
 ---
 
 # Frontend data flow
@@ -115,6 +115,28 @@ assessment state, **Highest endpoint priority (0–100)** (or **Not proven**),
 coverage counts, passive-evidence limitations, stage errors, and report
 provenance. Acknowledging a limit is local UI state; it never resolves or
 rewrites that evidence.
+
+The final ruled section of that card is the report-scoped **Analyst snapshot**.
+It remains above View focus and the case tabs. `attention_rings.tsx` projects
+four exact, presentation-only attention ratios: failed checks, unresolved
+checks, mail sessions without a same-UID published TLS establishment, and TLS
+handshakes whose server certificate is not observable. Its centre is the
+canonical highest endpoint priority, never a health or percent-secure score.
+Zero denominators say **No applicable data**; unknown and not-observable values
+never become passes.
+
+`evidence_heatmap.tsx` projects flows, sessions, handshakes, and certificates
+into one shared seven-row contribution matrix with adjacent labelled groups
+and one scroller. It does not render an independent heatmap or scroll area for
+each inventory. Each cell is one canonical record in report order.
+Flow/session/handshake keys are `record_type + uid`; certificate keys
+are `uid:role:chain_index:der_sha256`. `select_evidence_bands` joins checks by
+exact `record_type` + `record_key` and findings only by exact
+`evidence_references`, then retains all linked details in the record inspector.
+It does not infer endpoint associations, run policy, or mutate the report.
+Each group initially renders at most 104 records and expands locally in
+104-record increments. Selection, limits, and roving focus reset when report
+identity changes.
 
 The workbench keeps these four authority regions separate:
 

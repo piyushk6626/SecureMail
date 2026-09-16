@@ -68,6 +68,31 @@ provenance. A limited/none assessment or an evidence limitation opens the
 limitations panel. **Acknowledge limits and continue** only changes the local
 view; it does not turn unknown evidence into a pass.
 
+The final section of Assessment trust is **Analyst snapshot**, so it remains
+visible while changing case tabs. Its rings are an attention ledger, not a
+health gauge: longer arcs mean more review. The centre repeats the canonical
+highest endpoint priority. The exact numerator, denominator, and percentage
+for failed checks, unresolved checks, missing published TLS establishment, and
+server certificates not observable are listed beside the rings. A zero
+denominator is **No applicable data**, never a green 0%.
+
+The snapshot has one compact seven-row evidence matrix combining Flows, Mail
+sessions, TLS handshakes, and Certificates as adjacent labelled groups. The
+groups share one visual surface and one horizontal scroller; they are not four
+separate heatmaps. A square is exactly one published record, in report order
+rather than capture chronology. Select a square with a pointer, Enter/Space,
+or arrow-key navigation to inspect its canonical key, evidence state, exact
+linked checks, and exact linked findings. **Open finding** opens the existing
+finding drawer; the dashboard does not re-score it.
+
+Green means exactly linked pass-only checks with usable evidence. Red, amber,
+and blue mark high/failed, medium, and low/informational deterministic
+attention; lavender is unresolved and grey is not observable. A record with
+mixed linked outcomes keeps its result and visibility markers visible. **Observed · not
+evaluated** is neutral, not a pass. The grid initially shows at most 104
+records; use its **Show more** control to expand it locally. The text record
+list supplies the same selection route without relying on tiny squares.
+
 The overview then shows an endpoint-first action tree and a 4 × 4 coverage
 matrix. The matrix has SMTP, IMAP, POP3, and unclassified rows with transport,
 mail-protocol, TLS-handshake, and certificate columns. Select a cell to see

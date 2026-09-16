@@ -99,7 +99,7 @@ export function CaseView({
   return (
     <div key={identity}>
       <CaseHeader case_id={case_id} generated_at={report.manifest.generated_at} html_href={html_href} pdf_href={pdf_href} policy_profile={report.manifest.policy_profile} state={report.evidence.posture.assessment_state} />
-      <TrustBanner acknowledged={acknowledged} on_acknowledge={() => set_acknowledged(true)} original_filename={original_filename} report={report} />
+      <TrustBanner acknowledged={acknowledged} on_acknowledge={() => set_acknowledged(true)} on_open_finding={(finding_id) => set_selected_finding(findings.find((finding) => finding.finding_id === finding_id) ?? null)} original_filename={original_filename} report={report} />
       <div className="case-focus"><span><Layers3 size={15} /> View focus</span><select aria-label="View focus" onChange={(event) => change_focus(event.target.value as AnalystFocus)} value={focus}>{focus_options.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></div>
       <nav aria-label="Case sections" className="case-page-tabs" role="tablist">
         {case_pages.map((page) => <button aria-controls={`case-panel-${page.id}`} aria-selected={active_page === page.id} className={active_page === page.id ? "active" : ""} id={`case-tab-${page.id}`} key={page.id} onClick={() => set_active_page(page.id)} onKeyDown={(event) => move_case_tab(event, page.id)} role="tab" tabIndex={active_page === page.id ? 0 : -1} type="button"><span>{page.label}</span>{page_counts[page.id] === undefined ? null : <small>{page_counts[page.id]}</small>}</button>)}

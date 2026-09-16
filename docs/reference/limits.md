@@ -36,7 +36,8 @@ can double-count a staged upload during commit. See
 | Analyzer timeout | 120 s each | `ANALYZER_TIMEOUT_SECONDS` |
 | Combined analyzer output | 50 MiB | `MAX_OUTPUT_BYTES` |
 | Certificate DER | 64 KiB each | `MAX_CERTIFICATE_DER_BYTES` |
-| Certificates per run | 256 | `MAX_CERTIFICATES_PER_RUN` |
+| Distinct certificates per run | 256 | `MAX_CERTIFICATES_PER_RUN` |
+| Extracted certificate files per run | 4,096 | `MAX_EXTRACTED_CERTIFICATE_FILES_PER_RUN` |
 | ASN.1 constructed depth | 16 | `MAX_ASN1_DEPTH` |
 | Chain depth | 16 | `MAX_CHAIN_DEPTH` |
 | Container user | `65532:65532` | `SANDBOX_USER` |

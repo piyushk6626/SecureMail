@@ -8,6 +8,7 @@ import type {
   CertificateEvidence,
   CoverageCounts,
   EmailSession,
+  EvidenceRecordType,
   FindingOutcome,
   Flow,
   PolicyCheck,
@@ -71,6 +72,38 @@ export interface CertificateChain {
   uid: string;
   certificates: CertificateEvidence[];
   handshake: TlsHandshake | null;
+}
+
+export type AttentionTone = "danger" | "warning" | "unknown" | "not_observable";
+export type EvidenceCellTone = "neutral" | "success" | "danger" | "warning" | "info" | "unknown" | "not_observable";
+export type EvidenceBandType = EvidenceRecordType;
+
+export interface AttentionMetric {
+  id: "failed_checks" | "unresolved_checks" | "tls_not_established" | "certificate_not_observable";
+  label: string;
+  numerator: number;
+  denominator: number;
+  tone: AttentionTone;
+  split?: { unknown: number; not_observable: number };
+}
+
+export interface EvidenceCell {
+  band: EvidenceBandType;
+  key: string;
+  uid: string;
+  evidence_state: EvidenceState;
+  record: Flow | EmailSession | TlsHandshake | CertificateEvidence;
+  checks: PolicyCheck[];
+  findings: ScoredEndpointFinding[];
+  tone: EvidenceCellTone;
+  marker: string;
+  unresolved_states: EvidenceState[];
+}
+
+export interface EvidenceBand {
+  type: EvidenceBandType;
+  label: string;
+  cells: EvidenceCell[];
 }
 
 const zero_coverage: CoverageCounts = {
@@ -367,6 +400,121 @@ export function select_certificate_posture(report: CanonicalReport): {
 export function session_tls_established(report: CanonicalReport, session: EmailSession): boolean {
   if (session.explicit_upgrade?.state === "tls_established") return true;
   return handshake_for_uid(report, session.uid)?.established === true;
+}
+
+/** Presentation-only ratios for the assessment card. They do not alter coverage or posture. */
+export function select_attention_metrics(report: CanonicalReport): AttentionMetric[] {
+  const coverage = select_coverage(report);
+  const sessions = report.evidence.sessions ?? [];
+  const handshakes = report.evidence.handshakes ?? [];
+  return [
+    {
+      id: "failed_checks",
+      label: "Failed policy checks",
+      numerator: coverage.failed_count,
+      denominator: coverage.applicable_count,
+      tone: "danger",
+    },
+    {
+      id: "unresolved_checks",
+      label: "Unresolved policy checks",
+      numerator: coverage.unknown_count + coverage.not_observable_count,
+      denominator: coverage.applicable_count,
+      tone: "unknown",
+      split: { unknown: coverage.unknown_count, not_observable: coverage.not_observable_count },
+    },
+    {
+      id: "tls_not_established",
+      label: "TLS establishment not present in published evidence",
+      numerator: sessions.filter((session) => !session_tls_established(report, session)).length,
+      denominator: sessions.length,
+      tone: "warning",
+    },
+    {
+      id: "certificate_not_observable",
+      label: "Server certificate not observable",
+      numerator: handshakes.filter((handshake) => handshake.server_certificate_state === "not_observable").length,
+      denominator: handshakes.length,
+      tone: "not_observable",
+    },
+  ];
+}
+
+export function evidence_record_key(type: EvidenceBandType, record: Flow | EmailSession | TlsHandshake | CertificateEvidence): string {
+  if (type === "certificate") {
+    const certificate = record as CertificateEvidence;
+    return `${certificate.uid}:${certificate.role}:${certificate.chain_index}:${certificate.der_sha256}`;
+  }
+  return record.uid;
+}
+
+function is_unresolved_state(state: EvidenceState): boolean {
+  return state === "incomplete" || state === "conflicting" || state === "indeterminate";
+}
+
+function evidence_cell_tone(input: {
+  evidence_state: EvidenceState;
+  checks: PolicyCheck[];
+  findings: ScoredEndpointFinding[];
+}): { tone: EvidenceCellTone; marker: string; unresolved_states: EvidenceState[] } {
+  const states = [input.evidence_state, ...input.checks.map((check) => check.evidence_state)];
+  const unresolved_states = Array.from(new Set(states.filter((state) => is_unresolved_state(state))));
+  const has_unknown = input.checks.some((check) => check.outcome === "unknown") || unresolved_states.length > 0;
+  const has_not_observable = input.checks.some((check) => check.outcome === "not_observable") || states.includes("not_observable");
+  const negative = input.findings.filter((finding) => finding.outcome === "negative");
+  const severity = negative.reduce<FindingSeverity | null>((worst, finding) => {
+    if (!worst || severity_order[finding.severity] > severity_order[worst]) return finding.severity;
+    return worst;
+  }, null);
+  if (severity === "high") return { tone: "danger", marker: "HIGH", unresolved_states };
+  if (severity === "medium") return { tone: "warning", marker: "MEDIUM", unresolved_states };
+  if (severity === "low" || severity === "informational") return { tone: "info", marker: severity.toUpperCase(), unresolved_states };
+  if (input.checks.some((check) => check.outcome === "fail")) return { tone: "danger", marker: "FAILED CHECK", unresolved_states };
+  if (has_unknown) return { tone: "unknown", marker: unresolved_states[0]?.toUpperCase() ?? "UNKNOWN", unresolved_states };
+  if (has_not_observable) return { tone: "not_observable", marker: "NOT OBSERVABLE", unresolved_states };
+  if (input.checks.length > 0 && input.checks.every((check) => check.outcome === "pass")) return { tone: "success", marker: "PASS", unresolved_states };
+  return { tone: "neutral", marker: "OBSERVED · NOT EVALUATED", unresolved_states };
+}
+
+/**
+ * Retains canonical array order, joins only exact record references, and never
+ * mutates or re-evaluates the report.
+ */
+export function select_evidence_bands(report: CanonicalReport): EvidenceBand[] {
+  const checks = report.evidence.policy_checks ?? [];
+  const findings = report.evidence.posture.prioritized_findings ?? [];
+  const inputs: { type: EvidenceBandType; label: string; records: (Flow | EmailSession | TlsHandshake | CertificateEvidence)[] }[] = [
+    { type: "flow", label: "Flows", records: report.evidence.flows ?? [] },
+    { type: "session", label: "Mail sessions", records: report.evidence.sessions ?? [] },
+    { type: "handshake", label: "TLS handshakes", records: report.evidence.handshakes ?? [] },
+    { type: "certificate", label: "Certificates", records: report.evidence.certificates ?? [] },
+  ];
+  return inputs.map(({ type, label, records }) => ({
+    type,
+    label,
+    cells: records.map((record) => {
+      const key = evidence_record_key(type, record);
+      const linked_checks = checks.filter((check) => check.record_type === type && check.record_key === key);
+      const linked_findings = findings.filter((finding) =>
+        (finding.evidence_references ?? []).some((reference) => reference.record_type === type && reference.record_key === key),
+      );
+      const outcome = evidence_cell_tone({
+        evidence_state: record.evidence_state,
+        checks: linked_checks,
+        findings: linked_findings,
+      });
+      return {
+        band: type,
+        key,
+        uid: record.uid,
+        evidence_state: record.evidence_state,
+        record,
+        checks: linked_checks,
+        findings: linked_findings,
+        ...outcome,
+      };
+    }),
+  }));
 }
 
 export function service_role(report: CanonicalReport, uid: string): string {

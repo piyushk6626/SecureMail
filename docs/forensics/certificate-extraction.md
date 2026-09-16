@@ -109,7 +109,8 @@ remaining lifetime is ≤ the configured window.
 | Bound | Value | Constant |
 |---|---|---|
 | DER per file | 64 KiB | `MAX_CERTIFICATE_DER_BYTES` / Zeek `FileExtract::default_limit` |
-| Certificates per run | 256 | `MAX_CERTIFICATES_PER_RUN` |
+| Distinct certificates per run | 256 | `MAX_CERTIFICATES_PER_RUN` |
+| Extracted certificate files per run | 4,096 | `MAX_EXTRACTED_CERTIFICATE_FILES_PER_RUN` |
 | ASN.1 constructed depth | 16 | `MAX_ASN1_DEPTH` |
 | Chain depth | 16 | `MAX_CHAIN_DEPTH` |
 | Combined Zeek output | 50 MiB | logs plus extracted DER |

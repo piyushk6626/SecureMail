@@ -270,6 +270,20 @@ default CLI extra early.
 Commands: `make doctor`, `make sync`, `make lint` (ruff, mypy, import-linter),
 `make test`, `make analyzer-lock`.
 
+Dashboard startup rule for every agent:
+
+- For upload, worker, progress, or capture-analysis work, start the API with
+  `make dashboard-api`. This uses a writable `out/local-dashboard` root and
+  explicitly starts the single local worker.
+- Never use `SECUREMAIL_START_WORKER=0` or
+  `SECUREMAIL_REPORT_ROOT=tests/fixtures/dashboard` on port 8000 for those
+  tasks. That is catalog-only fixture mode and leaves uploaded jobs unclaimed.
+- `make dashboard-catalog` is reserved for explicitly requested fixture-only
+  catalog inspection and runs on port 8001 so it cannot replace the
+  upload-capable API.
+- Before reporting that an upload-capable dashboard is running, verify both
+  `GET /api/v1/health` and a child `python -m securemail.worker` process.
+
 ---
 
 ## 8. Fixtures and evidence

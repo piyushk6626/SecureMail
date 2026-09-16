@@ -29,6 +29,7 @@ from securemail.adapters.analyzers.sandbox import (
 from securemail.domain.evidence.certificate import (
     MAX_CERTIFICATE_DER_BYTES,
     MAX_CERTIFICATES_PER_RUN,
+    MAX_EXTRACTED_CERTIFICATE_FILES_PER_RUN,
 )
 from securemail.ports.analyzers import ExtractedCertificate, ZeekRunResult
 
@@ -188,10 +189,11 @@ def _read_extracted_certificates(
     if not cert_root.is_dir():
         return ()
     paths = sorted(path for path in cert_root.iterdir() if path.is_file())
-    if len(paths) > MAX_CERTIFICATES_PER_RUN:
+    if len(paths) > MAX_EXTRACTED_CERTIFICATE_FILES_PER_RUN:
         raise AnalyzerExecutionError("Zeek extracted too many certificate files")
     total = consumed_bytes
     found: list[ExtractedCertificate] = []
+    seen_digests: set[str] = set()
     for path in paths:
         resolved = path.resolve()
         if not resolved.is_relative_to(cert_root):
@@ -208,6 +210,11 @@ def _read_extracted_certificates(
         if total > MAX_OUTPUT_BYTES:
             raise AnalyzerExecutionError("Zeek output exceeded the configured size bound")
         digest = hashlib.sha256(payload).hexdigest()
+        if digest in seen_digests:
+            continue
+        if len(found) >= MAX_CERTIFICATES_PER_RUN:
+            raise AnalyzerExecutionError("Zeek extracted too many distinct certificate files")
+        seen_digests.add(digest)
         found.append(
             ExtractedCertificate(
                 sha256=digest,

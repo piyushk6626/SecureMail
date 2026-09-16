@@ -67,25 +67,32 @@ state; do not add a fallback that guesses a value.
 
 ## Local API
 
-Catalog browse (disable the worker explicitly):
+For upload, progress, cancellation, or completed-report development, use the
+standard worker-backed API:
 
 ```bash
-SECUREMAIL_REPORT_ROOT=tests/fixtures/dashboard \
-SECUREMAIL_START_WORKER=0 \
-  uv run uvicorn securemail.api.main:app --reload
+make dashboard-api
 ```
 
-Analysis on this host:
+In another terminal, start Vite:
 
 ```bash
-SECUREMAIL_DATA_ROOT=out/data \
-SECUREMAIL_REPORT_ROOT=out/data \
-SECUREMAIL_START_WORKER=1 \
-  uv run uvicorn securemail.api.main:app --reload
+make frontend-dev
 ```
 
-If a root is set and `SECUREMAIL_START_WORKER` is omitted, the worker
-**starts**.
+`make dashboard-api` uses `out/local-dashboard` by default. Override it with
+`make dashboard-api DASHBOARD_DATA_ROOT=out/another-root`. Before treating the
+dashboard as ready for uploads, verify that `python -m securemail.worker` is a
+child of Uvicorn.
+
+Fixture-only catalog browse is a separate, non-upload workflow:
+
+```bash
+make dashboard-catalog
+```
+
+It runs on port 8001 with the worker disabled so it cannot silently replace
+the upload-capable API on port 8000. Do not use it to test `/upload`.
 
 Playwright e2e copies dashboard JSON into `out/e2e-data`, starts Uvicorn on
 port 8011 with `SECUREMAIL_ANALYSIS_STUB=1`, and Vite on `127.0.0.1:5174` with

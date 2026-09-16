@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import type { CanonicalReport } from "../core/model";
 import { render_forensic_text } from "../core/forensic_text";
 import { select_coverage } from "../core/selectors";
+import { AttentionRings } from "./attention_rings";
+import { EvidenceHeatmap } from "./evidence_heatmap";
 import { Badge, Button, Card } from "./ui";
 
 function short_hash(value: string): string {
@@ -19,11 +21,13 @@ export function TrustBanner({
   report,
   acknowledged,
   on_acknowledge,
+  on_open_finding,
   original_filename,
 }: {
   report: CanonicalReport;
   acknowledged: boolean;
   on_acknowledge: () => void;
+  on_open_finding: (finding_id: string) => void;
   original_filename?: string | null | undefined;
 }) {
   const posture = report.evidence.posture;
@@ -117,6 +121,13 @@ export function TrustBanner({
         ) : has_limits ? (
           <div className="trust-acknowledged"><CheckCircle2 size={15} /> Limitations acknowledged for this report. They remain unresolved evidence boundaries.</div>
         ) : null}
+        <div className="analyst-snapshot">
+          <p className="section-label">Analyst snapshot</p>
+          <div className="analyst-snapshot-grid">
+            <AttentionRings report={report} />
+            <EvidenceHeatmap on_open_finding={on_open_finding} report={report} />
+          </div>
+        </div>
       </Card>
     </section>
   );

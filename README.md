@@ -63,11 +63,13 @@ uv run securemail score tests/fixtures/synthetic_findings/mixed_severity.json
 uv run securemail report tests/fixtures/reports/golden_report.json --format json,html,pdf --out out/
 uv run securemail evaluate-ml tests/support/synthetic_cohorts/cohort_seeded_v1/
 
-SECUREMAIL_DATA_ROOT=out/data SECUREMAIL_REPORT_ROOT=out/data \
-  SECUREMAIL_START_WORKER=1 \
-  uv run uvicorn securemail.api.main:app
-npm --prefix frontend run dev
+make dashboard-api
+make frontend-dev
 ```
+
+Run those commands in separate terminals. `dashboard-api` is the standard
+upload-capable local API and always starts one worker. Fixture-only catalog
+browsing is available separately as `make dashboard-catalog` on port 8001.
 
 `analyze` writes a v2 `EvidenceDocument`. `report` reads an already assembled
 `securemail.report/v1` object. The dashboard worker is the path that assembles
